@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="icon" type="image/png" href="favicon-48.png">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
@@ -36,6 +37,12 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neu
 header { background: var(--tinta); color: #fff; padding: 14px 16px; }
 header .marca { font-weight: 800; font-size: 1.1rem; }
 header .sub { opacity: .85; font-size: .9rem; }
+/* V3: logo nuevo sobre el azul + botón Volver */
+header { display:flex; align-items:center; gap:12px; }
+header .logo { height:32px; width:auto; flex-shrink:0; filter:drop-shadow(0 0 1.5px rgba(255,255,255,.9)) drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
+header .txt { flex:1; min-width:0; }
+header .volver { width:auto; flex:0 0 auto; margin:0; background:rgba(255,255,255,.18); color:#fff; border:1px solid rgba(255,255,255,.35); border-radius:999px; padding:8px 14px; font:inherit; font-weight:700; font-size:.88rem; cursor:pointer; white-space:nowrap; }
+@media print { header .volver { display:none; } }
 main { max-width: 680px; margin: 0 auto; padding: 14px 14px 40px; }
 .tarjeta { background: var(--papel); border: 1px solid var(--borde); border-radius: var(--radio); padding: 16px; margin: 0 0 14px; box-shadow: 0 1px 2px rgba(13,71,161,.06); }
 h1 { font-size: 1.3rem; margin: 0 0 6px; color: var(--tinta); }
@@ -112,7 +119,7 @@ footer { text-align: center; color: var(--suave); font-size: .82rem; padding: 0 
 </head>
 <body>
 <div class="franja" id="franja" role="note">CONTRATO DE PRUEBA — SIN VALOR LEGAL<small>Todavía no hay un contrato comercial vigente. No habilita pagos ni cambia tu plan.</small></div>
-<header><div class="marca">VAO POS</div><div class="sub" id="subtitulo">Contrato del servicio</div></header>
+<header><img class="logo" src="logo_oscuro.png" alt="VAO Sistemas"><div class="txt"><div class="marca">VAO POS</div><div class="sub" id="subtitulo">Contrato del servicio</div></div><button class="volver" id="btnVolver" type="button" onclick="volverAlPOS()">← Volver</button></header>
 
 <main>
   <div class="msg aviso oculto" id="avisoAlmacen">Este navegador no permite guardar datos. La página funciona, pero si la cerrás no se va a poder recuperar una aceptación en curso.</div>
@@ -263,13 +270,20 @@ footer { text-align: center; color: var(--suave); font-size: .82rem; padding: 0 
     <div class="msg" id="msgOlvidar"></div>
   </div>
 </main>
-<footer>VAO Sistemas · VAO POS · contrato.html V2</footer>
+<footer>VAO Sistemas · VAO POS · contrato.html V3</footer>
 
 <script>
 'use strict';
 // ── Configuración ─────────────────────────────────────────────────────────────
 const API_URL = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec'; // PRODUCCIÓN
-const VERSION_PAGINA = 'contrato.html V2';
+const VERSION_PAGINA = 'contrato.html V3';
+// V3: Volver → al POS del mismo comercio (si vino con ?p=XX); si no, atrás o a la portada.
+function volverAlPOS() {
+  const p = String(new URLSearchParams(location.search).get('p') || '').trim().toUpperCase();
+  if (/^[A-Z0-9]{2,10}$/.test(p)) { location.href = 'pos.html?p=' + encodeURIComponent(p); return; }
+  if (history.length > 1) { history.back(); return; }
+  location.href = 'index.html';
+}
 // V2: PRUEBA (sin valor legal) o COMERCIAL. Ningún otro ámbito. La franja de PRUEBA se ve por defecto y solo se oculta con COMERCIAL.
 function ambitoAdmitido(ambito, sinValorLegal) { return (ambito === 'PRUEBA' && sinValorLegal === true) || (ambito === 'COMERCIAL' && sinValorLegal === false); }
 function ajustarFranja(ambito) { const f = $('franja'); if (f) f.style.display = ambito === 'COMERCIAL' ? 'none' : ''; }

@@ -1,0 +1,17 @@
+{
+  "name": "VAO POS",
+  "short_name": "VAO POS",
+  "description": "Sistema de ventas de VAO Sistemas",
+  "start_url": "pos.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#141A22",
+  "theme_color": "#0D47A1",
+  "lang": "es-AR",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="icon" type="image/png" href="favicon-48.png"><!-- logo nuevo VAO -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SmartPOS · VAO Sistemas · Fiados</title>
@@ -137,19 +138,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--blanco); color:var(--t
 <body>
 
 <div class="header">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 520" height="38" style="flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.3));" role="img" aria-label="VAO Sistemas">
-  <defs>
-    <linearGradient id="fbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#21A8F6"/><stop offset="100%" stop-color="#0B49E8"/></linearGradient>
-    <linearGradient id="fgg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6BCB17"/><stop offset="100%" stop-color="#24A72E"/></linearGradient>
-    <linearGradient id="fsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFC21A"/><stop offset="100%" stop-color="#FF8C00"/></linearGradient>
-    <linearGradient id="fhg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0B49E8"/><stop offset="28%" stop-color="#16A6EF"/><stop offset="50%" stop-color="#43B02A"/><stop offset="70%" stop-color="#D6CF00"/><stop offset="86%" stop-color="#FFB000"/><stop offset="100%" stop-color="#FF8C00"/></linearGradient>
-  </defs>
-  <path d="M105 65 L305 65 L515 305 L710 65 L900 65 L525 430 L470 430 Z" fill="url(#fbg)"/>
-  <path d="M565 405 L900 90 L1165 385 L1015 385 L900 240 L800 350 L1005 350 L1065 420 L700 420 Z" fill="url(#fgg)"/>
-  <path d="M1228 351 A115 115 0 0 1 1458 351 Z" fill="url(#fsg)"/>
-  <g stroke="#FFB000" stroke-width="15" stroke-linecap="round"><line x1="1343" y1="165" x2="1343" y2="112"/><line x1="1230" y1="214" x2="1190" y2="174"/><line x1="1456" y1="214" x2="1496" y2="174"/></g>
-  <path d="M70 490 C 355 395, 650 355, 980 352 C 1210 350, 1410 370, 1560 410" fill="none" stroke="url(#fhg)" stroke-width="15" stroke-linecap="round"/>
-</svg>
+    <img src="logo_oscuro.png" alt="VAO Sistemas" style="height:30px;width:auto;flex-shrink:0;filter:drop-shadow(0 0 1.5px rgba(255,255,255,.9)) drop-shadow(0 1px 2px rgba(0,0,0,.35));">
     <div>
         <div class="header-titulo">VAO Sistemas</div>
         <div class="header-sub" id="headerSub">Fiados</div>
@@ -210,7 +199,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--blanco); color:var(--t
 </div>
 
 <script>
-const APP_VERSION = 2;
+const APP_VERSION = 4;
 const API_URL = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
 
 // Mismo esquema seguro que ya usan pos.html y reportes.html — sin sesión
