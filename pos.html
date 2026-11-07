@@ -250,6 +250,42 @@ body {
 /* V43.6 (celular): fila de mini botones P1 · P2 · P3 · ➕; al tocar uno se abren sus herramientas debajo y al tocarlo de nuevo se cierran.
    Mi plan, Salir y ✨ P3 PRO pasan al encabezado como íconos; la barra de Cobrar es más baja. En tablet y computadora no cambia nada. */
 .mini-tabs, .hdr-cel { display: none; }
+/* V43.8 (celular, «carrito al tocar»): el catálogo ocupa la pantalla; la venta actual se abre tocando 🛒 en la barra de Cobrar
+   (o desde «✏️ Corregir» al cobrar); buscar y actualizar son botones flotantes. En tablet y computadora no cambia nada. */
+.btn-carrito, .fab-v438, .carrito-fondo-v438, .btn-cerrar-carrito { display: none; }
+.btn-corregir-v438 { display: block; width: 100%; margin: 6px 0 10px; border: 2px dashed #90A4AE; background: #fff; color: #37474F; border-radius: 12px; padding: 9px; font-weight: 700; font-family: inherit; cursor: pointer; }
+.total-txt { display: block; }
+@media (max-width: 599px) {
+    body .buscador-wrap { display: none !important; }
+    body.buscar-on .buscador-wrap { display: flex !important; padding: 6px 10px; background: #fff; }
+    body #listaTodosWrap { display: block !important; flex: 1 1 auto; min-height: 0; max-height: none !important; margin: 0 !important; border-radius: 0 !important; border-left: 0 !important; border-right: 0 !important; }
+    #listaTodosWrap > div:first-child { display: none !important; }
+    body .venta-wrap { position: fixed; left: 0; right: 0; bottom: var(--tb, 56px); flex: none; min-height: 0; max-height: 62vh; z-index: 70; background: #fff; border-radius: 18px 18px 0 0;
+        box-shadow: 0 -10px 30px rgba(0,0,0,.28); transform: translateY(115%); transition: transform .2s ease-out; visibility: hidden; }
+    body.carrito-on .venta-wrap { transform: none; visibility: visible; }
+    body .venta-wrap #listaVenta { overflow-y: auto; flex: 1; min-height: 0; }
+    body .venta-header { display: flex !important; }
+    .btn-cerrar-carrito { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; border-radius: 50%; background: #EEE; font-size: 1rem; margin-left: 8px; cursor: pointer; }
+    body.carrito-on .carrito-fondo-v438 { display: block; position: fixed; inset: 0; bottom: var(--tb, 56px); background: rgba(0,0,0,.35); z-index: 65; }
+    .fab-v438 { display: flex; flex-direction: column; gap: 10px; position: fixed; right: 12px; bottom: calc(var(--tb, 56px) + 14px); z-index: 60; }
+    .fab-v438 button { width: 50px; height: 50px; border-radius: 50%; border: 0; background: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.28); font-size: 1.25rem; cursor: pointer; }
+    body.carrito-on .fab-v438 { display: none; }
+    body #listaTodosWrap { padding-bottom: 130px; }   /* que los botones flotantes no tapen el último producto */
+    body.carrito-on #vaoStagingBadge { display: none; }
+    /* en la venta: nombre arriba (toda la fila) y debajo cantidad · precio · subtotal → se lee sin cortar palabras */
+    body .venta-wrap .item-venta { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "n n n" "q p s"; row-gap: 6px; padding: 10px 14px; }
+    body .venta-wrap .item-nombre { grid-area: n; font-size: .95rem; }
+    body .venta-wrap .item-qty-wrap { grid-area: q; }
+    body .venta-wrap .item-precio { grid-area: p; justify-self: end; }
+    body .venta-wrap .item-subtotal { grid-area: s; min-width: 74px; text-align: right; }
+    body .venta-wrap .btn-qty { width: 36px; height: 36px; }
+    .btn-carrito { display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: 999px; background: rgba(255,255,255,.18); color: #fff; font-size: 1.15rem; padding: 7px 12px; cursor: pointer; margin-right: 10px; }
+    .btn-carrito b { background: #F07D3A; color: #fff; border-radius: 999px; min-width: 22px; padding: 1px 6px; font-size: .8rem; text-align: center; }
+    .btn-carrito.salta { animation: carritoSalta .35s ease-out; }
+    @keyframes carritoSalta { 0% { transform: scale(1); } 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
+    body .total-bar { justify-content: flex-start; }
+    body .total-bar .btn-cobrar { margin-left: auto; }
+}
 @media (max-width: 599px) {
     .hdr-cel { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; background: rgba(255,255,255,0.16); color: #fff; font-size: 0.95rem; cursor: pointer; flex-shrink: 0; padding: 0; }
     .hdr-cel.hdr-salir { background: rgba(214,66,66,.6); }
@@ -946,18 +982,26 @@ body {
     <div id="listaTodosItems"></div>
 </div>
 
+<!-- V43.8 (celular): botones flotantes — buscar y actualizar productos (el catálogo ocupa la pantalla) -->
+<div class="fab-v438" id="fabV438">
+    <button type="button" onclick="toggleBuscarV438()" aria-label="Buscar producto" title="Buscar producto">🔍</button>
+    <button type="button" onclick="cargarProductos()" aria-label="Actualizar productos" title="Actualizar productos">🔄</button>
+</div>
+<div class="carrito-fondo-v438" onclick="toggleCarritoV438(false)"></div>
 <!-- VENTA ACTUAL -->
 <div class="venta-wrap">
     <div class="venta-header">
         <span class="venta-titulo">🛒 Venta actual</span>
         <button class="btn-limpiar" onclick="limpiarVenta()">🗑 Limpiar</button>
+        <button type="button" class="btn-cerrar-carrito" onclick="toggleCarritoV438(false)" aria-label="Cerrar la venta actual">✕</button>
     </div>
     <div id="listaVenta"></div>
 </div>
 
 <!-- TOTAL BAR -->
 <div class="total-bar">
-    <div>
+    <button type="button" class="btn-carrito" id="btnCarrito" onclick="toggleCarritoV438()" aria-label="Ver la venta actual">🛒<b id="carritoN">0</b></button>   <!-- V43.8 (celular) -->
+    <div class="total-txt">
         <div class="total-label">Total</div>
         <div class="total-monto" id="totalMonto">$0</div>
     </div>
@@ -977,6 +1021,7 @@ body {
         </div>
         <div style="overflow-y:auto;flex:1;min-height:0;">
         <div class="confirm-items" id="confirmItems"></div>
+        <button type="button" class="btn-corregir-v438" onclick="corregirVentaV438()">✏️ Corregir la venta (cantidades, precios, quitar)</button>
         <div class="confirm-total" id="confirmTotal">$0</div>
 
         <!-- MÉTODOS DE PAGO -->
@@ -1198,8 +1243,8 @@ if (!/^[A-Z0-9]{2,10}$/.test(PREFIJO)) {
 
 // ========== CONFIG ==========
 const API_URL  = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
-const APP_VERSION_TXT = '43.7';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
-const APP_VERSION = 43; // V43.7: «Venta actual · Limpiar» solo aparece con productos en el carrito; 📣 comparte el afiche nuevo (og-vao-pos-2.jpg) · V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
+const APP_VERSION_TXT = '43.8';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
+const APP_VERSION = 43; // V43.8: celular «carrito al tocar» — el catálogo ocupa la pantalla; 🛒 (con cantidad) en la barra de Cobrar abre la venta para corregir; 🔍 y 🔄 flotantes; «✏️ Corregir la venta» en Confirmar · V43.7: «Venta actual · Limpiar» solo aparece con productos en el carrito; 📣 comparte el afiche nuevo (og-vao-pos-2.jpg) · V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
 const HOY_KEY    = 'vao_ventas_' + PREFIJO + '_' + new Date().toISOString().slice(0, 10);
 const CARRITO_KEY= 'vao_carrito_' + PREFIJO;
 
@@ -1808,6 +1853,29 @@ function renderListaTodos() {
     container.innerHTML = chips + (html || '<div style="padding:20px;text-align:center;color:var(--gris);">Sin productos</div>');
 }
 
+// ===== V43.8 (celular): «carrito al tocar» =====
+const _celuV438_ = () => !!(window.matchMedia && window.matchMedia('(max-width: 599px)').matches);
+let _carritoNAntV438 = 0;
+function _carritoContadorV438_() {
+    const n = ventaActual.reduce((s, i) => s + Number(i.qty || 0), 0), el = document.getElementById('carritoN'), b = document.getElementById('btnCarrito');
+    if (el) el.textContent = Number.isInteger(n) ? n : n.toFixed(1);
+    if (b && n > _carritoNAntV438) { b.classList.remove('salta'); void b.offsetWidth; b.classList.add('salta'); }
+    _carritoNAntV438 = n;
+    if (!ventaActual.length && document.body.classList.contains('carrito-on')) toggleCarritoV438(false);
+}
+function toggleCarritoV438(abrir) {
+    const on = abrir === undefined ? !document.body.classList.contains('carrito-on') : !!abrir;
+    if (on && !ventaActual.length) { mostrarToast('🛒 Todavía no hay productos en la venta', 'naranja'); return; }
+    document.body.classList.toggle('carrito-on', on);
+}
+function toggleBuscarV438() {
+    const on = !document.body.classList.contains('buscar-on'); document.body.classList.toggle('buscar-on', on);
+    if (on) setTimeout(() => { const i = document.getElementById('buscadorInput'); if (i) i.focus(); }, 50);
+}
+function corregirVentaV438() { cerrarConfirm(); toggleCarritoV438(true); }   // desde «Confirmar venta»: volver a la venta para corregir
+function _medirTotalV438_() { const t = document.querySelector('.total-bar'); if (t) document.documentElement.style.setProperty('--tb', t.offsetHeight + 'px'); }
+window.addEventListener('resize', _medirTotalV438_);
+document.addEventListener('DOMContentLoaded', () => { _medirTotalV438_(); if (_celuV438_() && !listaTodosAbierta) toggleListaTodos(); });
 function agregarDesdeLista(id) {
     agregarProducto(id); // ya maneja stock y toast
     renderListaTodos();  // refresca visual de stock
@@ -1988,6 +2056,7 @@ function agregarProducto(id) {
     guardarCarrito();
     renderVenta();
     mostrarToast('✅ ' + p.name.substring(0, 28), 'verde');
+    if (_celuV438_()) document.body.classList.remove('buscar-on');   // V43.8
 }
 
 // ========== RENDER VENTA ==========
@@ -1995,6 +2064,7 @@ function renderVenta() {
     const lista = document.getElementById('listaVenta');
     const total = ventaActual.reduce((s, i) => s + i.price * i.qty, 0);
     const vh = document.querySelector('.venta-header'); if (vh) vh.style.display = ventaActual.length ? '' : 'none';   // V43.7: «Venta actual · Limpiar» solo con productos en el carrito
+    _carritoContadorV438_();   // V43.8 (celular): 🛒 con la cantidad de unidades
     document.getElementById('totalMonto').textContent = '$' + total.toLocaleString('es-AR');
 
     // Si el panel MP está visible y el total cambió, regenerar QR
