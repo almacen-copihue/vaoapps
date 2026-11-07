@@ -962,7 +962,7 @@ details.ctr-com[open] > summary { border-bottom:1px solid #EEF2F6; }
 <div class="toast" id="toast"></div>
 
 <script>
-const APP_VERSION = 22; // V22.2 (v044.2): complementos «para P1, P2, P3 PRO» (antes los códigos internos); fila «Precio mensual» (dice «/ lanzamiento» solo si hay alguno); la cotización la carga cada comercio (VAO también puede, como soporte) · V22 (v044.1): planes P1 · P2 · P3 PRO integrados (activación en un paso con vista previa, cambio de plan a P3 con el pago), complementos opcionales aparte, botonera de cada comercio desde la matriz central y aviso de combinaciones contradictorias · V21 (v043): 📋 Planes y contrataciones — P1/P2/P3, prestaciones por comercio (catálogo/contratado/habilitado/suspendido), complementos, precios, historial y elecciones pendientes // V20: 💱 Cobro por comercio (cobro avanzado prender/apagar, cotizaciones USD/CLP, cobros sin terminar) y uso de la planilla
+const APP_VERSION = 22; // V22.3: «Complemento opcional» (antes «Complemento P3»); el candado de pagos explica qué falta en STAGING y en Producción · V22.2 (v044.2): complementos «para P1, P2, P3 PRO» (antes los códigos internos); fila «Precio mensual» (dice «/ lanzamiento» solo si hay alguno); la cotización la carga cada comercio (VAO también puede, como soporte) · V22 (v044.1): planes P1 · P2 · P3 PRO integrados (activación en un paso con vista previa, cambio de plan a P3 con el pago), complementos opcionales aparte, botonera de cada comercio desde la matriz central y aviso de combinaciones contradictorias · V21 (v043): 📋 Planes y contrataciones — P1/P2/P3, prestaciones por comercio (catálogo/contratado/habilitado/suspendido), complementos, precios, historial y elecciones pendientes // V20: 💱 Cobro por comercio (cobro avanzado prender/apagar, cotizaciones USD/CLP, cobros sin terminar) y uso de la planilla
 document.addEventListener('DOMContentLoaded', function(){
     var tag = document.createElement('span');
     tag.id = 'version-tag';
@@ -1860,7 +1860,9 @@ function renderVigenciaPagos() {
     const modoPago = r.modoPagos || (r.pagosSimulados ? 'SIMULADO' : 'BLOQUEADO'); // V15
     h += '<div class="vp-caja"><h4>💵 Registrar pago confirmado' + (modoPago === 'SIMULADO' ? ' <span style="color:#6A1B9A;">(SIMULADO · STAGING)</span>' : modoPago === 'REAL' ? ' <span style="color:#C62828;">(DINERO REAL)</span>' : '') + '</h4>';
     if (modoPago === 'BLOQUEADO') {
-        h += '<div class="ayuda" id="vpPagoBloqueado">🔒 Bloqueado: los pagos reales se habilitan cuando el contrato digital esté implementado y revisado. No se registra nada.</div>';
+        h += '<div class="ayuda" id="vpPagoBloqueado">' + (/staging/i.test(location.hostname)   // V22.3: el candado explica qué falta en cada entorno
+            ? '🔒 Pagos de prueba apagados en STAGING. Para registrar un pago SIMULADO (sin dinero): Apps Script → ⚙️ Configuración del proyecto → Propiedades → <b>PAGOS_SIMULADOS_STAGING = SI</b>. No se registra nada.'
+            : '🔒 El cobro de planes todavía no está habilitado: falta definir cómo acepta el comercio (Términos de uso o contrato) y habilitar los pagos reales. No se registra nada.') + '</div>';
     } else if (!(r.contratables || []).length) {
         h += '<div class="ayuda">No hay planes pagos contratables en PLANES_VAO.</div>';
     } else {
@@ -2215,7 +2217,7 @@ async function vpRecuperarConfirmar(btn) {
 // CONTRATOS_COMPLEMENTOS_VAO (qué contrató cada comercio), CONFIG_XX suspendido_<clave> (suspensión temporal).
 // La pantalla solo muestra y pide cambios; el servidor valida todo.
 let PC43 = { datos: null, tab: 'comercios', comercio: '' };
-const PC43_ESTADOS = { INCLUIDO: 'Incluido en el plan', COMPLEMENTO: 'Complemento P3', NO_INCLUIDO: 'No incluido', SEGUN_CONFIG: 'Según CONFIG (planes sin migrar)' };
+const PC43_ESTADOS = { INCLUIDO: 'Incluido en el plan', COMPLEMENTO: 'Complemento opcional', NO_INCLUIDO: 'No incluido', SEGUN_CONFIG: 'Según CONFIG (planes sin migrar)' };
 function _pc43Op() { try { const v = localStorage.getItem('vao_admin_operador'); if (v && !document.getElementById('pc43Operador').value) document.getElementById('pc43Operador').value = v; } catch (e) {} }
 function _pc43Cambio() {
     const operador = document.getElementById('pc43Operador').value.trim(), motivo = document.getElementById('pc43Motivo').value.trim();
