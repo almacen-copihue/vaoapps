@@ -962,7 +962,7 @@ details.ctr-com[open] > summary { border-bottom:1px solid #EEF2F6; }
 <div class="toast" id="toast"></div>
 
 <script>
-const APP_VERSION = 22; // V22.3: «Complemento opcional» (antes «Complemento P3»); el candado de pagos explica qué falta en STAGING y en Producción · V22.2 (v044.2): complementos «para P1, P2, P3 PRO» (antes los códigos internos); fila «Precio mensual» (dice «/ lanzamiento» solo si hay alguno); la cotización la carga cada comercio (VAO también puede, como soporte) · V22 (v044.1): planes P1 · P2 · P3 PRO integrados (activación en un paso con vista previa, cambio de plan a P3 con el pago), complementos opcionales aparte, botonera de cada comercio desde la matriz central y aviso de combinaciones contradictorias · V21 (v043): 📋 Planes y contrataciones — P1/P2/P3, prestaciones por comercio (catálogo/contratado/habilitado/suspendido), complementos, precios, historial y elecciones pendientes // V20: 💱 Cobro por comercio (cobro avanzado prender/apagar, cotizaciones USD/CLP, cobros sin terminar) y uso de la planilla
+const APP_VERSION = 22; // V22.4: cobro «como en un cuaderno» (casilla «aceptó los Términos de uso» si no hay contrato) y 🏠 comercio interno de VAO en Vigencia y pagos · V22.3: «Complemento opcional» (antes «Complemento P3»); el candado de pagos explica qué falta en STAGING y en Producción · V22.2 (v044.2): complementos «para P1, P2, P3 PRO» (antes los códigos internos); fila «Precio mensual» (dice «/ lanzamiento» solo si hay alguno); la cotización la carga cada comercio (VAO también puede, como soporte) · V22 (v044.1): planes P1 · P2 · P3 PRO integrados (activación en un paso con vista previa, cambio de plan a P3 con el pago), complementos opcionales aparte, botonera de cada comercio desde la matriz central y aviso de combinaciones contradictorias · V21 (v043): 📋 Planes y contrataciones — P1/P2/P3, prestaciones por comercio (catálogo/contratado/habilitado/suspendido), complementos, precios, historial y elecciones pendientes // V20: 💱 Cobro por comercio (cobro avanzado prender/apagar, cotizaciones USD/CLP, cobros sin terminar) y uso de la planilla
 document.addEventListener('DOMContentLoaded', function(){
     var tag = document.createElement('span');
     tag.id = 'version-tag';
@@ -1827,7 +1827,11 @@ function renderVigenciaPagos() {
     if (r.cambioPlanPendiente) h += '<div class="vp-aviso" style="background:#FFEBEE;border:1px solid #E57373;">⚠️ Hay un <b>cambio de plan sin terminar</b>: resolvelo en 🧩 Plan → checkpoint antes de registrar movimientos.</div>';
 
     // Resumen
-    if (r.plan === 'PRUEBA') {
+    if (r.interno) {   // V22.4: comercio interno de VAO
+        h += '<div class="vp-grid">' + _dato('Plan asignado', '🏠 ' + _esc(planNom(r.plan)) + ' (interno VAO)') + _dato('Estado', '<span style="color:#2E7D32;">Sin vencimiento</span>') +
+            _dato('Pagos', 'no corresponden') + '</div>' +
+            '<div class="ayuda" style="margin-bottom:10px;">Comercio interno de VAO desde el ' + _esc(new Date(r.interno.desde).toLocaleDateString('es-AR')) + ' (' + _esc(r.interno.operador) + ': «' + _esc(r.interno.motivo) + '»). Tiene P3 PRO y los complementos, sin vencimiento y sin pagos: no cuenta en los cobros.</div>';
+    } else if (r.plan === 'PRUEBA') {
         const pr = r.prueba;
         h += '<div class="vp-grid">' + _dato('Plan asignado', '🧪 Prueba gratuita') +
             _dato('Estado', pr ? (pr.estado === 'ACTIVA' ? 'Activa hasta ' + _esc(pr.venceTxt) : pr.estado === 'GRACIA' ? 'Gracia hasta ' + _esc(pr.finGraciaTxt) : 'Vencida (consulta)') : (c.fechaVence ? 'Vence ' + new Date(c.fechaVence).toLocaleDateString('es-AR') : 'Sin regularizar')) +
@@ -1859,10 +1863,12 @@ function renderVigenciaPagos() {
     // Registrar pago
     const modoPago = r.modoPagos || (r.pagosSimulados ? 'SIMULADO' : 'BLOQUEADO'); // V15
     h += '<div class="vp-caja"><h4>💵 Registrar pago confirmado' + (modoPago === 'SIMULADO' ? ' <span style="color:#6A1B9A;">(SIMULADO · STAGING)</span>' : modoPago === 'REAL' ? ' <span style="color:#C62828;">(DINERO REAL)</span>' : '') + '</h4>';
-    if (modoPago === 'BLOQUEADO') {
+    if (r.interno) {
+        h += '<div class="ayuda">🏠 Es un comercio interno de VAO: no se le registran pagos. Para cobrarle, primero quitale la marca (abajo).</div>';
+    } else if (modoPago === 'BLOQUEADO') {
         h += '<div class="ayuda" id="vpPagoBloqueado">' + (/staging/i.test(location.hostname)   // V22.3: el candado explica qué falta en cada entorno
             ? '🔒 Pagos de prueba apagados en STAGING. Para registrar un pago SIMULADO (sin dinero): Apps Script → ⚙️ Configuración del proyecto → Propiedades → <b>PAGOS_SIMULADOS_STAGING = SI</b>. No se registra nada.'
-            : '🔒 El cobro de planes todavía no está habilitado: falta definir cómo acepta el comercio (Términos de uso o contrato) y habilitar los pagos reales. No se registra nada.') + '</div>';
+            : '🔒 El cobro de planes está apagado. Para habilitarlo (una sola vez): Apps Script → ⚙️ Configuración del proyecto → Propiedades → <b>PAGOS_REALES_HABILITADOS = SI</b> y <b>CUENTAS_RECEPTORAS_VAO</b> con la cuenta donde recibís el dinero. No se registra nada.') + '</div>';
     } else if (!(r.contratables || []).length) {
         h += '<div class="ayuda">No hay planes pagos contratables en PLANES_VAO.</div>';
     } else {
@@ -1882,9 +1888,19 @@ function renderVigenciaPagos() {
             '<div class="form-grupo" style="max-width:150px;"><label class="form-label">Titular (últimos 4, opcional)</label><input class="form-input" id="vpTitular" inputmode="numeric" maxlength="4"></div></div>' +
             '<div class="form-grupo"><label class="form-label">Verificó el ingreso' + (modoPago === 'REAL' ? '' : ' (opcional en simulado)') + '</label><input class="form-input" id="vpOperador" maxlength="40" placeholder="Nombre de quien vio el dinero acreditado"></div>' +
             '<div class="ayuda" style="margin:2px 0 6px;">Para Mercado Pago cargado a mano: elegí ese medio y escribí el número de operación (solo dígitos).</div>' +
+            (modoPago === 'REAL' && r.terminos && !r.terminos.contrato   // V22.4: cobro «como en un cuaderno» — sin contrato, el comercio acepta los Términos de uso
+                ? (r.terminos.aceptados ? '<div class="ayuda" style="margin:4px 0 8px;color:#2E7D32;">✔ Ya aceptó los <a href="terminos.html" target="_blank" rel="noopener">Términos de uso</a> (' + _esc(r.terminos.version) + ').</div>'
+                    : '<label class="chk" style="margin:4px 0 8px;"><input type="checkbox" id="vpTerminos"> El comercio aceptó los <a href="terminos.html" target="_blank" rel="noopener">Términos de uso</a> (' + _esc(r.terminos.version) + '), por ejemplo por WhatsApp o en persona. Queda anotado.</label>') : '') +
             '<button class="btn-accion" id="vpBtnPagoPrevia" style="background:#2E7D32;color:white;" onclick="vpPrevia(\'confirmarPagoRecibido\', this)">Vista previa del pago</button><div id="vpBox_confirmarPagoRecibido"></div>';
     }
     h += '</div>';
+    // V22.4: comercio interno de VAO (tu propia cuenta): P3 PRO + complementos, sin vencimiento y sin pagos
+    h += '<div class="vp-caja" style="border-color:' + (r.interno ? '#2E7D32' : 'var(--borde)') + ';"><h4>🏠 Comercio interno de VAO</h4>' +
+        '<div class="ayuda" style="margin-bottom:6px;">' + (r.interno ? 'Este comercio es interno. Si le quitás la marca, ' + 'deja de tener P3 PRO gratis: queda vencido (solo consulta) hasta que se le registre un pago.'
+            : 'Para tu propia cuenta o un comercio de demostración: tiene <b>P3 PRO y los complementos</b>, <b>sin vencimiento y sin pagos</b> (no ensucia los cobros). No lo uses para clientes.') + '</div>' +
+        '<div class="form-fila"><div class="form-grupo" style="max-width:180px;"><label class="form-label">Operador</label><input class="form-input" id="vpIntOperador" maxlength="40" placeholder="Ej.: Víctor"></div>' +
+        '<div class="form-grupo"><label class="form-label">Motivo</label><input class="form-input" id="vpIntMotivo" maxlength="200" placeholder="' + (r.interno ? 'Ej.: pasa a ser cliente' : 'Ej.: mi cuenta para usar el sistema') + '"></div></div>' +
+        '<button class="btn-accion" style="background:' + (r.interno ? '#eee' : '#2E7D32;color:white') + ';" onclick="vpPrevia(\'setComercioInterno\', this)">' + (r.interno ? 'Quitar la marca (vista previa)' : 'Marcar como interno (vista previa)') + '</button><div id="vpBox_setComercioInterno"></div></div>';
 
     if (r.plan !== 'PRUEBA') {
         // Cortesía
@@ -2106,10 +2122,12 @@ function _vpDatos(accion) {
     const v = id => (document.getElementById(id) || {}).value || '';
     if (accion === 'confirmarPagoRecibido') { const d = { plan: v('vpPlan'), importe: v('vpImporte').replace(/\D/g, ''), medio: v('vpMedio'), fechaPago: v('vpFechaPago'), referencia: v('vpReferencia').trim(),
         cuenta: v('vpCuenta'), banco: v('vpBanco').trim(), titular: v('vpTitular').replace(/\D/g, ''), operador: v('vpOperador').trim(), clave: _vpClave }; // V15
+        const te = document.getElementById('vpTerminos'); if (te && te.checked) d.aceptoTerminos = true;   // V22.4
         const fr = v('vpFrase').trim() || _vpFraseMem; if (fr) { _vpFraseMem = fr; d.frase = fr; } return d; } // la frase sobrevive al redibujo de la vista previa
     if (accion === 'registrarCortesia')     return { dias: v('vpCortesiaDias'), motivo: v('vpCortesiaMotivo').trim() };
     if (accion === 'regularizarVigencia')   return { fin: v('vpRegFin'), inicio: v('vpRegInicio'), motivo: v('vpRegMotivo').trim() };
     if (accion === 'sincronizarVigencia')   return { motivo: v('vpSincMotivo').trim() };
+    if (accion === 'setComercioInterno')    return { activo: !(_vpEstado && _vpEstado.interno), operador: v('vpIntOperador').trim(), motivo: v('vpIntMotivo').trim() };   // V22.4
     return {};
 }
 
@@ -2127,6 +2145,8 @@ function _vpResumenPrevia(accion, r) {
     if (accion === 'regularizarVigencia') return L('Vencimiento hoy', _esc(r.venceActual)) + L('Queda vigente hasta', _esc(r.fin) + (r.inicio ? ' (desde ' + _esc(r.inicio) + ')' : '')) + L('Motivo', _esc(r.motivo)) +
         '<div style="color:#E65100;">' + _esc(r.aviso) + '</div>';
     if (accion === 'sincronizarVigencia') return L('En la planilla', _esc(r.enPlanilla)) + L('Según el historial', _esc(r.segunHistorial)) + '<div style="color:#E65100;">ℹ️ ' + _esc(r.aviso) + '</div>';
+    if (accion === 'setComercioInterno') return '<div style="font-weight:800;margin-bottom:4px;">' + (r.activo ? '🏠 Marcar como comercio interno de VAO' : 'Quitar la marca de comercio interno') + '</div>' +
+        (r.cambios || []).map(x => '<div>• ' + _esc(x) + '</div>').join('') + (r.seActivan && r.seActivan.length ? '<div style="color:#2E7D32;">✅ Se activan: <b>' + r.seActivan.map(_esc).join(', ') + '</b></div>' : '');
     return '';
 }
 
@@ -2135,7 +2155,8 @@ async function vpPrevia(accion, btn) {
     const d = _vpDatos(accion);
     if (accion === 'confirmarPagoRecibido' && !/^\d+$/.test(d.importe)) { toast('Ingresá el importe (sin puntos)', 'rojo'); return; }
     if (accion === 'confirmarPagoRecibido' && d.referencia.replace(/[\s\-.\/]/g, '').length < 4) { toast('Escribí la referencia de la operación (mínimo 4 letras o números)', 'rojo'); return; } // V15
-    if ((accion === 'registrarCortesia' || accion === 'regularizarVigencia' || accion === 'sincronizarVigencia') && d.motivo.length < 5) { toast('Escribí el motivo (mínimo 5 caracteres)', 'rojo'); return; }
+    if ((accion === 'registrarCortesia' || accion === 'regularizarVigencia' || accion === 'sincronizarVigencia' || accion === 'setComercioInterno') && d.motivo.length < 5) { toast('Escribí el motivo (mínimo 5 caracteres)', 'rojo'); return; }
+    if (accion === 'setComercioInterno' && d.operador.length < 2) { toast('Escribí quién hace el cambio (operador)', 'rojo'); return; }   // V22.4
     if (accion === 'regularizarVigencia' && !d.fin) { toast('Elegí la fecha hasta la que queda vigente', 'rojo'); return; }
     btn.disabled = true; box.innerHTML = '<div class="ayuda">Calculando…</div>';
     try {
