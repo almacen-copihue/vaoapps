@@ -260,6 +260,18 @@ body {
 .ini-v439 { position: relative; flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; background: var(--lavanda-pale, #EDE7F6); color: var(--lavanda, #5E35B1); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.05rem; }
 .prod-v439.en-venta .ini-v439 { background: #fff; color: #2E7D32; }
 .globo-v439 { position: absolute; top: -8px; right: -8px; min-width: 22px; height: 22px; padding: 0 4px; border-radius: 12px; background: #E53935; color: #fff; font-size: .72rem; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; line-height: 1; }
+.cat-v4310 { padding: 6px 14px 2px; font-size: 0.65rem; font-weight: 700; color: var(--lavanda); text-transform: uppercase; letter-spacing: 1px; background: var(--lavanda-pale); }
+.cat-v4310.venta { background: #E8F5E9; color: #2E7D32; font-size: .72rem; padding: 7px 14px; }
+.swipe-v4310 { position: relative; overflow: hidden; background: #E53935; }
+.swipe-fondo { position: absolute; right: 0; top: 0; bottom: 0; width: 120px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 1.05rem; opacity: .55; }
+.swipe-v4310.listo .swipe-fondo { opacity: 1; }
+.prod-v439 { position: relative; padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0ecf7; cursor: pointer; background: #fff; border-left: 4px solid transparent; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: pan-y; }
+.prod-v439.en-venta { background: #DCEDC8; border-left-color: #43A047; }
+.prod-v439.sin-stock { background: #fafafa; opacity: .45; }
+.prod-v439:active { filter: brightness(.96); }
+.globo-v439.pulso { animation: globoPulso .3s ease-out; }
+@media (hover: none) and (pointer: coarse) { .menos-v439 { display: none; } }   /* pantallas táctiles: se saca deslizando */
+@keyframes globoPulso { 0% { transform: scale(1); } 45% { transform: scale(1.45); } 100% { transform: scale(1); } }
 .menos-v439 { flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; border: 0; background: #fff; color: #C62828; font-size: 1.3rem; font-weight: 900; box-shadow: 0 1px 4px rgba(0,0,0,.18); cursor: pointer; }
 @media (max-width: 599px) {
     body .buscador-wrap { display: none !important; }
@@ -1263,7 +1275,7 @@ if (!/^[A-Z0-9]{2,10}$/.test(PREFIJO)) {
 
 // ========== CONFIG ==========
 const API_URL  = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
-const APP_VERSION_TXT = '43.9';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
+const APP_VERSION_TXT = '43.11';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
 const APP_VERSION = 43; // V43.8: celular «carrito al tocar» — el catálogo ocupa la pantalla; 🛒 (con cantidad) en la barra de Cobrar abre la venta para corregir; 🔍 y 🔄 flotantes; «✏️ Corregir la venta» en Confirmar · V43.7: «Venta actual · Limpiar» solo aparece con productos en el carrito; 📣 comparte el afiche nuevo (og-vao-pos-2.jpg) · V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
 const HOY_KEY    = 'vao_ventas_' + PREFIJO + '_' + new Date().toISOString().slice(0, 10);
 const CARRITO_KEY= 'vao_carrito_' + PREFIJO;
@@ -1833,50 +1845,122 @@ function toggleListaTodos() {
 let categoriaLista = ''; // V22 (P3): '' = todas
 function _escHTML(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function elegirCategoriaLista(cat) { categoriaLista = cat; renderListaTodos(); }
-function renderListaTodos() {
+function renderListaTodos(conservarVista) {
     const container = document.getElementById('listaTodosItems');
+    const wrap = document.getElementById('listaTodosWrap');
+    // V43.10: al reordenar, la vista no salta — se toma como referencia la primera fila visible que no está en la venta
+    let ancla = null;
+    if (conservarVista && wrap) {
+        const top = wrap.getBoundingClientRect().top;
+        const f = [...container.querySelectorAll('.swipe-v4310:not(.arriba)')].find(x => x.getBoundingClientRect().bottom > top + 2);
+        if (f) ancla = { id: f.dataset.prodId, dy: f.getBoundingClientRect().top - top };
+    }
     const todasCats = [...new Set(productos.map(p => p.category || 'GENERAL'))].sort();
     if (categoriaLista && !todasCats.includes(categoriaLista)) categoriaLista = '';
     const chips = todasCats.length > 1
         ? '<div class="chips-cat"><button class="chip-cat' + (categoriaLista ? '' : ' activo') + '" data-cat="" onclick="elegirCategoriaLista(this.dataset.cat)">Todas</button>' +
           todasCats.map(c => '<button class="chip-cat' + (c === categoriaLista ? ' activo' : '') + '" data-cat="' + _escHTML(c) + '" onclick="elegirCategoriaLista(this.dataset.cat)">' + _escHTML(c) + '</button>').join('') + '</div>'
         : '';
+    // V43.10: los productos de la venta van arriba, en el orden en que se agregaron (sin repetirse abajo)
+    const enVenta = ventaActual.map(i => productos.find(p => String(p.id) === String(i.id))).filter(Boolean);
+    const idsVenta = new Set(enVenta.map(p => String(p.id)));
+    _ordenClaveV4310 = enVenta.map(p => p.id).join(',');
+    let html = '';
+    if (enVenta.length) {
+        html += '<div class="cat-v4310 venta">🛒 En la venta · ' + enVenta.length + '</div>';
+        enVenta.forEach(p => { html += _filaProdV4310_(p, true); });
+    }
     // Agrupar por categoría
     const cats = {};
-    productos.filter(p => !categoriaLista || (p.category || 'GENERAL') === categoriaLista).forEach(p => {
+    productos.filter(p => !idsVenta.has(String(p.id)) && (!categoriaLista || (p.category || 'GENERAL') === categoriaLista)).forEach(p => {
         const c = p.category || 'GENERAL';
         if (!cats[c]) cats[c] = [];
         cats[c].push(p);
     });
-    let html = '';
     Object.keys(cats).sort().forEach(cat => {
-        html += '<div style="padding:6px 14px 2px;font-size:0.65rem;font-weight:700;color:var(--lavanda);' +
-                'text-transform:uppercase;letter-spacing:1px;background:var(--lavanda-pale);">' + cat + '</div>';
-        cats[cat].forEach(p => {
-            const sinStock = p.stock === 0;
-            // V43.9 — como en Almacén Copihue: globito rojo con la cantidad, fila verde y el total de ese producto; − para sacar uno
-            const it = ventaActual.find(i => i.id === p.id), q = it ? it.qty : 0;
-            html += '<div class="prod-v439' + (q > 0 ? ' en-venta' : '') + '" data-prod-id="' + p.id + '" onclick="agregarDesdeLista(' + p.id + ')" style="' +
-                'padding:10px 14px;display:flex;align-items:center;gap:10px;' +
-                'border-bottom:1px solid #f0ecf7;cursor:pointer;' +
-                'opacity:' + (sinStock ? '0.45' : '1') + ';' +
-                'background:' + (sinStock ? '#fafafa' : (q > 0 ? '#DCEDC8' : 'white')) + ';border-left:4px solid ' + (q > 0 ? '#43A047' : 'transparent') + ';">' +
-                '<div class="ini-v439">' + _escHTML((p.name || '?').trim().charAt(0).toUpperCase()) +
-                    (q > 0 ? '<b class="globo-v439">' + (Number.isInteger(q) ? q : q.toFixed(1)) + '</b>' : '') + '</div>' +
-                '<div style="flex:1;min-width:0;">' +
-                    '<div style="font-size:0.88rem;font-weight:600;color:var(--texto);">' +
-                        (sinStock ? '❌ ' : '') + p.name +
-                    '</div>' +
-                    '<div style="font-size:0.7rem;color:var(--gris);">$' + p.price.toLocaleString('es-AR') + ' · Stock: ' + p.stock + '</div>' +
-                '</div>' +
-                (q > 0
-                  ? '<div style="text-align:right;flex-shrink:0;"><div style="font-size:.62rem;color:#558B2F;">total</div><div style="font-size:0.95rem;font-weight:800;color:#2E7D32;">$' + (it.price * q).toLocaleString('es-AR') + '</div></div>' +
-                    '<button type="button" class="menos-v439" onclick="event.stopPropagation();cambiarQty(' + p.id + ',-1)" aria-label="Sacar uno">−</button>'
-                  : '<div style="font-size:0.95rem;font-weight:700;color:var(--lavanda);flex-shrink:0;">$' + p.price.toLocaleString('es-AR') + '</div>') +
-                '</div>';
-        });
+        html += '<div class="cat-v4310">' + _escHTML(cat) + '</div>';
+        cats[cat].forEach(p => { html += _filaProdV4310_(p, false); });
     });
     container.innerHTML = chips + (html || '<div style="padding:20px;text-align:center;color:var(--gris);">Sin productos</div>');
+    _swipeInitV4310_();
+    if (ancla && wrap) {
+        const f = container.querySelector('.swipe-v4310[data-prod-id="' + ancla.id + '"]:not(.arriba)');
+        if (f) wrap.scrollTop += (f.getBoundingClientRect().top - wrap.getBoundingClientRect().top) - ancla.dy;
+    }
+}
+// V43.10 — una fila del catálogo (como Almacén Copihue): tocar = +1 (globito rojo), deslizar a la izquierda = −1
+function _filaProdV4310_(p, arriba) {
+    const sinStock = p.stock === 0;
+    const it = ventaActual.find(i => String(i.id) === String(p.id)), q = it ? it.qty : 0;
+    return '<div class="swipe-v4310' + (arriba ? ' arriba' : '') + '" data-prod-id="' + p.id + '" data-q="' + q + '"><div class="swipe-fondo">−1 ✋</div>' +
+        '<div class="prod-v439' + (q > 0 ? ' en-venta' : '') + (sinStock ? ' sin-stock' : '') + '" data-prod-id="' + p.id + '" onclick="agregarDesdeLista(' + p.id + ')">' +
+        '<div class="ini-v439">' + _escHTML((p.name || '?').trim().charAt(0).toUpperCase()) +
+            (q > 0 ? '<b class="globo-v439">' + (Number.isInteger(q) ? q : q.toFixed(1)) + '</b>' : '') + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+            '<div style="font-size:0.88rem;font-weight:600;color:var(--texto);">' + (sinStock ? '❌ ' : '') + p.name + '</div>' +
+            '<div style="font-size:0.7rem;color:var(--gris);">$' + p.price.toLocaleString('es-AR') + ' · Stock: ' + p.stock + '</div>' +
+        '</div>' +
+        (q > 0
+          ? '<div style="text-align:right;flex-shrink:0;"><div style="font-size:.62rem;color:#558B2F;">total</div><div style="font-size:0.95rem;font-weight:800;color:#2E7D32;">$' + (it.price * q).toLocaleString('es-AR') + '</div></div>' +
+            '<button type="button" class="menos-v439" onclick="event.stopPropagation();restarDesdeListaV4310(' + p.id + ')" aria-label="Sacar uno">−</button>'
+          : '<div style="font-size:0.95rem;font-weight:700;color:var(--lavanda);flex-shrink:0;">$' + p.price.toLocaleString('es-AR') + '</div>') +
+        '</div></div>';
+}
+let _ordenTimerV4310 = null, _ordenClaveV4310 = '', _tocandoV4310 = false, _swipeHastaV4310 = 0, _silencioV4310 = false;
+const ORDEN_ESPERA_V4310 = 1500;   // ms sin tocar antes de subir los elegidos (da tiempo a tocar 3 veces seguidas)
+// Actualiza solo las filas que cambiaron (la lista no se mueve mientras tocás) y programa el reordenamiento
+function _refrescarListaV4310_() {
+    const c = document.getElementById('listaTodosItems'); if (!c || !listaTodosAbierta) return;
+    c.querySelectorAll('.swipe-v4310').forEach(w => {
+        const p = productos.find(x => String(x.id) === w.dataset.prodId); if (!p) return;
+        const it = ventaActual.find(i => String(i.id) === w.dataset.prodId), q = it ? it.qty : 0;
+        if (String(q) === w.dataset.q) return;
+        const subio = q > Number(w.dataset.q);
+        w.outerHTML = _filaProdV4310_(p, w.classList.contains('arriba'));
+        if (subio) { const g = c.querySelector('.swipe-v4310[data-prod-id="' + p.id + '"] .globo-v439'); if (g) g.classList.add('pulso'); }
+    });
+    _programarOrdenV4310_();
+}
+function _programarOrdenV4310_() {
+    clearTimeout(_ordenTimerV4310);
+    _ordenTimerV4310 = setTimeout(() => {
+        if (_tocandoV4310) return _programarOrdenV4310_();
+        if (ventaActual.map(i => i.id).join(',') !== _ordenClaveV4310 && listaTodosAbierta) renderListaTodos(true);
+    }, ORDEN_ESPERA_V4310);
+}
+function restarDesdeListaV4310(id) {
+    if (!ventaActual.find(i => String(i.id) === String(id))) return;
+    cambiarQty(id, -1);
+}
+function _swipeInitV4310_() {
+    const c = document.getElementById('listaTodosItems'); if (!c || c._swV4310) return; c._swV4310 = true;
+    let fila = null, x0 = 0, y0 = 0, dx = 0, modo = '';
+    c.addEventListener('touchstart', e => {
+        const f = e.target.closest('.prod-v439'); if (!f || e.touches.length !== 1) return;
+        fila = f; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; modo = ''; _tocandoV4310 = true; f.style.transition = 'none';
+    }, { passive: true });
+    c.addEventListener('touchmove', e => {
+        if (!fila) return;
+        const mx = e.touches[0].clientX - x0, my = e.touches[0].clientY - y0;
+        if (!modo) { if (Math.abs(mx) > 12 && Math.abs(mx) > Math.abs(my) * 1.3) modo = 'h'; else if (Math.abs(my) > 10) modo = 'v'; }
+        if (modo === 'h') {
+            e.preventDefault(); dx = Math.min(0, mx);
+            fila.style.transform = 'translateX(' + Math.max(dx, -120) + 'px)';
+            fila.parentNode.classList.toggle('listo', dx < -60 && fila.classList.contains('en-venta'));
+        }
+    }, { passive: false });
+    const fin = () => {
+        if (!fila) return;
+        const f = fila, id = f.dataset.prodId, horizontal = modo === 'h', cuanto = dx;
+        fila = null; modo = ''; _tocandoV4310 = false;
+        f.style.transition = 'transform .18s ease-out'; f.style.transform = ''; f.parentNode.classList.remove('listo');
+        if (horizontal) {
+            _swipeHastaV4310 = Date.now() + 400;   // que el deslizamiento no cuente también como toque (+1)
+            if (cuanto < -60) { const p = productos.find(x => String(x.id) === id); if (p) restarDesdeListaV4310(p.id); }
+        }
+        _programarOrdenV4310_();
+    };
+    c.addEventListener('touchend', fin); c.addEventListener('touchcancel', fin);
 }
 
 // ===== V43.8 (celular): «carrito al tocar» =====
@@ -1888,7 +1972,7 @@ function _carritoContadorV438_() {
     if (b && n > _carritoNAntV438) { b.classList.remove('salta'); void b.offsetWidth; b.classList.add('salta'); }
     _carritoNAntV438 = n;
     if (!ventaActual.length && document.body.classList.contains('carrito-on')) toggleCarritoV438(false);
-    if (listaTodosAbierta) renderListaTodos();   // V43.9: globitos al día (también al cambiar desde el buscador o el carrito)
+    _refrescarListaV4310_();   // V43.10: globitos al día sin mover la lista (después de 1,5 s sin tocar, los elegidos suben arriba)
 }
 function toggleCarritoV438(abrir) {
     const on = abrir === undefined ? !document.body.classList.contains('carrito-on') : !!abrir;
@@ -1912,8 +1996,11 @@ function _medirTotalV438_() { const t = document.querySelector('.total-bar'); if
 window.addEventListener('resize', _medirTotalV438_);
 document.addEventListener('DOMContentLoaded', () => { _medirTotalV438_(); if (_celuV438_() && !listaTodosAbierta) toggleListaTodos(); });
 function agregarDesdeLista(id) {
-    agregarProducto(id); // ya maneja stock y toast
-    renderListaTodos();  // refresca visual de stock
+    if (Date.now() < _swipeHastaV4310) return;   // V43.10: venía de deslizar
+    _silencioV4310 = true;   // V43.10: el globito ya avisa (sin cartel verde tapando la pantalla); los avisos de error siguen
+    try { agregarProducto(id); } finally { _silencioV4310 = false; }
+    _refrescarListaV4310_();
+    if (_celuV438_()) { try { if (!localStorage.getItem('vao_tip_deslizar')) { localStorage.setItem('vao_tip_deslizar', '1'); mostrarToast('👈 Para sacar uno, deslizá el producto a la izquierda', 'naranja'); } } catch (e) {} }
 }
 
 // ========== BUSCAR PRODUCTO ==========
@@ -2090,7 +2177,7 @@ function agregarProducto(id) {
     }
     guardarCarrito();
     renderVenta();
-    mostrarToast('✅ ' + p.name.substring(0, 28), 'verde');
+    if (!_silencioV4310) mostrarToast('✅ ' + p.name.substring(0, 28), 'verde');
     if (_celuV438_()) document.body.classList.remove('buscar-on');   // V43.8
 }
 
@@ -2132,6 +2219,11 @@ function cambiarQty(id, delta) {
     if (_carritoBloqueado()) return;
     const item = ventaActual.find(i => i.id === id);
     if (!item) return;
+    if (delta < 0 && item.qty + delta < 1) {   // V43.10: con 1, el − quita el producto de la venta (antes solo se podía con 🗑 Limpiar)
+        ventaActual = ventaActual.filter(i => i !== item);
+        guardarCarrito(); renderVenta(); mostrarToast('🗑 Quitado: ' + item.name.substring(0, 25), 'naranja');
+        return;
+    }
     item.qty = Math.max(1, item.qty + delta);
     const p = productos.find(pr => pr.id === id);
     if (p && item.qty > p.stock) { item.qty = p.stock; mostrarToast('⚠️ Stock máximo: ' + p.stock, 'rojo'); }
@@ -3535,13 +3627,31 @@ const CIERRES_MODAL = {
     modalStats:   function () { cerrarEstadisticas(); },
     modalMisDatos: function () { cerrarMisDatos(); }
 };
-let _modalEnHistorial = null, _ignorarPop = false;
+// V43.11 — REGLA DE ORO «no salir sin confirmación». Atrás cierra, de arriba hacia abajo: la ventana abierta, el carrito
+// (V43.8) o la lupa. Con todo cerrado, el primer Atrás avisa «Tocá Atrás otra vez para salir» y recién el segundo sale.
+function _capasAbiertas_() {
+    const l = [];
+    if (document.body.classList.contains('buscar-on')) l.push({ id: 'buscar', cerrar: function () { document.body.classList.remove('buscar-on'); const i = document.getElementById('buscadorInput'); if (i) i.blur(); } });
+    if (document.body.classList.contains('carrito-on')) l.push({ id: 'carrito', cerrar: function () { toggleCarritoV438(false); } });
+    document.querySelectorAll('.modal-bg.open').forEach(function (m) { l.push({ id: m.id, cerrar: function () { (CIERRES_MODAL[m.id] || function () { m.classList.remove('open'); })(); } }); });
+    return l;
+}
+let _modalEnHistorial = null, _ignorarPop = false, _guardaPuesta = false, _guardaPendiente = true, _avisoSalirHasta = 0;
+// La «guarda» es una entrada extra del historial: el Atrás del celular la consume en lugar de salir de la app.
+// Chrome solo respeta entradas creadas después de un toque, por eso se pone (y se repone) en el próximo toque.
+function _ponerGuarda_() {
+    if (!_guardaPendiente) return;
+    _guardaPendiente = false; _guardaPuesta = true;
+    try { history.pushState({ vaoGuarda: 1 }, ''); } catch (e) {}
+}
+['pointerdown', 'touchstart', 'keydown'].forEach(function (ev) { window.addEventListener(ev, _ponerGuarda_, { capture: true, passive: true }); });
 new MutationObserver(function () {
-    const abierto = document.querySelector('.modal-bg.open');
-    if (abierto && !_modalEnHistorial) {
-        history.pushState({ vaoModal: abierto.id }, '');
-        _modalEnHistorial = abierto.id;
-    } else if (!abierto && _modalEnHistorial) {
+    const n = _capasAbiertas_().length;
+    if (n && !_modalEnHistorial) {
+        _ponerGuarda_();
+        history.pushState({ vaoModal: 'capa' }, '');
+        _modalEnHistorial = 'capa';
+    } else if (!n && _modalEnHistorial) {
         _modalEnHistorial = null;
         _ignorarPop = true;
         history.back();
@@ -3549,12 +3659,16 @@ new MutationObserver(function () {
 }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
 window.addEventListener('popstate', function () {
     if (_ignorarPop) { _ignorarPop = false; return; }
-    // Se cierra la ventana de ARRIBA (la última abierta en la página).
-    const abierto = [...document.querySelectorAll('.modal-bg.open')].pop();
-    if (abierto) {
+    const capas = _capasAbiertas_();
+    if (capas.length) {   // se cierra la de ARRIBA; si quedan otras abiertas, se vuelve a anotar en el historial
         _modalEnHistorial = null;
-        (CIERRES_MODAL[abierto.id] || function () { abierto.classList.remove('open'); })();
+        capas[capas.length - 1].cerrar();
+        if (_capasAbiertas_().length && !_modalEnHistorial) { history.pushState({ vaoModal: 'capa' }, ''); _modalEnHistorial = 'capa'; }
+        return;
     }
+    // Sin nada abierto: se consumió la guarda. Avisar; si vuelve a tocar Atrás enseguida, sale (el navegador ya no tiene guarda).
+    _guardaPuesta = false; _guardaPendiente = true; _avisoSalirHasta = Date.now() + 2500;
+    mostrarToast('👋 Para salir de VAO POS, tocá Atrás otra vez', 'naranja');
 });
 
 // ========== V23: VALIDACIONES (las mismas que exige el servidor v028) ==========
