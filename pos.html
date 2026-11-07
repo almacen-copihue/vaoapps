@@ -247,6 +247,34 @@ body {
 }
 /* V43.2: en el celular las tarjetas se pliegan (acordeón: una abierta, las demás en una línea con sus íconos) */
 .tp-mini, .tp-flecha { display: none; }
+/* V43.6 (celular): fila de mini botones P1 · P2 · P3 · ➕; al tocar uno se abren sus herramientas debajo y al tocarlo de nuevo se cierran.
+   Mi plan, Salir y ✨ P3 PRO pasan al encabezado como íconos; la barra de Cobrar es más baja. En tablet y computadora no cambia nada. */
+.mini-tabs, .hdr-cel { display: none; }
+@media (max-width: 599px) {
+    .hdr-cel { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: none; border-radius: 50%; background: rgba(255,255,255,0.16); color: #fff; font-size: 0.95rem; cursor: pointer; flex-shrink: 0; padding: 0; }
+    .hdr-cel.hdr-salir { background: rgba(214,66,66,.6); }
+    .hdr-cel.hdr-p3 { background: linear-gradient(135deg, #8A5A00, #D4A017 60%, #F3D27A); }
+    .header { padding: 6px 10px; gap: 6px; }
+    .header-logo { min-width: 0; gap: 7px; } .header-logo > div:last-child { min-width: 0; }
+    #headerAvatar { width: 34px !important; height: 34px !important; font-size: .8rem !important; }
+    .header-titulo { font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header-sub { font-size: .55rem; letter-spacing: 1px; }
+    .header-right { gap: 4px; } .header-right > button, .header-right > a { margin-right: 0 !important; }
+    .planes-pos.mini .planes-cuenta { display: none; }
+    .planes-pos.mini { flex-direction: column; gap: 6px; padding: 6px 8px; }
+    .planes-pos.mini .mini-tabs { display: flex; gap: 6px; }
+    .mini-tabs button { flex: 1 1 0; min-width: 0; height: 38px; border: 0; border-radius: 10px; background: #fff; font-family: inherit; font-weight: 900; font-size: .95rem; cursor: pointer; border-top: 4px solid var(--mt, #1E88E5); color: var(--mt-t, #0D47A1); display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+    .mini-tabs button small { font-weight: 700; font-size: .62rem; opacity: .75; }
+    .mini-tabs button.P1 { --mt: #1E88E5; --mt-t: #0D47A1; } .mini-tabs button.P2 { --mt: #7E57C2; --mt-t: #4527A0; }
+    .mini-tabs button.P3 { --mt: #B07D12; --mt-t: #6B4A00; } .mini-tabs button.C { --mt: #2E8B57; --mt-t: #1B5E20; }
+    .mini-tabs button.activo { background: var(--mt); color: #fff; }
+    .planes-pos.mini .tarjeta-plan.plegada { display: none !important; }
+    .planes-pos.mini .tarjeta-plan .tp-cab { display: none; }
+    .planes-pos.mini .tarjeta-plan { padding: 6px; }
+    body .total-bar { padding: 5px 12px; }   /* «body» para ganarle a las reglas generales que están más abajo */
+    body .total-label { font-size: .62rem; } body .total-monto { font-size: 1.3rem; line-height: 1.1; }
+    body .btn-cobrar { padding: 8px 20px; font-size: .95rem; }
+}
 .btn-cuenta.p3pro { background: linear-gradient(135deg, #8A5A00, #D4A017 60%, #F3D27A); color: #241800; }
 @media (max-width: 599px) {
     .planes-pos.plegable .tarjeta-plan .tp-cab { cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -802,6 +830,10 @@ body {
         <button onclick="abrirRecomendar()" title="Recomendar VAO POS" aria-label="Recomendar VAO POS" style="background:rgba(255,255,255,0.15);border:none;
                 color:white;border-radius:20px;padding:5px 10px;font-size:0.72rem;
                 font-weight:700;cursor:pointer;font-family:inherit;margin-right:6px;">📣</button>
+        <!-- V43.6: en el celular, ✨ P3 PRO, Mi plan y Salir van acá (iconos) para dejar más lugar al catálogo -->
+        <button class="hdr-cel hdr-p3" id="hdrVerP3" onclick="verP3V432()" style="display:none" title="Conocé P3 PRO" aria-label="Conocé P3 PRO">✨</button>
+        <button class="hdr-cel" id="hdrMiPlan" onclick="abrirPagoPlan()" title="Mi plan" aria-label="Mi plan">💳</button>
+        <button class="hdr-cel hdr-salir" id="hdrSalir" onclick="confirmarSalir()" title="Salir" aria-label="Salir">🚪</button>
     </div>
 </div>
 
@@ -1166,7 +1198,8 @@ if (!/^[A-Z0-9]{2,10}$/.test(PREFIJO)) {
 
 // ========== CONFIG ==========
 const API_URL  = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
-const APP_VERSION = 43; // V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
+const APP_VERSION_TXT = '43.6';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
+const APP_VERSION = 43; // V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
 const HOY_KEY    = 'vao_ventas_' + PREFIJO + '_' + new Date().toISOString().slice(0, 10);
 const CARRITO_KEY= 'vao_carrito_' + PREFIJO;
 
@@ -1253,11 +1286,20 @@ function _plegablesV432_() {
         }
     });
     cont.classList.toggle('plegable', vis.length > 1);
+    cont.classList.toggle('mini', vis.length > 1);   // V43.6: en el celular, fila de mini botones
+    let mt = cont.querySelector('.mini-tabs'); if (!mt) { mt = document.createElement('div'); mt.className = 'mini-tabs'; mt.setAttribute('role', 'tablist'); cont.insertBefore(mt, cont.firstChild); }
+    const ETQ = { tarjetaP1: ['P1', 'Esencial'], tarjetaP2: ['P2', 'Gestión'], tarjetaP3: ['P3', 'PRO'], tarjetaC: ['C+', 'Compl.'] };   // V43.6: «C+» = complementos (pedido del dueño)
+    mt.innerHTML = vis.map(t => '<button type="button" role="tab" class="' + t.dataset.plan + '" data-t="' + t.id + '">' + ETQ[t.id][0] + (ETQ[t.id][1] ? '<small>' + ETQ[t.id][1] + '</small>' : '') + '</button>').join('');
+    mt.querySelectorAll('button').forEach(b => b.onclick = () => { const ab = document.querySelector('#planesPos .tarjeta-plan:not(.plegada)'); _abrirTarjetaV432_(ab && ab.id === b.dataset.t ? '' : b.dataset.t, true); });
     let abierta = null; try { abierta = localStorage.getItem(_claveTarjetaV432_()); } catch (e) {}
-    if (!vis.some(t => t.id === abierta)) abierta = vis.length ? vis[0].id : null;
+    const celu = window.matchMedia && window.matchMedia('(max-width: 599px)').matches;
+    if (abierta === 'ninguna' && celu) abierta = '';
+    else if (!vis.some(t => t.id === abierta)) abierta = celu ? '' : (vis.length ? vis[0].id : null);   // V43.6: en el celular arranca todo cerrado (más lugar para el catálogo)
     _abrirTarjetaV432_(abierta, false);
     const apps = _appsV43_(), p3 = document.getElementById('btnVerP3');
-    if (p3) p3.style.display = (PRESTACIONES_ACTUAL && PRESTACIONES_ACTUAL.planesP1P2P3 && apps && !apps.some(a => a.grupo === 'P3' && a.habilitada)) ? '' : 'none';
+    const verP3 = (PRESTACIONES_ACTUAL && PRESTACIONES_ACTUAL.planesP1P2P3 && apps && !apps.some(a => a.grupo === 'P3' && a.habilitada));
+    if (p3) p3.style.display = verP3 ? '' : 'none';
+    const h3 = document.getElementById('hdrVerP3'); if (h3) h3.style.display = verP3 ? '' : 'none';   // V43.6: el ✨ del encabezado (celular) sigue la misma regla
 }
 // V43.3: «✨ P3 PRO» abre SU propia ventana (no Mi plan): precio, las herramientas que suma con su explicación y «Pedir P3 PRO».
 // Las herramientas salen de la matriz central del servidor (getConfig.prestaciones.apps, grupo P3); el precio, de getPlanesPublicos.
@@ -1282,7 +1324,8 @@ function _abrirTarjetaV432_(id, guardar) {
         const abierta = g === id; t.classList.toggle('plegada', !abierta);
         const cab = t.querySelector('.tp-cab'); if (cab) cab.setAttribute('aria-expanded', abierta ? 'true' : 'false');
     });
-    if (guardar && id) { try { localStorage.setItem(_claveTarjetaV432_(), id); } catch (e) {} }
+    document.querySelectorAll('#planesPos .mini-tabs button').forEach(b => { const on = b.dataset.t === id; b.classList.toggle('activo', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    if (guardar) { try { localStorage.setItem(_claveTarjetaV432_(), id || 'ninguna'); } catch (e) {} }   // V43.6: también se recuerda «todo cerrado»
 }
 
 // V43 (v044.1): botonera desde la MATRIZ CENTRAL (getConfig.prestaciones.apps): cada aplicación tiene un solo botón y su destino.
@@ -1554,7 +1597,7 @@ document.getElementById('headerTitulo').textContent = PREFIJO;
 document.getElementById('lnkTerminos').href = 'contrato.html?p=' + encodeURIComponent(PREFIJO); // V28: contrato digital del comercio conectado
 document.getElementById('headerAvatar').textContent = PREFIJO;
 document.title = PREFIJO + ' · Punto de Venta';
-document.getElementById('headerSub').textContent = 'VAO Sistemas · v' + APP_VERSION;
+document.getElementById('headerSub').textContent = 'VAO Sistemas · v' + APP_VERSION_TXT;
 const [_c1, _c2] = colorPorPrefijo(PREFIJO);
 document.getElementById('headerAvatar').style.background = `linear-gradient(135deg,${_c1},${_c2})`;
 
@@ -1569,7 +1612,7 @@ function cargarDatosVendedor() {
     if (v) {
         vendedorActual = v;
         document.getElementById('headerTitulo').textContent = v.nombre;
-        document.getElementById('headerSub').textContent = 'VAO Sistemas · v' + APP_VERSION;
+        document.getElementById('headerSub').textContent = 'VAO Sistemas · v' + APP_VERSION_TXT;
         document.title = v.nombre + ' · Punto de Venta';
         const qrCanv = document.getElementById('qrTransfCanvas');
         if (qrCanv && qrCanv.children.length > 0 && v.aliasPago) {
