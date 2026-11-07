@@ -19,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-/* planes.html v5.3 (07/11): el rompecabezas une P1 + P2 + P3 PRO en una sola pieza (antes P3 quedaba separada) · v5.2: enlace Términos · v5 (STAGING · v044.1) — tres planes como composición envolvente: P1 es la base, P2 abraza a P1, P3 PRO abraza a P1 y P2 y suma el paquete PRO.
+/* planes.html v5.4 (07/11): sin «lista de espera» — «Reservar mi prueba gratis», aviso amable con WhatsApp y sin «no hay fecha asegurada» · v5.3 (07/11): el rompecabezas une P1 + P2 + P3 PRO en una sola pieza (antes P3 quedaba separada) · v5.2: enlace Términos · v5 (STAGING · v044.1) — tres planes como composición envolvente: P1 es la base, P2 abraza a P1, P3 PRO abraza a P1 y P2 y suma el paquete PRO.
    Complementos opcionales aparte (verdes). Íconos y nombres salen de la matriz central del servidor (catalogoV043.apps).
    planes.html v4 (STAGING · v044) — «Armá tu plan» como rompecabezas: arrastrar y encajar, o tocar las piezas.
    planes.html v3 (STAGING · v043) — página pública. Planes P1/P2, complementos P3 «Armá tu plan». Nombres, prestaciones y precios vienen del servidor (PLANES_VAO y COMPLEMENTOS_VAO). */
@@ -236,8 +236,8 @@ footer { padding: 26px 0 40px; font-size: .88rem; color: var(--suave); }
 
 <div class="col hero-cta">
   <a class="btn btn-principal" id="ctaPrincipal" href="#empezar">Empezar mi prueba gratis</a>
-  <div class="chico">Sin tarjeta de crédito. Se crea al instante con tu correo.</div>
-  <div class="aviso-espera oculto" id="avisoEspera">En este momento las nuevas pruebas las habilita VAO Sistemas en forma manual. Podés anotarte en la lista de espera: si habilitan tu prueba, te llega un correo con el enlace para comenzar. No hay una fecha asegurada.</div>
+  <div class="chico" id="ctaSub">Sin tarjeta de crédito. Se crea al instante con tu correo.</div>
+  <div class="aviso-espera oculto" id="avisoEspera">Ahora mismo están completos los lugares de prueba. Dejá tus datos y <b>te escribimos por correo apenas se libere uno</b>. ¿Tenés apuro? <a href="https://wa.me/542944907380?text=Hola%20VAO%20Sistemas%2C%20quiero%20probar%20VAO%20POS" target="_blank" rel="noopener">Escribinos por WhatsApp</a>.</div>
 </div>
 
 <section>
@@ -333,7 +333,7 @@ footer { padding: 26px 0 40px; font-size: .88rem; color: var(--suave); }
     <!-- Lista de espera -->
     <div id="espera" class="oculto">
       <p class="msg info" id="textoEspera"></p>
-      <p class="chico">No hace falta que vuelvas a anotarte. Si VAO Sistemas habilita tu prueba, te escribimos al correo que confirmaste.</p>
+      <p class="chico">No hace falta que vuelvas a anotarte. Si tenés apuro, <a href="https://wa.me/542944907380?text=Hola%20VAO%20Sistemas%2C%20reservé%20mi%20prueba%20de%20VAO%20POS" target="_blank" rel="noopener">escribinos por WhatsApp</a>.</p>
     </div>
   </div>
 </section>
@@ -592,8 +592,9 @@ async function cargarPlanes() {
     $('condiciones').textContent = CONDICIONES.texto;
     if (r.inscripcion === 'LISTA_ESPERA') {
       $('avisoEspera').classList.remove('oculto');
-      $('ctaPrincipal').textContent = 'Anotarme en la lista de espera';
-      $('tituloRegistro').textContent = 'Anotate en la lista de espera';
+      $('ctaPrincipal').textContent = 'Reservar mi prueba gratis';   // v5.4: sin «lista de espera» (sonaba a rechazo)
+      $('tituloRegistro').textContent = 'Reservá tu prueba gratis';
+      $('ctaSub').textContent = 'Sin tarjeta de crédito y sin compromiso.';
     }
   } catch (e) {
     $('planes').innerHTML = '<div class="estado-carga">No pudimos cargar los planes. Revisá tu conexión y volvé a intentar. <button class="btn btn-claro" style="margin-top:10px;width:100%" onclick="cargarPlanes()">Reintentar</button></div>';
@@ -612,7 +613,7 @@ function iniciarReenvio() {
   reenviarTimer = setInterval(() => { s--; b.textContent = s > 0 ? 'Reenviar código (' + s + ')' : 'Reenviar código'; if (s <= 0) { clearInterval(reenviarTimer); b.disabled = false; } }, 1000);
 }
 function mostrarResultado(r) {
-  if (r.listaEspera) { $('textoEspera').textContent = r.mensaje; paso(4); mensaje(''); return; }
+  if (r.listaEspera) { $('textoEspera').textContent = '✅ ¡Listo, tu prueba quedó reservada! Te escribimos al correo que confirmaste apenas se libere un lugar, con el enlace para empezar.'; paso(4); mensaje(''); return; }   // v5.4: texto propio (el del servidor decía «no hay una fecha asegurada»)
   if (r.creado || r.yaCreado) {
     $('btnPos').href = r.posUrl;
     if (r.pin) { $('pin').textContent = r.pin; $('bloquePin').classList.remove('oculto'); $('textoListo').textContent = '¡Tu prueba está lista! Tu comercio quedó creado.'; }
