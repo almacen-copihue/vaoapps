@@ -19,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-/* planes.html v5.5 (07/11): cada tarjeta muestra solo sus herramientas con su etiqueta encima; «Incluye ✔ Todo P1 · ✔ Todo P2» en una línea · v5.4 (07/11): sin «lista de espera» — «Reservar mi prueba gratis», aviso amable con WhatsApp y sin «no hay fecha asegurada» · v5.3 (07/11): el rompecabezas une P1 + P2 + P3 PRO en una sola pieza (antes P3 quedaba separada) · v5.2: enlace Términos · v5 (STAGING · v044.1) — tres planes como composición envolvente: P1 es la base, P2 abraza a P1, P3 PRO abraza a P1 y P2 y suma el paquete PRO.
+/* planes.html v5.6 (07/11): Prueba gratis arriba de «Planes» y clickeable (lleva al formulario); marco que abraza P1 → plan elegido; tarjetas alineadas · v5.5 (07/11): cada tarjeta muestra solo sus herramientas con su etiqueta encima; «Incluye ✔ Todo P1 · ✔ Todo P2» en una línea · v5.4 (07/11): sin «lista de espera» — «Reservar mi prueba gratis», aviso amable con WhatsApp y sin «no hay fecha asegurada» · v5.3 (07/11): el rompecabezas une P1 + P2 + P3 PRO en una sola pieza (antes P3 quedaba separada) · v5.2: enlace Términos · v5 (STAGING · v044.1) — tres planes como composición envolvente: P1 es la base, P2 abraza a P1, P3 PRO abraza a P1 y P2 y suma el paquete PRO.
    Complementos opcionales aparte (verdes). Íconos y nombres salen de la matriz central del servidor (catalogoV043.apps).
    planes.html v4 (STAGING · v044) — «Armá tu plan» como rompecabezas: arrastrar y encajar, o tocar las piezas.
    planes.html v3 (STAGING · v043) — página pública. Planes P1/P2, complementos P3 «Armá tu plan». Nombres, prestaciones y precios vienen del servidor (PLANES_VAO y COMPLEMENTOS_VAO). */
@@ -169,7 +169,19 @@ ul.hace b { color: var(--tinta); }
 .p5 .elegir { margin-top: auto; display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--tinta); background: #F4F7FB; border-radius: 12px; padding: 10px; }
 .p5 .elegir input { width: 22px; height: 22px; margin: 0; }
 .p5.PRO { box-shadow: 0 10px 30px rgba(126,87,194,.28); }
-@media (min-width: 1000px) { .p5.PRO { transform: translateY(-10px); } .p5.PRO:hover { transform: translateY(-12px); } }
+/* v5.6: tarjetas alineadas (P2 ya no va elevada); el marco abraza P1 → plan elegido */
+.planes5 { position: relative; }
+.p5 { z-index: 1; }
+.marco5 { position: absolute; z-index: 0; display: none; border-radius: 26px; border: 4px solid #1E88E5; background: rgba(30,136,229,.08); box-shadow: 0 0 0 6px rgba(30,136,229,.15); pointer-events: none; transition: left .2s, top .2s, width .2s, height .2s; }
+.marco5.PRO { border-color: #7E57C2; background: rgba(126,87,194,.08); box-shadow: 0 0 0 6px rgba(126,87,194,.15); }
+.marco5.PLUS { border-color: #D4A017; background: rgba(212,160,23,.10); box-shadow: 0 0 0 6px rgba(212,160,23,.20); }
+.p5.incluida { background-color: #FAFCFF; }
+.p5.elegido { transform: none; }
+.p5.BASICO.elegido, .p5.BASICO:hover { border-color: #1E88E5; } .p5.PRO.elegido, .p5.PRO:hover { border-color: #7E57C2; } .p5.PLUS.elegido, .p5.PLUS:hover { border-color: transparent; }   /* cada tarjeta conserva su color (la regla vieja .plan.elegido la pintaba de azul) */
+.prueba5 { display: block; text-decoration: none; color: inherit; cursor: pointer; margin: 6px 0 18px; border-width: 3px; transition: transform .15s, box-shadow .15s; }
+.prueba5:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(46,125,50,.2); }
+.prueba5 h3 { margin: 0; }
+.prueba5-ir { display: inline-block; margin-top: 10px; background: var(--verde); color: #fff; font-weight: 800; border-radius: 999px; padding: 8px 16px; }
 .p5 .tag.reco { background: #7E57C2; color: #fff; }
 .p5 .tag { position: absolute; top: -12px; right: 14px; background: linear-gradient(135deg, #8A5A00, #D4A017); color: #241800; font-weight: 900; font-size: .75rem; border-radius: 999px; padding: 3px 10px; }
 .siempre { font-size: .9rem; color: var(--suave); margin: 0 0 12px; }
@@ -261,6 +273,7 @@ footer { padding: 26px 0 40px; font-size: .88rem; color: var(--suave); }
 
 <section style="padding-top:8px;">
   <div class="col">
+    <div id="pruebaArriba"></div>
     <h2>Planes</h2>
     <p class="siempre oculto" id="siempre">En todos los planes: ventas con efectivo, transferencia, débito, crédito o QR, y 🏪 Mis datos (tus registros son tuyos).</p>
     <div id="planes" class="planes"><div class="estado-carga">Cargando los planes…</div></div>
@@ -480,16 +493,32 @@ function pintarPlanesV3() {
   if (CATALOGO && CATALOGO.apps) {   // v5: tarjetas envolventes desde la matriz central
     const prueba = PLANES.find(p => p.codigo === 'PRUEBA'), pagos = BASES5.map(c => PLANES.find(p => p.codigo === c)).filter(Boolean);
     $('siempre').classList.remove('oculto');
-    $('planes').innerHTML = (prueba ? '<div class="plan gratis"><div class="plan-cab"><h3>' + esc(prueba.nombre) + '</h3><div class="precio">Gratis</div></div><div class="lineas-precio">' + esc($('tDias').textContent) + ' días + ' + esc($('tGracia').textContent) + ' de gracia, con P1 y P2 completos. Sin tarjeta.</div></div>' : '') +
-      '<div class="planes5">' + pagos.map(htmlPlanV5).join('') + '</div>' + (PROMO ? '<p class="chico">' + esc(PROMO.condiciones) + '</p>' : '');
+    // v5.6: la Prueba va ARRIBA de «Planes» y toda la tarjeta lleva al formulario
+    $('pruebaArriba').innerHTML = prueba ? '<a class="plan gratis prueba5" href="#empezar" aria-label="Empezar mi prueba gratis"><div class="plan-cab"><h3>🎁 ' + esc(prueba.nombre) + ' gratis</h3><div class="precio">Gratis</div></div><div class="lineas-precio">' + esc($('tDias').textContent) + ' días + ' + esc($('tGracia').textContent) + ' de gracia, con P1 y P2 completos. Sin tarjeta.</div><span class="prueba5-ir">' + esc($('ctaPrincipal').textContent || 'Empezar mi prueba gratis') + ' →</span></a>' : '';
+    $('planes').innerHTML = '<div class="planes5"><div class="marco5" aria-hidden="true"></div>' + pagos.map(htmlPlanV5).join('') + '</div>' + (PROMO ? '<p class="chico">' + esc(PROMO.condiciones) + '</p>' : '');
     $('planes').querySelectorAll('.plan.elegible').forEach(card => card.addEventListener('click', ev => {
       const cod = card.dataset.plan; if (ELECCION.plan === cod && ev.target.tagName !== 'INPUT') return;
       ELECCION.plan = cod; guardarEleccion(); pintarPlanesV3(); pintarComplementos(); if (solicitudId) anotarEleccion(false);
     }));
+    marcoV56(); requestAnimationFrame(marcoV56);
     return;
   }
   pintarPlanesV4viejo();
 }
+// v5.6: el marco abraza desde P1 hasta el plan elegido (P1 · P1+P2 · P1+P2+P3), en la computadora (fila) y en el celular (columna)
+function marcoV56() {
+  const cont = document.querySelector('.planes5'), m = cont && cont.querySelector('.marco5'); if (!m) return;
+  const orden = BASES5.filter(c => cont.querySelector('.p5.' + c)), hasta = orden.indexOf(ELECCION.plan);
+  cont.querySelectorAll('.p5').forEach(c => c.classList.remove('incluida'));
+  if (hasta === -1) { m.className = 'marco5'; m.style.display = 'none'; return; }
+  const cards = orden.slice(0, hasta + 1).map(c => cont.querySelector('.p5.' + c)), base = cont.getBoundingClientRect();
+  cards.slice(0, -1).forEach(c => c.classList.add('incluida'));
+  const rs = cards.map(c => c.getBoundingClientRect()), PAD = 9;
+  const L = Math.min(...rs.map(r => r.left)), T = Math.min(...rs.map(r => r.top)), R = Math.max(...rs.map(r => r.right)), B = Math.max(...rs.map(r => r.bottom));
+  Object.assign(m.style, { display: 'block', left: (L - base.left - PAD) + 'px', top: (T - base.top - PAD) + 'px', width: (R - L + 2 * PAD) + 'px', height: (B - T + 2 * PAD) + 'px' });
+  m.className = 'marco5 ' + ELECCION.plan;
+}
+window.addEventListener('resize', () => marcoV56());
 function pintarPlanesV4viejo() {
   const prueba = PLANES.find(p => p.codigo === 'PRUEBA');
   const pagos = PLANES.filter(p => p.codigo === 'BASICO' || p.codigo === 'PRO');
