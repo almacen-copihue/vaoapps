@@ -253,8 +253,14 @@ body {
 /* V43.8 (celular, «carrito al tocar»): el catálogo ocupa la pantalla; la venta actual se abre tocando 🛒 en la barra de Cobrar
    (o desde «✏️ Corregir» al cobrar); buscar y actualizar son botones flotantes. En tablet y computadora no cambia nada. */
 .btn-carrito, .fab-v438, .carrito-fondo-v438, .btn-cerrar-carrito { display: none; }
-.btn-corregir-v438 { display: block; width: 100%; margin: 6px 0 10px; border: 2px dashed #90A4AE; background: #fff; color: #37474F; border-radius: 12px; padding: 9px; font-weight: 700; font-family: inherit; cursor: pointer; }
+.btn-corregir-v438 { display: block; box-sizing: border-box; width: 100%; margin: 6px 0 10px; border: 2px dashed #90A4AE; background: #fff; color: #37474F; border-radius: 12px; padding: 9px; font-weight: 700; font-family: inherit; cursor: pointer; }
 .total-txt { display: block; }
+.pasos-v439, .confirm-resumen-v439 { display: none; }
+/* V43.9 — lista con globito (como Almacén Copihue) */
+.ini-v439 { position: relative; flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; background: var(--lavanda-pale, #EDE7F6); color: var(--lavanda, #5E35B1); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.05rem; }
+.prod-v439.en-venta .ini-v439 { background: #fff; color: #2E7D32; }
+.globo-v439 { position: absolute; top: -8px; right: -8px; min-width: 22px; height: 22px; padding: 0 4px; border-radius: 12px; background: #E53935; color: #fff; font-size: .72rem; font-weight: 900; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; line-height: 1; }
+.menos-v439 { flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; border: 0; background: #fff; color: #C62828; font-size: 1.3rem; font-weight: 900; box-shadow: 0 1px 4px rgba(0,0,0,.18); cursor: pointer; }
 @media (max-width: 599px) {
     body .buscador-wrap { display: none !important; }
     body.buscar-on .buscador-wrap { display: flex !important; padding: 6px 10px; background: #fff; }
@@ -279,6 +285,17 @@ body {
     body .venta-wrap .item-precio { grid-area: p; justify-self: end; }
     body .venta-wrap .item-subtotal { grid-area: s; min-width: 74px; text-align: right; }
     body .venta-wrap .btn-qty { width: 36px; height: 36px; }
+    /* V43.9: pasos y pago */
+    .pasos-v439 { display: flex; gap: 6px; padding: 8px 14px; background: #fff; font-size: .72rem; font-weight: 700; color: #90A4AE; }
+    .pasos-v439 span { flex: 1; text-align: center; padding: 4px 0; border-radius: 999px; background: #ECEFF1; }
+    .pasos-v439 .ok { background: #E8F5E9; color: #2E7D32; }
+    .pasos-v439 .act { background: #F07D3A; color: #fff; }
+    #modalConfirm .confirm-items { display: none; }
+    body:has(.modal-bg.open) #vaoStagingBadge { display: none; }
+    #modalConfirm .btn-corregir-v438 { width: calc(100% - 40px); margin: 8px 20px 4px; }
+    .confirm-resumen-v439 { display: block; text-align: center; color: var(--gris); font-weight: 600; font-size: .85rem; margin-top: 4px; }
+    #modalConfirm .btn-corregir-v438 .txt-corregir { font-size: 0; }
+    #modalConfirm .btn-corregir-v438 .txt-corregir::after { content: 'Volver a revisar la venta'; font-size: .9rem; }
     .btn-carrito { display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: 999px; background: rgba(255,255,255,.18); color: #fff; font-size: 1.15rem; padding: 7px 12px; cursor: pointer; margin-right: 10px; }
     .btn-carrito b { background: #F07D3A; color: #fff; border-radius: 999px; min-width: 22px; padding: 1px 6px; font-size: .8rem; text-align: center; }
     .btn-carrito.salta { animation: carritoSalta .35s ease-out; }
@@ -995,6 +1012,7 @@ body {
         <button class="btn-limpiar" onclick="limpiarVenta()">🗑 Limpiar</button>
         <button type="button" class="btn-cerrar-carrito" onclick="toggleCarritoV438(false)" aria-label="Cerrar la venta actual">✕</button>
     </div>
+    <div class="pasos-v439"><span class="ok">1 Productos</span><span class="act">2 Revisar</span><span>3 Pago</span></div>   <!-- V43.9 (celular) -->
     <div id="listaVenta"></div>
 </div>
 
@@ -1005,7 +1023,7 @@ body {
         <div class="total-label">Total</div>
         <div class="total-monto" id="totalMonto">$0</div>
     </div>
-    <button class="btn-cobrar" onclick="abrirConfirm()">Cobrar →</button>
+    <button class="btn-cobrar" id="btnCobrar" onclick="cobrarV439()">Cobrar →</button>
 </div>
 
 <!-- TOAST -->
@@ -1020,8 +1038,10 @@ body {
             <button class="modal-cerrar" onclick="cerrarConfirm()">✕</button>
         </div>
         <div style="overflow-y:auto;flex:1;min-height:0;">
+        <div class="pasos-v439"><span class="ok">1 Productos</span><span class="ok">2 Revisar</span><span class="act">3 Pago</span></div>   <!-- V43.9 (celular) -->
+        <div class="confirm-resumen-v439" id="confirmResumenV439"></div>
         <div class="confirm-items" id="confirmItems"></div>
-        <button type="button" class="btn-corregir-v438" onclick="corregirVentaV438()">✏️ Corregir la venta (cantidades, precios, quitar)</button>
+        <button type="button" class="btn-corregir-v438" onclick="corregirVentaV438()">✏️ <span class="txt-corregir">Corregir la venta (cantidades, precios, quitar)</span></button>
         <div class="confirm-total" id="confirmTotal">$0</div>
 
         <!-- MÉTODOS DE PAGO -->
@@ -1243,7 +1263,7 @@ if (!/^[A-Z0-9]{2,10}$/.test(PREFIJO)) {
 
 // ========== CONFIG ==========
 const API_URL  = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
-const APP_VERSION_TXT = '43.8';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
+const APP_VERSION_TXT = '43.9';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
 const APP_VERSION = 43; // V43.8: celular «carrito al tocar» — el catálogo ocupa la pantalla; 🛒 (con cantidad) en la barra de Cobrar abre la venta para corregir; 🔍 y 🔄 flotantes; «✏️ Corregir la venta» en Confirmar · V43.7: «Venta actual · Limpiar» solo aparece con productos en el carrito; 📣 comparte el afiche nuevo (og-vao-pos-2.jpg) · V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
 const HOY_KEY    = 'vao_ventas_' + PREFIJO + '_' + new Date().toISOString().slice(0, 10);
 const CARRITO_KEY= 'vao_carrito_' + PREFIJO;
@@ -1834,20 +1854,26 @@ function renderListaTodos() {
                 'text-transform:uppercase;letter-spacing:1px;background:var(--lavanda-pale);">' + cat + '</div>';
         cats[cat].forEach(p => {
             const sinStock = p.stock === 0;
-            html += '<div onclick="agregarDesdeLista(' + p.id + ')" style="' +
-                'padding:10px 14px;display:flex;justify-content:space-between;align-items:center;' +
+            // V43.9 — como en Almacén Copihue: globito rojo con la cantidad, fila verde y el total de ese producto; − para sacar uno
+            const it = ventaActual.find(i => i.id === p.id), q = it ? it.qty : 0;
+            html += '<div class="prod-v439' + (q > 0 ? ' en-venta' : '') + '" data-prod-id="' + p.id + '" onclick="agregarDesdeLista(' + p.id + ')" style="' +
+                'padding:10px 14px;display:flex;align-items:center;gap:10px;' +
                 'border-bottom:1px solid #f0ecf7;cursor:pointer;' +
                 'opacity:' + (sinStock ? '0.45' : '1') + ';' +
-                'background:' + (sinStock ? '#fafafa' : 'white') + ';">' +
-                '<div>' +
+                'background:' + (sinStock ? '#fafafa' : (q > 0 ? '#DCEDC8' : 'white')) + ';border-left:4px solid ' + (q > 0 ? '#43A047' : 'transparent') + ';">' +
+                '<div class="ini-v439">' + _escHTML((p.name || '?').trim().charAt(0).toUpperCase()) +
+                    (q > 0 ? '<b class="globo-v439">' + (Number.isInteger(q) ? q : q.toFixed(1)) + '</b>' : '') + '</div>' +
+                '<div style="flex:1;min-width:0;">' +
                     '<div style="font-size:0.88rem;font-weight:600;color:var(--texto);">' +
                         (sinStock ? '❌ ' : '') + p.name +
                     '</div>' +
-                    '<div style="font-size:0.7rem;color:var(--gris);">Stock: ' + p.stock + '</div>' +
+                    '<div style="font-size:0.7rem;color:var(--gris);">$' + p.price.toLocaleString('es-AR') + ' · Stock: ' + p.stock + '</div>' +
                 '</div>' +
-                '<div style="font-size:0.95rem;font-weight:700;color:var(--lavanda);">$' +
-                    p.price.toLocaleString('es-AR') +
-                '</div></div>';
+                (q > 0
+                  ? '<div style="text-align:right;flex-shrink:0;"><div style="font-size:.62rem;color:#558B2F;">total</div><div style="font-size:0.95rem;font-weight:800;color:#2E7D32;">$' + (it.price * q).toLocaleString('es-AR') + '</div></div>' +
+                    '<button type="button" class="menos-v439" onclick="event.stopPropagation();cambiarQty(' + p.id + ',-1)" aria-label="Sacar uno">−</button>'
+                  : '<div style="font-size:0.95rem;font-weight:700;color:var(--lavanda);flex-shrink:0;">$' + p.price.toLocaleString('es-AR') + '</div>') +
+                '</div>';
         });
     });
     container.innerHTML = chips + (html || '<div style="padding:20px;text-align:center;color:var(--gris);">Sin productos</div>');
@@ -1862,11 +1888,20 @@ function _carritoContadorV438_() {
     if (b && n > _carritoNAntV438) { b.classList.remove('salta'); void b.offsetWidth; b.classList.add('salta'); }
     _carritoNAntV438 = n;
     if (!ventaActual.length && document.body.classList.contains('carrito-on')) toggleCarritoV438(false);
+    if (listaTodosAbierta) renderListaTodos();   // V43.9: globitos al día (también al cambiar desde el buscador o el carrito)
 }
 function toggleCarritoV438(abrir) {
     const on = abrir === undefined ? !document.body.classList.contains('carrito-on') : !!abrir;
     if (on && !ventaActual.length) { mostrarToast('🛒 Todavía no hay productos en la venta', 'naranja'); return; }
     document.body.classList.toggle('carrito-on', on);
+    const bc = document.getElementById('btnCobrar'); if (bc) bc.textContent = on ? 'Elegir pago →' : 'Cobrar →';   // V43.9
+}
+// V43.9 (celular) — 3 pasos: 1 Productos (lista con globitos) → 2 Revisar (carrito, sin pago) → 3 Pago (cómo paga y confirmar)
+function cobrarV439() {
+    if (!_celuV438_()) return abrirConfirm();
+    if (!ventaActual.length) { mostrarToast('Agregá productos primero', 'rojo'); return; }
+    if (!document.body.classList.contains('carrito-on')) return toggleCarritoV438(true);   // paso 2
+    toggleCarritoV438(false); abrirConfirm();                                                // paso 3
 }
 function toggleBuscarV438() {
     const on = !document.body.classList.contains('buscar-on'); document.body.classList.toggle('buscar-on', on);
@@ -2150,6 +2185,8 @@ function abrirConfirm() {
         '<div class="confirm-item"><span>'+i.qty+'× '+i.name.substring(0,30)+'</span><strong>$'+(i.price*i.qty).toLocaleString('es-AR')+'</strong></div>'
     ).join('');
     document.getElementById('confirmTotal').textContent = '$' + total.toLocaleString('es-AR');
+    const _uV439 = ventaActual.reduce((s, i) => s + Number(i.qty || 0), 0);   // V43.9: en el celular la lista ya se revisó en el paso 2
+    document.getElementById('confirmResumenV439').textContent = '🛒 ' + (Number.isInteger(_uV439) ? _uV439 : _uV439.toFixed(1)) + (_uV439 === 1 ? ' unidad' : ' unidades') + ' · ' + ventaActual.length + (ventaActual.length === 1 ? ' producto' : ' productos');
     const enCurso = _leerVentaEnCurso();
     seleccionarMetodo(enCurso ? enCurso.metodoPago : 'efectivo');
     // V13: un fiado en curso muestra su cliente/teléfono guardados, de solo lectura.
