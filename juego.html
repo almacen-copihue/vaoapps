@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Raspadita y tragamonedas · VAO POS</title>
+<style>
+/* juego.html v1 (v044) — complemento opcional. Promoción de regalos al azar: el resultado lo sortea el SERVIDOR
+   (respetando cantidades y chances); la raspadita y el tragamonedas solo lo muestran. No se juega dinero. */
+.escena { position: relative; max-width: 360px; margin: 10px auto; aspect-ratio: 16/10; border-radius: 18px; overflow: hidden; box-shadow: var(--sombra); background: linear-gradient(135deg, #FFF8E1, #FFE0B2); }
+.escena .res { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: #4E342E; padding: 10px; }
+.escena .res b { font-size: 1.6rem; } .escena canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+.rodillos { display: flex; gap: 8px; justify-content: center; margin: 14px 0; }
+.rodillo { width: 84px; height: 96px; border-radius: 14px; background: #263238; color: #fff; font-size: 3rem; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 12px rgba(0,0,0,.6); }
+.rodillo.gira { animation: gira .12s linear infinite; } @keyframes gira { 0% { transform: translateY(-6px); } 50% { transform: translateY(6px); } 100% { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .rodillo.gira { animation: none; } }
+.codigo { font-family: ui-monospace, monospace; font-size: 1.3rem; letter-spacing: .15em; font-weight: 800; }
+</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <p class="vao-msg info">🎁 Promoción de regalos para tus clientes. <b>No es un juego de apuestas:</b> no se juega dinero. Vos definís los premios, las cantidades y las chances.</p>
+  <nav class="vao-pestanas" id="tabs" role="tablist">
+    <button data-tab="jugar" class="activo">🎲 Jugar</button><button data-tab="pendientes">⏳ Premios a entregar</button>
+    <button data-tab="premios">🎁 Premios</button><button data-tab="historial">📜 Historial</button>
+  </nav>
+  <section data-panel="jugar">
+    <div class="vao-tarjeta vao-centro" style="max-width:none">
+      <div class="vao-fila" style="justify-content:center;"><button class="vao-btn" data-modo="RASPADITA" id="mR">🪙 Raspadita</button><button class="vao-btn" data-modo="TRAGAMONEDAS" id="mT">🎰 Tragamonedas</button></div>
+      <div id="escenaR" class="escena oculto"><div class="res" id="resR"></div><canvas id="lienzo" aria-label="Raspá para descubrir"></canvas></div>
+      <div id="escenaT" class="oculto"><div class="rodillos"><div class="rodillo" id="r0">🍒</div><div class="rodillo" id="r1">🍋</div><div class="rodillo" id="r2">⭐</div></div><div id="resT" style="min-height:48px"></div></div>
+      <div id="msgJ" class="oculto"></div>
+      <button class="vao-btn primario vao-escribe" id="btnJugar">Nueva jugada</button>
+      <div id="ganado" class="oculto" style="margin-top:12px;"></div>
+    </div>
+  </section>
+  <section data-panel="pendientes" class="oculto"><div class="vao-tarjeta"><h2>Premios ganados que faltan entregar</h2><div class="vao-fila vao-escribe"><div class="vao-campo"><label for="buscaCod">Código</label><input id="buscaCod" maxlength="10" placeholder="J1234ABC" style="text-transform:uppercase"></div><button class="vao-btn primario" id="btnEntregarCod">Entregar</button></div><ul class="vao-lista" id="pendientes"></ul></div></section>
+  <section data-panel="premios" class="oculto">
+    <div class="vao-tarjeta"><h2>Premios cargados</h2><table class="vao-tabla" id="tPremios"></table>
+      <p id="sinPremio" style="font-size:.86rem;color:var(--suave)"></p></div>
+    <div class="vao-tarjeta vao-escribe"><h2 id="tituloForm">Agregar premio</h2>
+      <div class="vao-fila">
+        <div class="vao-campo"><label for="pNombre">Premio</label><input id="pNombre" maxlength="60" placeholder="Ej.: Alfajor, 10% de descuento"></div>
+        <div class="vao-campo" style="flex:0 1 120px;"><label for="pCant">Cantidad</label><input id="pCant" type="number" min="0" value="10"></div>
+        <div class="vao-campo" style="flex:0 1 120px;"><label for="pPeso">Chances (1–1000)</label><input id="pPeso" type="number" min="1" max="1000" value="10"></div>
+      </div>
+      <div class="vao-campo vao-buscar"><label for="pProd">¿Es un producto de tu inventario? (opcional: al entregarlo sale del stock como regalo)</label><input id="pProd" autocomplete="off" placeholder="Buscar producto…"><div class="vao-resultados oculto" id="pRes"></div></div>
+      <div id="pProdSel" style="margin-bottom:8px;font-size:.86rem;"></div>
+      <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><input type="checkbox" id="pActivo" checked style="width:22px;height:22px"> Activo</label>
+      <div id="msgP" class="oculto"></div>
+      <div class="vao-fila"><button class="vao-btn primario" id="btnPremio">Guardar premio</button><button class="vao-btn" id="btnNuevoP">Nuevo</button></div>
+      <hr style="border:0;border-top:1px solid var(--borde);margin:14px 0">
+      <div class="vao-fila"><div class="vao-campo" style="flex:0 1 220px;"><label for="pSin">Chances de «sin premio»</label><input id="pSin" type="number" min="0" max="10000"></div><button class="vao-btn" id="btnSin">Guardar</button></div>
+    </div>
+  </section>
+  <section data-panel="historial" class="oculto"><div class="vao-tarjeta"><h2>Últimas jugadas</h2><ul class="vao-lista" id="historial"></ul></div></section>
+</main>
+<script src="vao-comun.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let MODO = 'RASPADITA', ULTIMO = null, EDIT = null, PROD_P = null;
+const SIMB = ['🍒', '🍋', '⭐', '🍇', '🔔', '🍀', '💎'];
+function elegirModo(m) { MODO = m; $('mR').classList.toggle('primario', m === 'RASPADITA'); $('mT').classList.toggle('primario', m === 'TRAGAMONEDAS'); $('escenaR').classList.add('oculto'); $('escenaT').classList.add('oculto'); $('ganado').classList.add('oculto'); }
+function mostrarGanado(r) {
+  const g = $('ganado'); g.classList.remove('oculto');
+  g.innerHTML = r.gano ? '<div class="vao-msg ok">🎉 ¡Ganó <b>' + VAO.esc(r.premio) + '</b>! Código <span class="codigo">' + VAO.esc(r.codigo) + '</span></div><button class="vao-btn primario vao-escribe" id="entregarYa">Entregar ahora</button>'
+    : '<div class="vao-msg info">Esta vez no hubo premio. ¡Gracias por participar!</div>';
+  if (r.gano) $('entregarYa').onclick = () => entregar(r.codigo);
+}
+function raspadita(r) {
+  $('escenaR').classList.remove('oculto');
+  $('resR').innerHTML = r.gano ? '<span>🎉 ¡GANASTE!</span><b>' + VAO.esc(r.premio) + '</b><small>Código ' + VAO.esc(r.codigo) + '</small>' : '<b>¡Seguí participando!</b><small>Gracias por tu compra</small>';
+  const c = $('lienzo'), ctx = c.getContext('2d'), rect = c.getBoundingClientRect(); c.width = rect.width * 2; c.height = rect.height * 2;
+  ctx.fillStyle = '#9E9E9E'; ctx.fillRect(0, 0, c.width, c.height); ctx.fillStyle = '#E0E0E0'; ctx.font = 'bold ' + (c.width / 12) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('RASPÁ ACÁ', c.width / 2, c.height / 2);
+  ctx.globalCompositeOperation = 'destination-out'; let raspando = false, mostrado = false;
+  const raspa = e => { if (!raspando) return; const b = c.getBoundingClientRect(), p = e.touches ? e.touches[0] : e; ctx.beginPath(); ctx.arc((p.clientX - b.left) * 2, (p.clientY - b.top) * 2, c.width / 14, 0, Math.PI * 2); ctx.fill();
+    if (!mostrado) { const d = ctx.getImageData(0, 0, c.width, c.height).data; let v = 0; for (let i = 3; i < d.length; i += 64) if (d[i] === 0) v++; if (v / (d.length / 64) > .45) { mostrado = true; c.style.transition = 'opacity .4s'; c.style.opacity = 0; mostrarGanado(r); } } };
+  c.style.opacity = 1;
+  ['mousedown', 'touchstart'].forEach(ev => c.addEventListener(ev, e => { raspando = true; raspa(e); e.preventDefault(); }, { passive: false }));
+  ['mousemove', 'touchmove'].forEach(ev => c.addEventListener(ev, e => { raspa(e); e.preventDefault(); }, { passive: false }));
+  ['mouseup', 'mouseleave', 'touchend'].forEach(ev => c.addEventListener(ev, () => raspando = false));
+  c.ondblclick = () => { if (!mostrado) { mostrado = true; c.style.opacity = 0; mostrarGanado(r); } };   // accesible: doble toque descubre todo
+}
+function tragamonedas(r) {
+  $('escenaT').classList.remove('oculto'); $('resT').innerHTML = '';
+  const fin = r.gano ? [SIMB[6], SIMB[6], SIMB[6]] : (() => { const a = SIMB.slice(0, 6).sort(() => Math.random() - .5); return [a[0], a[1], a[2]]; })();
+  const rs = [0, 1, 2].map(i => $('r' + i)); rs.forEach(x => x.classList.add('gira'));
+  const t = setInterval(() => rs.forEach(x => { if (x.classList.contains('gira')) x.textContent = SIMB[Math.floor(Math.random() * SIMB.length)]; }), 90);
+  rs.forEach((x, i) => setTimeout(() => { x.classList.remove('gira'); x.textContent = fin[i]; if (i === 2) { clearInterval(t); mostrarGanado(r); } }, 900 + i * 450));
+}
+async function jugar() {
+  const b = $('btnJugar'); b.disabled = true; $('ganado').classList.add('oculto'); VAO.msg('msgJ', '');
+  const op = VAO.opId('JUE');
+  try {
+    let r; try { r = await VAO.api('juegoJugar', { opId: op, modo: MODO, operador: VAO.operador() || 'Comercio' }); }
+    catch (e) { r = await VAO.api('juegoJugar', { opId: op, modo: MODO, operador: VAO.operador() || 'Comercio' }); }   // un reintento con el MISMO número: no sortea dos veces
+    if (!r.success) VAO.msg('msgJ', r.error, 'error'); else { ULTIMO = r; MODO === 'RASPADITA' ? raspadita(r) : tragamonedas(r); }
+  } catch (e) { VAO.msg('msgJ', VAO.sinConexion, 'error'); }
+  b.disabled = false;
+}
+async function entregar(cod) {
+  const r = await VAO.api('juegoEntregar', { codigo: cod, operador: VAO.operador() || 'Comercio' });
+  VAO.toast(r.success ? r.mensaje : r.error, r.success ? 'ok' : 'error'); if (r.success) { $('ganado').classList.add('oculto'); cargarPendientes(); }
+}
+async function cargarPendientes() {
+  const r = await VAO.api('juegoHistorial', {});
+  if (!r.success) return;
+  $('pendientes').innerHTML = r.pendientes.length ? r.pendientes.map(j => '<li class="vao-item"><div class="izq"><b>' + VAO.esc(j.premio) + '</b><small><span class="codigo" style="font-size:.9rem">' + VAO.esc(j.codigo) + '</span> · ' + VAO.esc(j.fecha) + ' · ' + (j.modo === 'TRAGAMONEDAS' ? '🎰' : '🪙') + '</small></div>' +
+    '<div class="vao-fila vao-escribe" style="flex:0 0 auto"><button class="vao-btn chico primario" data-ent="' + j.codigo + '">Entregar</button><button class="vao-btn chico peligro" data-an="' + j.codigo + '">Anular</button></div></li>').join('') : '<li class="vao-item">No hay premios pendientes.</li>';
+  $('pendientes').querySelectorAll('[data-ent]').forEach(b => b.onclick = () => entregar(b.dataset.ent));
+  $('pendientes').querySelectorAll('[data-an]').forEach(b => b.onclick = async () => { const motivo = prompt('Motivo para anular el premio ' + b.dataset.an + ':'); if (!motivo) return;
+    const x = await VAO.api('juegoEntregar', { codigo: b.dataset.an, anular: true, motivo, operador: VAO.operador() || 'Comercio' }); VAO.toast(x.success ? x.mensaje : x.error, x.success ? 'ok' : 'error'); cargarPendientes(); });
+  $('historial').innerHTML = r.jugadas.length ? r.jugadas.map(j => '<li class="vao-item"><div class="izq"><b>' + (j.premio ? VAO.esc(j.premio) : 'Sin premio') + '</b><small>' + VAO.esc(j.codigo) + ' · ' + VAO.esc(j.fecha) + ' · ' + j.modo.toLowerCase() + '</small></div><span class="vao-chip ' + ({ ENTREGADO: '', PENDIENTE: 'naranja', ANULADO: 'rojo', SIN_PREMIO: 'gris' }[j.estado] || 'gris') + '">' + j.estado.replace('_', ' ') + '</span></li>').join('') : '<li class="vao-item">Todavía no hay jugadas.</li>';
+}
+async function cargarPremios() {
+  const r = await VAO.api('juegoConfig', {}); if (!r.success) return;
+  $('tPremios').innerHTML = '<tr><th>Premio</th><th class="num">Quedan</th><th class="num">Entregados</th><th class="num">Chance</th><th></th></tr>' + (r.premios.length ? r.premios.map((p, i) => '<tr><td>' + VAO.esc(p.premio) + (p.productoId ? ' <span class="vao-chip gris">producto</span>' : '') + (p.activo ? '' : ' <span class="vao-chip gris">inactivo</span>') + '</td><td class="num">' + p.disponibles + (p.reservados ? ' (+' + p.reservados + ' por entregar)' : '') + '</td><td class="num">' + p.entregados + '</td><td class="num">' + p.chance + '%</td><td><button class="vao-btn chico vao-escribe" data-ed="' + i + '">Editar</button></td></tr>').join('') : '<tr><td colspan="5">Todavía no cargaste premios.</td></tr>');
+  $('sinPremio').textContent = 'Chance de «sin premio»: ' + r.chanceSinPremio + '%.'; $('pSin').value = r.pesoSinPremio;
+  $('tPremios').querySelectorAll('[data-ed]').forEach(b => b.onclick = () => { const p = r.premios[+b.dataset.ed]; EDIT = p.id; $('tituloForm').textContent = 'Editar premio'; $('pNombre').value = p.premio; $('pCant').value = p.cantidad; $('pPeso').value = p.peso; $('pActivo').checked = p.activo;
+    PROD_P = p.productoId ? (VAO._prods || []).find(x => x.id === p.productoId) || { id: p.productoId, name: 'producto #' + p.productoId } : null; pintarProdP(); $('pNombre').focus(); });
+}
+function pintarProdP() { $('pProdSel').innerHTML = PROD_P ? 'Producto: <b>' + VAO.esc(PROD_P.name) + '</b> <button class="vao-btn chico" id="qp">Quitar</button>' : ''; if (PROD_P) $('qp').onclick = () => { PROD_P = null; pintarProdP(); }; }
+async function guardarPremio() {
+  const r = await VAO.api('juegoGuardarPremio', { id: EDIT || undefined, premio: $('pNombre').value, cantidad: +$('pCant').value, peso: +$('pPeso').value, activo: $('pActivo').checked, productoId: PROD_P ? PROD_P.id : '' });
+  VAO.msg('msgP', r.success ? r.mensaje : r.error, r.success ? 'ok' : 'error'); if (r.success) { nuevoP(); cargarPremios(); }
+}
+function nuevoP() { EDIT = null; PROD_P = null; $('tituloForm').textContent = 'Agregar premio'; $('pNombre').value = ''; $('pCant').value = 10; $('pPeso').value = 10; $('pActivo').checked = true; pintarProdP(); }
+VAO.iniciar({ modulo: 'extra_raspadita', titulo: 'Raspadita y tragamonedas', icono: '🎁', grupo: 'C' }).then(async ok => {
+  if (!ok) return;
+  VAO.pestanas('tabs', t => { if (t === 'pendientes' || t === 'historial') cargarPendientes(); if (t === 'premios') cargarPremios(); });
+  document.querySelectorAll('[data-modo]').forEach(b => b.onclick = () => elegirModo(b.dataset.modo)); elegirModo('RASPADITA');
+  $('btnJugar').onclick = jugar; $('btnPremio').onclick = guardarPremio; $('btnNuevoP').onclick = nuevoP;
+  $('btnSin').onclick = async () => { const r = await VAO.api('juegoGuardarPremio', { pesoSinPremio: +$('pSin').value }); VAO.msg('msgP', r.success ? r.mensaje : r.error, r.success ? 'ok' : 'error'); cargarPremios(); };
+  $('btnEntregarCod').onclick = () => { const c = $('buscaCod').value.trim().toUpperCase(); if (c) entregar(c); };
+  try { await VAO.productos(); } catch (e) {}
+  VAO.buscador('pProd', 'pRes', p => { PROD_P = p; pintarProdP(); });
+});
+</script>
+</body>
+</html>

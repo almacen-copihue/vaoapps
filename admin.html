@@ -737,6 +737,7 @@ details.ctr-com[open] > summary { border-bottom:1px solid #EEF2F6; }
                 <div class="botones-seccion">
                     <button class="btn-primario" style="background:#0D47A1;" onclick="abrirModalRegistros()">🚀 Pruebas y registros <span id="badgeRegistros" style="display:none;background:#FFB300;color:#222;border-radius:999px;padding:1px 8px;margin-left:4px;font-size:0.78rem;"></span></button>
                     <button class="btn-primario" style="background:#5E35B1;" onclick="abrirModalPlanes()">🧩 Planes</button>
+                    <button class="btn-primario" id="btnPC43" style="background:#283593;" onclick="abrirPC43()">📋 Planes y contrataciones <span id="badgePC43" style="display:none;background:#FFB300;color:#222;border-radius:999px;padding:1px 8px;margin-left:4px;font-size:0.78rem;"></span></button>
                     <button class="btn-primario" id="btnContratos" style="background:#00695C;" onclick="abrirModalContratos()">📄 Contratos</button>
                     <button class="btn-primario" id="btnCobros" style="background:#2E7D32;" onclick="abrirModalCobros()">📊 Cobros</button>
                     <button class="btn-primario btn-verde" onclick="abrirModalAlta()">
@@ -911,6 +912,40 @@ details.ctr-com[open] > summary { border-bottom:1px solid #EEF2F6; }
     </div>
 </div>
 
+<!-- V20: cobro avanzado, cotizaciones y uso de la planilla (backend v042) -->
+<div class="modal-overlay" id="modalCobroV42">
+    <div class="modal" style="max-width:560px;">
+        <div class="modal-titulo">💱 Cobro — <span id="cv42Prefijo"></span></div>
+        <div id="cv42Contenido"><div class="ayuda">Cargando…</div></div>
+        <div class="modal-footer">
+            <button class="btn-cancelar" onclick="cerrarModalCobroV42()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- V21 (v043): 📋 Planes y contrataciones. Todo cambio pide operador y motivo y queda en CAMBIOS_PLANES_VAO. -->
+<div class="modal-overlay" id="modalPC43">
+    <div class="modal" style="max-width:900px;">
+        <div class="modal-titulo">📋 Planes y contrataciones</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-bottom:8px;">
+            <div class="form-grupo" style="margin:0;"><label class="form-label">Operador (quién hace el cambio)</label><input class="form-input" id="pc43Operador" maxlength="60" style="width:180px;" placeholder="Ej.: Víctor"></div>
+            <div class="form-grupo" style="margin:0;flex:1;min-width:200px;"><label class="form-label">Motivo del cambio (obligatorio para cambiar)</label><input class="form-input" id="pc43Motivo" maxlength="200" placeholder="Ej.: pagó el complemento por transferencia"></div>
+        </div>
+        <div id="pc43Pestanas" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+            <button class="btn-accion pc43-tab" data-t="comercios" onclick="pc43Tab('comercios')">🏪 Comercios</button>
+            <button class="btn-accion pc43-tab" data-t="catalogo" onclick="pc43Tab('catalogo')">🗂️ Catálogo y precios</button>
+            <button class="btn-accion pc43-tab" data-t="pendientes" onclick="pc43Tab('pendientes')">⏳ Elecciones pendientes</button>
+            <button class="btn-accion pc43-tab" data-t="historial" onclick="pc43Tab('historial')">📜 Historial</button>
+        </div>
+        <div id="pc43Msg"></div>
+        <div id="pc43Contenido"><div class="ayuda">Cargando…</div></div>
+        <div class="modal-footer">
+            <button class="btn-cancelar" onclick="cargarPC43()">🔄 Actualizar</button>
+            <button class="btn-cancelar" onclick="cerrarPC43()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <!-- V11: Pruebas y registros (altas automáticas desde planes.html) -->
 <div class="modal-overlay" id="modalRegistros">
     <div class="modal" style="max-width:760px;">
@@ -927,7 +962,7 @@ details.ctr-com[open] > summary { border-bottom:1px solid #EEF2F6; }
 <div class="toast" id="toast"></div>
 
 <script>
-const APP_VERSION = 19;
+const APP_VERSION = 22; // V22.2 (v044.2): complementos «para P1, P2, P3 PRO» (antes los códigos internos); fila «Precio mensual» (dice «/ lanzamiento» solo si hay alguno); la cotización la carga cada comercio (VAO también puede, como soporte) · V22 (v044.1): planes P1 · P2 · P3 PRO integrados (activación en un paso con vista previa, cambio de plan a P3 con el pago), complementos opcionales aparte, botonera de cada comercio desde la matriz central y aviso de combinaciones contradictorias · V21 (v043): 📋 Planes y contrataciones — P1/P2/P3, prestaciones por comercio (catálogo/contratado/habilitado/suspendido), complementos, precios, historial y elecciones pendientes // V20: 💱 Cobro por comercio (cobro avanzado prender/apagar, cotizaciones USD/CLP, cobros sin terminar) y uso de la planilla
 document.addEventListener('DOMContentLoaded', function(){
     var tag = document.createElement('span');
     tag.id = 'version-tag';
@@ -1164,6 +1199,12 @@ function renderClientes() {
                         <button class="btn-accion"
                             style="background:#EDE7F6;color:#4527A0;"
                             onclick="abrirModalPlanCliente('${c.prefijo}')">🧩 Plan</button>
+                        <button class="btn-accion"
+                            style="background:#E0F2F1;color:#00695C;"
+                            onclick="abrirModalCobroV42('${c.prefijo}')">💱 Cobro</button>
+                        <button class="btn-accion"
+                            style="background:#E8EAF6;color:#283593;"
+                            onclick="abrirPC43('${c.prefijo}')">📋 Prestaciones</button>
                     </div>
                 </td>
             </tr>`).join('')}
@@ -1449,7 +1490,7 @@ function alCambiarPlanAlta() {
         const f = n => { const d = new Date(); d.setDate(d.getDate() + n); return d.toLocaleDateString('es-AR'); };
         ayuda.innerHTML = '🧪 <b>Prueba fija:</b> empieza hoy (' + f(0) + '), funciona hasta el <b>' + f(6) + '</b> (día 7) y tiene gracia hasta el <b>' + f(9) +
             '</b> (día 10). Después queda en modo consulta. No se puede cambiar ni renovar. Pide teléfono o correo (una prueba por persona).<br>Incluye: venta, cobro y buscador' + (mods.length ? ', ' + mods.map(_esc).join(', ') : '') + '.' +
-            '<br>💳 <b>Planes pagos</b> (Básico, Pro…): se activan después, registrando el pago confirmado en <b>💳 Vigencia y pagos</b>.';
+            '<br>💳 <b>Planes pagos</b> (P1 Esencial, P2 Gestión…): se activan después, registrando el pago confirmado en <b>💳 Vigencia y pagos</b>.';
         return;
     }
     dias.disabled = false;
@@ -1479,7 +1520,7 @@ function renderPlanes() {
         return;
     }
     if (!planesInfo.existe) {   // V13: el servidor CONFIRMÓ que PLANES_VAO no existe
-        cont.innerHTML = '<p class="ayuda" style="font-size:0.85rem;">Todavía no hay tabla de planes. Se crea la hoja <b>PLANES_VAO</b> con PRUEBA, BÁSICO y PRO; después podés editar cada uno acá. No se modifica ninguna hoja existente.</p>' +
+        cont.innerHTML = '<p class="ayuda" style="font-size:0.85rem;">Todavía no hay tabla de planes. Se crea la hoja <b>PLANES_VAO</b> con Prueba, P1 Esencial (BÁSICO) y P2 Gestión (PRO); P3 PRO se suma con «Activar los planes» (📋 Planes y contrataciones). No se modifica ninguna hoja existente.</p>' +
             '<div id="planesPrevia" class="ayuda" style="margin:10px 0 14px;">Calculando qué cambia para los negocios actuales…</div>' +
             '<button class="btn-primario btn-verde" id="btnInitPlanes" onclick="crearPlanesIniciales()">Crear planes iniciales</button>';
         cargarPreviaPlanes();
@@ -1528,7 +1569,7 @@ async function cargarPreviaPlanes() {
                   afectados.map(i => '<li>' + _esc(i.prefijo) + ' (' + _esc(nombres[i.plan] || i.plan) + '): ' + i.pierde.map(_esc).join(', ') + '</li>').join('') +
                   '</ul>Si no corresponde, después de crear los planes cambiales el plan o editá el plan.'
                 : '<div style="color:#2E7D32;font-weight:700;">✅ Ningún negocio actual pierde módulos que tenga encendidos.</div>') +
-            (noRec.length ? '<div style="margin-top:6px;">Sin cambios (su plan no es PRUEBA/BÁSICO/PRO, siguen como hoy): ' + noRec.map(i => _esc(i.prefijo) + (i.plan ? ' (' + _esc(i.plan) + ')' : '')).join(', ') + '</div>' : '');
+            (noRec.length ? '<div style="margin-top:6px;">Sin cambios (su plan no es Prueba, P1 o P2; siguen como hoy): ' + noRec.map(i => _esc(i.prefijo) + (i.plan ? ' (' + _esc(i.plan) + ')' : '')).join(', ') + '</div>' : '');
     } catch (e) { cont.textContent = 'No se pudo calcular el impacto (sin conexión).'; }
 }
 function _nombreModuloPrevia(clave) {
@@ -1601,7 +1642,7 @@ function renderModulosCliente(res) {
     document.getElementById('pcPlanAyuda').textContent = res.planReconocido ? ('Plan actual: ' + res.planNombre) :
         ('Plan actual "' + (res.plan || 'sin plan') + '" no está en la tabla de planes: hoy manda solo la configuración del negocio. Elegí un plan para ordenarlo.');
     document.getElementById('pcModulosAyuda').innerHTML = res.editable
-        ? 'Plan <b>Personalizado</b>: elegí los módulos uno por uno (dentro de lo que permite PLANES_VAO).'
+        ? 'Plan <b>a medida</b> («Armá tu plan», no se muestra en la página pública): elegí los módulos uno por uno (dentro de lo que permite PLANES_VAO).'
         : 'Los módulos de este plan los define <b>PLANES_VAO</b> y no se cambian uno por uno. Si hay diferencias, usá el checkpoint de arriba. Para elegir módulos sueltos, pasalo a Personalizado.';
     cont.innerHTML = res.modulos.map(m => {
         const motivo = m.permitidoPorPlan === false ? 'el plan no lo incluye' : (!m.interruptor ? 'apagado para este negocio' : '');
@@ -2169,7 +2210,218 @@ async function vpRecuperarConfirmar(btn) {
     } catch (e) { toast('Error de conexión', 'rojo'); btn.disabled = false; }
 }
 
+// ── V21 (v043): 📋 PLANES Y CONTRATACIONES ─────────────────────────
+// Una sola fuente por dato: PLANES_VAO (qué incluye cada plan), COMPLEMENTOS_VAO (catálogo P3 y precios),
+// CONTRATOS_COMPLEMENTOS_VAO (qué contrató cada comercio), CONFIG_XX suspendido_<clave> (suspensión temporal).
+// La pantalla solo muestra y pide cambios; el servidor valida todo.
+let PC43 = { datos: null, tab: 'comercios', comercio: '' };
+const PC43_ESTADOS = { INCLUIDO: 'Incluido en el plan', COMPLEMENTO: 'Complemento P3', NO_INCLUIDO: 'No incluido', SEGUN_CONFIG: 'Según CONFIG (planes sin migrar)' };
+function _pc43Op() { try { const v = localStorage.getItem('vao_admin_operador'); if (v && !document.getElementById('pc43Operador').value) document.getElementById('pc43Operador').value = v; } catch (e) {} }
+function _pc43Cambio() {
+    const operador = document.getElementById('pc43Operador').value.trim(), motivo = document.getElementById('pc43Motivo').value.trim();
+    if (!operador) { _pc43Msg('Escribí quién hace el cambio (operador). No se cambió nada.', 'error'); document.getElementById('pc43Operador').focus(); return null; }
+    if (motivo.length < 3) { _pc43Msg('Escribí el motivo del cambio. No se cambió nada.', 'error'); document.getElementById('pc43Motivo').focus(); return null; }
+    try { localStorage.setItem('vao_admin_operador', operador); } catch (e) {}
+    return { operador, motivo };
+}
+function _pc43Msg(t, tipo) {
+    document.getElementById('pc43Msg').innerHTML = t ? '<div class="ayuda" style="background:' + (tipo === 'error' ? '#FFEBEE;color:var(--rojo)' : '#E8F5E9;color:var(--verde)') + ';padding:8px 10px;border-radius:8px;margin-bottom:10px;">' + _esc(t) + '</div>' : '';
+}
+async function abrirPC43(prefijo) {
+    PC43.comercio = prefijo || ''; PC43.tab = 'comercios'; _pc43Op(); _pc43Msg('');
+    document.getElementById('modalPC43').classList.add('visible');
+    await cargarPC43();
+}
+function cerrarPC43() { document.getElementById('modalPC43').classList.remove('visible'); }
+async function cargarPC43() {
+    const cont = document.getElementById('pc43Contenido');
+    cont.innerHTML = '<div class="ayuda">Cargando…</div>';
+    let r = null; try { r = await _adminApi('getPlanesContrataciones', {}); } catch (e) { r = null; }
+    if (!r) { cont.innerHTML = '<div class="ayuda" style="color:var(--rojo);">Sin conexión. No se cambió nada.</div>'; return; }
+    if (r.error) { cont.innerHTML = '<div class="ayuda" style="color:var(--rojo);">' + _esc(/no reconocida|desconocida|Acción/i.test(r.error) ? 'El servidor instalado todavía no tiene Planes y contrataciones (hace falta Code.gs v043).' : r.error) + '</div>'; return; }
+    PC43.datos = r;
+    const b = document.getElementById('badgePC43'); if (b) { b.style.display = r.intereses.length ? '' : 'none'; b.textContent = r.intereses.length; }
+    pc43Tab(PC43.tab);
+}
+function pc43Tab(t) {
+    PC43.tab = t;
+    document.querySelectorAll('.pc43-tab').forEach(x => { const on = x.dataset.t === t; x.style.background = on ? '#283593' : '#E8EAF6'; x.style.color = on ? '#fff' : '#283593'; });
+    const d = PC43.datos; if (!d) return;
+    const cont = document.getElementById('pc43Contenido');
+    // V22: si los planes no están activados, el primer paso es activarlos (vista previa → confirmar con operador y motivo). No es solo un aviso.
+    const aviso = d.migrado ? '' : '<div style="background:linear-gradient(135deg,#0A2472,#283593);color:#fff;padding:14px;border-radius:12px;margin-bottom:12px;">' +
+        '<div style="font-weight:800;font-size:1.05rem;">⚡ Paso 1: activar los planes P1 Esencial · P2 Gestión · P3 PRO</div>' +
+        '<div style="font-size:.86rem;opacity:.92;margin:6px 0 10px;">Arma los tres planes con sus aplicaciones y sus precios (los ves en la vista previa antes de confirmar), separa los complementos opcionales y muestra antes qué cambia en cada comercio. Hasta activarlos, cada comercio sigue como hoy. No toca ventas, fiados ni pagos.</div>' +
+        '<button class="btn-accion" style="background:#FFD54F;color:#1A1A1A;font-weight:800;" onclick="pc43MigrarVista()">Ver qué cambia (vista previa)</button><div id="pc43Mig"></div></div>';
+    if (t === 'comercios') cont.innerHTML = aviso + (PC43.comercio ? _pc43Comercio(PC43.comercio) : _pc43Lista());
+    else if (t === 'catalogo') cont.innerHTML = aviso + _pc43Catalogo();
+    else if (t === 'pendientes') cont.innerHTML = _pc43Pendientes();
+    else if (t === 'historial') { cont.innerHTML = '<div class="ayuda">Cargando el historial…</div>'; _pc43Historial(); }
+}
+function _pc43Est(e) { const c = { ACTIVO: '#2E7D32', VENCIDO: '#C62828', SUSPENDIDO: '#C62828' }[e] || '#E65100'; return '<b style="color:' + c + ';">' + _esc(String(e).replace('_', ' ')) + '</b>'; }
+function _pc43Lista() {
+    const d = PC43.datos;
+    return '<table class="tabla-clientes"><thead><tr><th>Comercio</th><th>Plan</th><th>Estado</th><th>Vence</th><th>Complementos</th><th></th></tr></thead><tbody>' +
+        d.comercios.map(c => {
+            const comps = c.prestaciones.filter(p => p.catalogo === 'COMPLEMENTO' && p.contrato).map(p => _esc(p.nombre.split(' (')[0]) + ' (' + (p.contratado ? 'activo' + (p.contrato.vence ? ' hasta ' + _esc(p.contrato.vence) : '') : (p.contrato.estado === 'BAJA' ? 'de baja' : 'vencido')) + ')');
+            const susp = c.prestaciones.filter(p => p.suspendido).length;
+            return '<tr><td><b>' + _esc(c.prefijo) + '</b> ' + _esc(c.nombre) + '</td><td>' + _esc(c.planNombre) + '</td><td>' + _pc43Est(c.estado) + (susp ? '<br><span class="ayuda" style="color:#C62828;">' + susp + ' prestación(es) suspendida(s)</span>' : '') + '</td><td>' + _esc(c.vence || '—') + '</td><td>' + (comps.join('<br>') || '—') +
+                '</td><td><button class="btn-accion" style="background:#E8EAF6;color:#283593;" onclick="PC43.comercio=\'' + _esc(c.prefijo) + '\';pc43Tab(\'comercios\')">Ver</button></td></tr>';
+        }).join('') + '</tbody></table>' + (d.comercios.length ? '' : '<div class="ayuda">No hay comercios.</div>');
+}
+function _pc43Comercio(pref) {
+    const d = PC43.datos, c = d.comercios.find(x => x.prefijo === pref);
+    if (!c) return '<div class="ayuda">No se encontró ' + _esc(pref) + '.</div>';
+    const grupos = ['P1', 'P2', 'P3', 'C', ''];
+    const fila = p => {
+        const sn = v => v ? '✅' : '—';
+        let acc = '';
+        if (p.catalogo === 'COMPLEMENTO') {
+            acc = p.contratado
+                ? '<button class="btn-accion" style="background:#FFEBEE;color:var(--rojo);" onclick="pc43Complemento(\'' + c.prefijo + '\',\'' + p.clave + '\',\'BAJA\')">Dar de baja</button>'
+                : '<span style="display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center;"><input type="date" class="form-input" id="pc43Vence_' + p.clave + '" style="width:150px;padding:4px;" title="Vence (vacío = sin vencimiento)"><input class="form-input" id="pc43Precio_' + p.clave + '" inputmode="numeric" placeholder="$ precio" style="width:90px;padding:4px;" title="Precio acordado (vacío = el del catálogo)">' +
+                  '<button class="btn-accion" style="background:#E8F5E9;color:var(--verde);" onclick="pc43Complemento(\'' + c.prefijo + '\',\'' + p.clave + '\',\'ALTA\')">Contratar</button></span>';
+        }
+        if (p.suspendido) acc += ' <button class="btn-accion" style="background:#E8F5E9;color:var(--verde);" onclick="pc43Suspender(\'' + c.prefijo + '\',\'' + p.clave + '\',false)">Reactivar</button>';
+        else if (p.habilitado || p.contratado) acc += ' <button class="btn-accion" style="background:#FFF3E0;color:#E65100;" onclick="pc43Suspender(\'' + c.prefijo + '\',\'' + p.clave + '\',true)">Suspender</button>';
+        const det = p.contrato ? '<br><span class="ayuda">Contrato: ' + _esc(p.contrato.estado) + (p.contrato.vence ? ' · vence ' + _esc(p.contrato.vence) : '') + (p.contrato.estado === 'ACTIVO' && !p.contratado ? ' · <b style="color:#C62828;">VENCIDO</b>' : '') + '</span>' : '';
+        return '<tr data-clave="' + p.clave + '"><td>' + _esc(p.nombre) + det + '</td><td>' + _esc(PC43_ESTADOS[p.catalogo] || p.catalogo) + '</td><td style="text-align:center;">' + sn(p.contratado) + '</td><td style="text-align:center;">' + sn(p.habilitado) + '</td><td style="text-align:center;">' + (p.suspendido ? '⏸️' : '—') + '</td><td>' + acc + '</td></tr>';
+    };
+    return '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px;"><div><b>' + _esc(c.prefijo) + '</b> ' + _esc(c.nombre) + ' · ' + _esc(c.planNombre) + ' · ' + _pc43Est(c.estado) + (c.vence ? ' · vence ' + _esc(c.vence) : '') + '</div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;"><button class="btn-accion" style="background:#FFF3E0;color:#E65100;" onclick="cerrarPC43();abrirModalVigencia(\'' + _esc(c.prefijo) + '\')">💳 Cambiar de plan P1 · P2 · P3 PRO (se registra con el pago)</button>' +
+        '<button class="btn-accion" style="background:#E8EAF6;color:#283593;" onclick="PC43.comercio=\'\';pc43Tab(\'comercios\')">← Todos</button></div></div>' +
+        ((c.incompatibles || []).length ? '<div style="background:#FFEBEE;color:#B71C1C;border-radius:8px;padding:8px 10px;margin-bottom:8px;"><b>⚠️ Combinaciones contradictorias</b>' + c.incompatibles.map(x => '<div>• ' + _esc(x) + '</div>').join('') + '</div>' : '') +
+        _pc43Botonera(c) +
+        '<div class="ayuda" style="margin-bottom:6px;">Catálogo = lo que el plan ofrece · Contratado = lo que el comercio tiene · Habilitado = lo que funciona hoy en el POS · Suspendido = apagado temporalmente por Admin (los datos no se borran).</div>' +
+        '<table class="tabla-clientes"><thead><tr><th>Prestación</th><th>Catálogo</th><th>Contratado</th><th>Habilitado</th><th>Suspendido</th><th>Cambiar</th></tr></thead><tbody>' +
+        grupos.map(g => { const ps = c.prestaciones.filter(p => (p.grupo || '') === g); if (!ps.length) return ''; return '<tr><td colspan="6" style="background:#E8EAF6;font-weight:700;color:#283593;">' + _esc(g ? (d.grupos[g] || g) : 'Otras prestaciones') + '</td></tr>' + ps.map(fila).join(''); }).join('') +
+        '</tbody></table><div class="ayuda" style="margin-top:8px;">Ventas con medios simples y 📥 Mis datos (descargas e historial) están siempre en todos los planes.</div>';
+}
+// V22: la botonera que ve el comercio (sale de la matriz central del servidor y de sus prestaciones habilitadas)
+function _pc43Botonera(c) {
+    const apps = PC43.datos.apps || []; if (!apps.length) return '';
+    const hab = {}; (c.prestaciones || []).forEach(p => { hab[p.clave] = p.habilitado; });
+    const col = { P1: '#1E88E5', P2: '#7E57C2', P3: '#B07D12', C: '#2E8B57' }, nom = { P1: 'P1', P2: 'P2', P3: 'PRO', C: '➕' };
+    return '<div style="border:1px solid #C5CAE9;border-radius:10px;padding:8px 10px;margin-bottom:8px;"><b>Botonera del comercio</b> <span class="ayuda">(lo que ve en el POS hoy)</span><div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;">' +
+        apps.map(a => { const on = a.modulo === null || hab[a.modulo] === true; return '<span style="border-radius:999px;padding:3px 9px;font-size:.78rem;font-weight:700;' + (on ? 'background:' + col[a.grupo] + ';color:#fff;' : 'background:#ECEFF1;color:#90A4AE;text-decoration:line-through;') + '" title="' + _esc(a.destino) + '">' + _esc(nom[a.grupo] + ' ' + a.icono + ' ' + a.nombre) + '</span>'; }).join('') + '</div></div>';
+}
+function _pc43Catalogo() {
+    const d = PC43.datos, claves = (d.planes[0] || { modulos: [] }).modulos.map(m => m.clave);
+    const nom = {}; (d.comercios[0] ? d.comercios[0].prestaciones : []).forEach(p => { nom[p.clave] = p.nombre; });
+    const val = v => ({ TRUE: '✅', FALSE: '—', COMPLEMENTO: '➕ opcional', 'SIN DEFINIR': '?' }[v] || _esc(v));
+    const pesos = n => n === null || n === undefined || n === '' ? 'a definir' : '$' + Number(n).toLocaleString('es-AR');
+    return '<h4 style="margin:4px 0;">Planes (PLANES_VAO)</h4><div style="overflow-x:auto;"><table class="tabla-clientes"><thead><tr><th>Prestación</th>' + d.planes.map(p => '<th>' + _esc(p.nombre) + (p.activo && p.visible ? '' : '<br><span class="ayuda">' + (p.activo ? 'no se muestra' : 'no se ofrece') + '</span>') + '</th>').join('') + '</tr></thead><tbody>' +
+        claves.map(k => '<tr><td>' + _esc(nom[k] || k) + '</td>' + d.planes.map(p => '<td style="text-align:center;">' + val((p.modulos.find(m => m.clave === k) || {}).valor) + '</td>').join('') + '</tr>').join('') +
+        '<tr><td><b>Precio mensual' + (d.planes.some(p => p.codigo !== 'PRUEBA' && p.precioLanzamiento !== null && p.precioLanzamiento !== undefined && p.precioLanzamiento !== '') ? ' / lanzamiento' : '') + '</b></td>' + d.planes.map(p => '<td>' + (p.codigo === 'PRUEBA' ? 'Gratis' : pesos(p.precioRegular) + (p.precioLanzamiento !== null && p.precioLanzamiento !== undefined && p.precioLanzamiento !== '' ? ' / ' + pesos(p.precioLanzamiento) : '')) + '</td>').join('') + '</tr>' +
+        '</tbody></table></div><div class="ayuda">Los precios de los planes se editan en <a href="#" onclick="cerrarPC43();abrirModalPlanes();return false;">🧩 Planes</a> (con vista previa). Cambiar un precio afecta solo contrataciones nuevas.</div>' +
+        '<h4 style="margin:14px 0 4px;">Paquete P3 PRO (incluido en el plan, no se vende suelto)</h4><div class="ayuda">' + d.complementos.filter(c => c.paquete === 'PRO').map(c => _esc(c.nombre)).join(' · ') + '</div>' +
+        '<h4 style="margin:14px 0 4px;">Complementos opcionales (COMPLEMENTOS_VAO)</h4>' +
+        (d.complementos.length ? d.complementos.filter(c => c.paquete !== 'PRO').map(c => '<div style="border:1px solid #C5CAE9;border-radius:8px;padding:10px;margin-bottom:8px;" data-comp="' + _esc(c.clave) + '"><b>' + _esc(c.nombre) + '</b> <span class="ayuda">para ' + _esc(c.planesBase.map(x => ({ BASICO: 'P1', PRO: 'P2', PLUS: 'P3 PRO', PRUEBA: 'Prueba' })[x] || x).join(', ')) + '</span><div class="ayuda">' + _esc(c.descripcion) + '</div>' +
+            '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:6px;">' +
+            '<div class="form-grupo" style="margin:0;"><label class="form-label">Precio regular</label><input class="form-input" id="pc43CReg_' + c.clave + '" inputmode="numeric" value="' + (c.precioRegular === null ? '' : c.precioRegular) + '" style="width:110px;"></div>' +
+            '<div class="form-grupo" style="margin:0;"><label class="form-label">Lanzamiento</label><input class="form-input" id="pc43CLan_' + c.clave + '" inputmode="numeric" value="' + (c.precioLanzamiento === null ? '' : c.precioLanzamiento) + '" style="width:110px;"></div>' +
+            '<label style="display:flex;gap:6px;align-items:center;"><input type="checkbox" id="pc43CDisp_' + c.clave + '"' + (c.disponible ? ' checked' : '') + '> Disponible para contratar</label>' +
+            '<button class="btn-accion" style="background:#E8F5E9;color:var(--verde);" onclick="pc43GuardarComplemento(\'' + _esc(c.clave) + '\')">Guardar</button></div></div>').join('')
+          : '<div class="ayuda">Todavía no hay catálogo de complementos (se crea al pasar los planes a P1/P2/P3).</div>');
+}
+function _pc43Pendientes() {
+    const l = PC43.datos.intereses;
+    return '<div class="ayuda" style="margin-bottom:8px;">Lo que eligieron en la página de planes al pedir su prueba. <b>No activa nada solo</b>: cuando el comercio paga, registrá el pago en 💳 Vigencia y pagos (plan) y contratá los complementos en su ficha.</div>' +
+        (l.length ? '<table class="tabla-clientes"><thead><tr><th>Fecha</th><th>Comercio</th><th>Correo</th><th>Plan</th><th>Complementos</th><th>Total mensual</th></tr></thead><tbody>' +
+            l.map(i => '<tr><td>' + _esc(i.fecha) + '</td><td>' + _esc(i.comercio) + '</td><td>' + _esc(i.correo) + '</td><td>' + _esc((PC43.datos.planes.find(p => p.codigo === i.plan) || {}).nombre || i.plan) + '</td><td>' + _esc(i.complementos || '—') + '</td><td>' + (i.total === '' || i.total === null ? 'a confirmar' : '$' + Number(i.total).toLocaleString('es-AR')) + '</td></tr>').join('') + '</tbody></table>'
+          : '<div class="ayuda">No hay elecciones pendientes.</div>');
+}
+async function _pc43Historial() {
+    let r = null; try { r = await _adminApi('getHistorialPlanes', { prefijo: PC43.comercio || '' }); } catch (e) { r = null; }
+    const cont = document.getElementById('pc43Contenido'); if (PC43.tab !== 'historial') return;
+    if (!r || r.error) { cont.innerHTML = '<div class="ayuda" style="color:var(--rojo);">' + _esc(r ? r.error : 'Sin conexión.') + '</div>'; return; }
+    cont.innerHTML = '<div class="ayuda" style="margin-bottom:6px;">' + (PC43.comercio ? 'Cambios de ' + _esc(PC43.comercio) + ' y generales' : 'Todos los cambios') + ' (últimos 200). El historial no se borra.</div>' +
+        (r.cambios.length ? '<table class="tabla-clientes"><thead><tr><th>Fecha</th><th>Operador</th><th>Comercio</th><th>Qué</th><th>Anterior</th><th>Nuevo</th><th>Motivo</th></tr></thead><tbody>' +
+            r.cambios.map(x => '<tr><td>' + _esc(x.fecha) + '</td><td>' + _esc(x.operador) + '</td><td>' + _esc(x.comercio) + '</td><td>' + _esc(x.tipo) + '<br><span class="ayuda">' + _esc(x.clave) + '</span></td><td>' + _esc(x.anterior) + '</td><td>' + _esc(x.nuevo) + '</td><td>' + _esc(x.motivo) + '</td></tr>').join('') + '</tbody></table>'
+          : '<div class="ayuda">Sin cambios registrados.</div>');
+}
+async function _pc43Enviar(accion, datos) {
+    let r = null; try { r = await _adminApi(accion, datos); } catch (e) { r = null; }
+    _pc43Msg(r ? (r.error || r.mensaje) : 'Sin conexión. No se cambió nada.', r && r.success ? 'ok' : 'error');
+    if (r && r.success) { document.getElementById('pc43Motivo').value = ''; const m = document.getElementById('pc43Msg').innerHTML; await cargarPC43(); document.getElementById('pc43Msg').innerHTML = m;
+        if (accion === 'migrarPlanes') { try { await cargarPlanes(); } catch (e) {} }   // V22: nombres P1/P2/P3 PRO en todo el Admin sin recargar la página
+    }
+    return r;
+}
+async function pc43Suspender(prefijo, clave, suspender) {
+    const ok = _pc43Cambio(); if (!ok) return;
+    await _pc43Enviar('setPrestacion', Object.assign({ prefijo, clave, suspender }, ok));
+}
+async function pc43Complemento(prefijo, clave, accion) {
+    const ok = _pc43Cambio(); if (!ok) return;
+    const v = document.getElementById('pc43Vence_' + clave), pr = document.getElementById('pc43Precio_' + clave);
+    await _pc43Enviar('contratarComplemento', Object.assign({ prefijo, clave, accion, vence: v ? v.value : '', precio: pr ? pr.value.replace(/\D/g, '') : '' }, ok));
+}
+async function pc43GuardarComplemento(clave) {
+    const ok = _pc43Cambio(); if (!ok) return;
+    const n = id => document.getElementById(id).value.replace(/\D/g, '');
+    await _pc43Enviar('guardarComplemento', Object.assign({ clave, precioRegular: n('pc43CReg_' + clave), precioLanzamiento: n('pc43CLan_' + clave), disponible: document.getElementById('pc43CDisp_' + clave).checked }, ok));
+}
+let _pc43Firma = '';
+async function pc43MigrarVista() {
+    const box = document.getElementById('pc43Mig'); box.innerHTML = '<div class="ayuda">Calculando…</div>';
+    let r = null; try { r = await _adminApi('migrarPlanes', {}); } catch (e) { r = null; }
+    if (!r || r.error) { box.innerHTML = '<div style="color:var(--rojo);">' + _esc(r ? r.error : 'Sin conexión.') + '</div>'; return; }
+    _pc43Firma = r.firma || '';
+    box.innerHTML = '<div style="background:#fff;color:#222;border-radius:8px;padding:10px;margin-top:8px;"><b>Vista previa (no se cambió nada)</b><ul style="margin:6px 0;padding-left:18px;">' + r.cambios.map(c => '<li>' + _esc(c) + '</li>').join('') + '</ul>' +
+        ((r.avisos || []).length ? '<div class="ayuda">' + r.avisos.map(_esc).join('<br>') + '</div>' : '') +
+        '<b>Comercios que cambian de prestaciones</b><br>' + (r.impacto.length ? r.impacto.map(i => '<div>• <b>' + _esc(i.prefijo) + '</b> (' + _esc(i.plan) + '): ' + i.cambios.map(_esc).join(' · ') + '</div>').join('') : 'Ninguno.') +
+        '<div class="ayuda" style="margin-top:6px;">Ventas, pagos, fiados y abonos no se tocan. Se recomienda hacerlo desde el menú de la planilla (opción 5); acá pide operador y motivo.</div>' +
+        (r.cambios.length ? '<button class="btn-accion" style="background:#2E7D32;color:#fff;margin-top:6px;" onclick="pc43MigrarConfirmar()">Confirmar: activar P1 · P2 · P3 PRO</button>' : '') + '</div>';
+}
+async function pc43MigrarConfirmar() {
+    const ok = _pc43Cambio(); if (!ok) return;
+    await _pc43Enviar('migrarPlanes', Object.assign({ confirmar: true, firma: _pc43Firma }, ok));
+}
+
 // ── RESET PIN (V9) ──────────────────────────────────────────────────
+// ── V20: COBRO AVANZADO, COTIZACIONES Y USO DE LA PLANILLA ─────────
+let _cv42Prefijo = '';
+async function abrirModalCobroV42(prefijo) {
+    _cv42Prefijo = prefijo;
+    document.getElementById('cv42Prefijo').textContent = prefijo;
+    document.getElementById('modalCobroV42').classList.add('visible');
+    await cargarCobroV42();
+}
+function cerrarModalCobroV42() { document.getElementById('modalCobroV42').classList.remove('visible'); }
+async function cargarCobroV42(msg, tipoMsg) {
+    const cont = document.getElementById('cv42Contenido');
+    cont.innerHTML = '<div class="ayuda">Cargando…</div>';
+    let r = null; try { r = await _adminApi('getEstadoCobro', { prefijo: _cv42Prefijo }); } catch (e) { r = null; }
+    if (!r) { cont.innerHTML = '<div class="ayuda" style="color:var(--rojo);">Sin conexión. No se cambió nada.</div>'; return; }
+    if (r.error) { cont.innerHTML = '<div class="ayuda" style="color:var(--rojo);">' + _esc(r.error) + '</div>'; return; }
+    const c = r.cobro || { avanzado: false, cot: {} }, u = r.usoPlanilla || {};
+    cont.innerHTML =
+        (msg ? '<div class="ayuda" style="background:' + (tipoMsg === 'error' ? '#FFEBEE;color:var(--rojo)' : '#E8F5E9;color:var(--verde)') + ';padding:8px 10px;border-radius:8px;margin-bottom:10px;">' + _esc(msg) + '</div>' : '') +
+        '<div class="form-grupo"><label class="form-label">Cobro avanzado (🔀 Mixto en el POS: varios medios, monedas, fiar lo que falta, vuelto a la deuda)</label>' +
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><b>' + (c.avanzado ? '🟢 PRENDIDO' : '⚪ APAGADO') + '</b>' +
+        '<button class="btn-accion" style="background:' + (c.avanzado ? '#FFEBEE;color:var(--rojo)' : '#E8F5E9;color:var(--verde)') + ';" onclick="cambiarCobroAvanzadoV42(' + (!c.avanzado) + ')">' + (c.avanzado ? 'Apagar' : 'Prender') + '</button></div>' +
+        (r.migracionPendiente ? '<div class="ayuda" style="color:#E65100;margin-top:6px;">⏳ Este comercio tiene fiados sin pasar al libro: primero usá el menú de la planilla «3. Pasar los fiados de un comercio al libro».</div>' : '') + '</div>' +
+        '<div class="ayuda" style="margin-bottom:6px;">💱 Desde v044.2 la cotización la carga <b>cada comercio</b> (Mis datos → ⚙️ Ajustes): es la que él acepta, no la oficial. Cambiala acá solo como soporte, si te lo pide.</div>' +
+        ['USD', 'CLP'].map(m => '<div class="form-grupo"><label class="form-label">Cotización ' + m + ' (pesos por 1 ' + m + '; vacío = moneda apagada)' + (c.fechas && c.fechas[m] ? ' · último cambio: ' + _esc(c.fechas[m].fecha || 'sin fecha') + (c.fechas[m].revisar ? ' ⚠️' : '') : '') + '</label>' +
+            '<div style="display:flex;gap:8px;"><input class="form-input" id="cv42Cot' + m + '" inputmode="decimal" value="' + (c.cot[m] || '') + '" style="max-width:160px;">' +
+            '<button class="btn-accion" style="background:#E3F2FD;color:var(--azul-dark);" onclick="guardarCotizacionV42(\'' + m + '\')">Guardar</button></div></div>').join('') +
+        '<div class="form-grupo"><label class="form-label">Cobros sin terminar de este comercio</label><div class="ayuda">' +
+            ((r.enCurso || []).length ? r.enCurso.map(_esc).join('<br>') + '<br>Se terminan solos cuando el comercio toca Confirmar con el mismo cobro.' : 'Ninguno.') + '</div></div>' +
+        '<div class="form-grupo"><label class="form-label">Uso de la planilla (todos los comercios)</label><div class="ayuda">' +
+            Number(u.celdas || 0).toLocaleString('es-AR') + ' de ' + Number(u.limite || 10000000).toLocaleString('es-AR') + ' celdas (' + (u.porcentaje || 0) + '%) · ' + (u.hojas || 0) + ' hojas' +
+            (u.aviso ? '<br><b style="color:#E65100;">' + _esc(u.aviso) + '</b>' : '') + '</div></div>';
+}
+async function cambiarCobroAvanzadoV42(activo) {
+    let r = null; try { r = await _adminApi('setCobroAvanzado', { prefijo: _cv42Prefijo, activo: activo }); } catch (e) { r = null; }
+    await cargarCobroV42(r ? (r.error || r.mensaje) : 'Sin conexión. No se cambió nada.', r && r.success ? 'ok' : 'error');
+}
+async function guardarCotizacionV42(moneda) {
+    const valor = document.getElementById('cv42Cot' + moneda).value.trim();
+    let r = null; try { r = await _adminApi('setCotizacion', { prefijo: _cv42Prefijo, moneda: moneda, valor: valor }); } catch (e) { r = null; }
+    await cargarCobroV42(r ? (r.error || r.mensaje) : 'Sin conexión. No se cambió nada.', r && r.success ? 'ok' : 'error');
+}
+
 async function resetPin(prefijo, nombre) {
     if (!confirm('¿Resetear el PIN de ' + prefijo + ' (' + (nombre || 'sin nombre') + ')?\n\nSe va a generar un PIN nuevo y el anterior dejará de funcionar.')) return;
 
@@ -2393,7 +2645,7 @@ async function abrirCheckpointGeneral() {
         if (pl.corregibleFijos) h += '<br><button class="btn-accion" style="margin-top:6px;background:#FB8C00;color:white;" onclick="accionPlanes(\'corregirPlanesFijos\', this)">Corregir reglas fijas en PLANES_VAO' +
             (pl.corregiblePrueba ? ' · PRUEBA 7 + 3' : '') + (pl.fiadosFaltan && pl.fiadosFaltan.length ? ' · Fiados en ' + pl.fiadosFaltan.map(_esc).join(', ') : '') + '</button>' +
             '<div class="ayuda">Solo cambia la planilla de planes. Ningún negocio cambia: cada uno se revisa en su checkpoint.</div>';
-        if (pl.existe && !pl.tienePersonalizado) h += '<br><button class="btn-accion" style="margin-top:6px;background:#5E35B1;color:white;" onclick="accionPlanes(\'agregarPlanPersonalizado\', this)">Agregar plan PERSONALIZADO</button>';
+        if (pl.existe && !pl.tienePersonalizado) h += '<br><button class="btn-accion" style="margin-top:6px;background:#5E35B1;color:white;" onclick="accionPlanes(\'agregarPlanPersonalizado\', this)">Agregar plan a medida («Armá tu plan»)</button>';
         const rs = cm.resumen || {};
         if ((rs.cambiosIncompletos || []).length) h += '<div style="margin-top:8px;color:#C62828;font-weight:800;">⛔ Cambio de plan sin terminar: ' + rs.cambiosIncompletos.map(_esc).join(', ') + '</div>';
         if ((rs.pruebasSinRegularizar || []).length) h += '<div style="margin-top:4px;color:#C62828;font-weight:800;">🧪 PRUEBA sin regularizar (no vencen solas): ' + rs.pruebasSinRegularizar.map(_esc).join(', ') + '</div>';
@@ -2528,7 +2780,7 @@ async function cargarPreciosAdmin() {
         const r = await _adminApi('getPlanesPublicos');
         let h = '<div class="plan-card" style="border-color:#0D47A1;"><h4>💲 Precios y oferta de lanzamiento</h4>';
         if (!r.preciosConfigurados) {
-            h += '<p class="ayuda">PLANES_VAO todavía no tiene precios. "Preparar" agrega las columnas de precio, carga los valores aprobados (BÁSICO 25.000/15.000 · PLUS 35.000/20.000 próximamente · PRO 45.000/25.000), agrega PLUS como no contratable y crea la oferta de 20 cupos. Ningún negocio cambia.</p>' +
+            h += '<p class="ayuda">PLANES_VAO todavía no tiene precios. "Preparar" agrega las columnas de precio, carga los valores aprobados en su momento y crea la oferta de 20 cupos. Después, «Activar los planes P1 · P2 · P3 PRO» (📋 Planes y contrataciones) carga los precios vigentes de P1, P2 y P3 PRO con vista previa. Ningún negocio cambia.</p>' +
                  '<div id="prepPrev"></div><button class="btn-primario" style="background:#0D47A1;" onclick="previaPrepararPrecios()">Revisar qué se prepara</button>';
         } else {
             h += '<p class="ayuda">Los cambios valen para contrataciones NUEVAS. La página pública los toma enseguida (sin tocar el HTML).</p>';

@@ -118,7 +118,7 @@ footer { text-align: center; color: var(--suave); font-size: .82rem; padding: 0 
 </style>
 </head>
 <body>
-<div class="franja" id="franja" role="note">CONTRATO DE PRUEBA — SIN VALOR LEGAL<small>Todavía no hay un contrato comercial vigente. No habilita pagos ni cambia tu plan.</small></div>
+<div class="franja" id="franja" role="note">CONTRATO — TODAVÍA SIN VIGENCIA<small>Todavía no hay un contrato comercial vigente. No habilita pagos ni cambia tu plan.</small></div>
 <header><img class="logo" src="logo_oscuro.png" alt="VAO Sistemas"><div class="txt"><div class="marca">VAO POS</div><div class="sub" id="subtitulo">Contrato del servicio</div></div><button class="volver" id="btnVolver" type="button" onclick="volverAlPOS()">← Volver</button></header>
 
 <main>
@@ -270,13 +270,13 @@ footer { text-align: center; color: var(--suave); font-size: .82rem; padding: 0 
     <div class="msg" id="msgOlvidar"></div>
   </div>
 </main>
-<footer>VAO Sistemas · VAO POS · contrato.html V3</footer>
+<footer>VAO Sistemas · VAO POS · contrato.html V3.1</footer>
 
 <script>
 'use strict';
 // ── Configuración ─────────────────────────────────────────────────────────────
 const API_URL = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec'; // PRODUCCIÓN
-const VERSION_PAGINA = 'contrato.html V3';
+const VERSION_PAGINA = 'contrato.html V3.1';
 // V3: Volver → al POS del mismo comercio (si vino con ?p=XX); si no, atrás o a la portada.
 function volverAlPOS() {
   const p = String(new URLSearchParams(location.search).get('p') || '').trim().toUpperCase();
@@ -386,6 +386,7 @@ async function cargarContrato() {
   mostrar('pCargando');
   const r = await api('getContrato', {}, true);
   if (r._incierto) return error('Sin conexión', 'No pudimos cargar el contrato (' + r._motivo + '). Revisá tu conexión y tocá Reintentar.');
+  if (r.sinContrato) { location.replace('terminos.html?p=' + encodeURIComponent(E.prefijo)); return; }   // V3.1 (v044.3): sin contrato publicado se muestran los Términos de uso (no un error)
   if (r.error) return error(r.alterado ? 'Contrato en revisión' : 'Contrato no disponible', r.error);
   if (!ambitoAdmitido(r.ambito, r.sinValorLegal)) return error('Contrato no admitido', 'El contrato publicado tiene un tipo que esta página no reconoce. Avisá a VAO Sistemas.');
   ajustarFranja(r.ambito);

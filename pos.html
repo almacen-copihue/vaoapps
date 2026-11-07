@@ -163,9 +163,100 @@ body {
     .toolbar { padding: 6px 6px; gap: 4px; }
     .btn-tool { flex-direction: column; gap: 1px; padding: 5px 2px; border-radius: 12px; font-size: 0.6rem; letter-spacing: 0; line-height: 1.1; min-width: 0; }
     .btn-tool .ico { font-size: 1rem; }
-    #btnMiPlan { flex: 0 0 34px; } #btnMiPlan .txt { display: none; } /* V29: en celular, solo el ícono (no achica los demás botones) */
+
 }
 .btn-tool .txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+/* ===== V41: TARJETAS POR PLAN (P1 · Esencial / P2 · Gestión / P3 · Complementos) ===== */
+.planes-pos { background: #0A2472; padding: 8px 10px 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; flex-shrink: 0; }
+.tarjeta-plan { flex: 1 1 260px; min-width: 0; background: #fff; border-radius: 14px; padding: 7px 8px 8px; display: flex; flex-direction: column; gap: 6px;
+                border-top: 4px solid var(--tp-color); box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+.tarjeta-plan[data-plan="P1"] { --tp-color: #1E88E5; --tp-fondo: #E3F2FD; --tp-tinta: #0D47A1; }
+.tarjeta-plan[data-plan="P2"] { --tp-color: #7E57C2; --tp-fondo: #EDE7F6; --tp-tinta: #4527A0; }
+.tarjeta-plan[data-plan="P3"] { --tp-color: #B07D12; --tp-fondo: #FFF6DC; --tp-tinta: #6B4A00; }   /* V43: P3 PRO premium */
+.tarjeta-plan[data-plan="P3"] .tp-sello { background: linear-gradient(135deg, #8A5A00, #D4A017 60%, #F3D27A); color: #241800; }
+.tarjeta-plan[data-plan="C"] { --tp-color: #2E8B57; --tp-fondo: #E8F5E9; --tp-tinta: #1B5E20; }   /* V43: complementos opcionales */
+/* V43.1: Mi plan con tarjetas */
+.mp5 { position: relative; border-radius: 16px; padding: 12px; margin: 12px 0; background: #fff; border: 3px solid #1E88E5; }
+.mp5.PRO { border-color: #7E57C2; box-shadow: 0 8px 22px rgba(126,87,194,.22); }
+.mp5.PLUS { border-color: transparent; background: linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,#8A5A00,#D4A017 45%,#F3D27A 70%,#8A5A00) border-box; }
+.mp5.actual { outline: 3px solid #2CCB6F; outline-offset: 2px; }
+.p3-sheet .modal-header { border-bottom: 3px solid #D4A017; }
+.p3-cab { display: flex; align-items: center; gap: 12px; margin: 12px 0 6px; padding: 12px; border-radius: 14px; background: linear-gradient(135deg, #FFF6DC, #FFFBEF); border: 2px solid #D4A017; }
+.p3-sello { font-weight: 900; font-size: 1.1rem; border-radius: 10px; padding: 6px 10px; background: linear-gradient(135deg, #8A5A00, #D4A017 60%, #F3D27A); color: #241800; }
+.p3-cab b { display: block; color: #6B4A00; font-size: 1rem; } .p3-cab span { font-family: 'IBM Plex Mono', monospace; font-weight: 800; color: #6B4A00; }
+.p3-intro { font-size: .9rem; color: #333; margin: 10px 2px; }
+#p3Herramientas { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.p3h { display: flex; gap: 10px; align-items: center; background: #FFFBEF; border: 1px solid #EAD9A6; border-radius: 12px; padding: 9px 10px; }
+.p3h-ic { font-size: 1.4rem; } .p3h b { display: block; color: #6B4A00; font-size: .9rem; } .p3h b small { font-weight: 400; color: #8a7a55; } .p3h span { font-size: .78rem; color: #555; }
+.p3-pedir { display: block; width: 100%; margin-top: 14px; border: 0; border-radius: 12px; padding: 13px; font: inherit; font-weight: 800; cursor: pointer; background: linear-gradient(135deg, #8A5A00, #D4A017 60%, #F3D27A); color: #241800; font-size: 1rem; }
+.p3-nota { font-size: .76rem; color: #777; text-align: center; margin: 8px 0; }
+.p3-comparar { display: block; width: 100%; border: 2px solid #0D47A1; background: transparent; color: #0D47A1; border-radius: 12px; padding: 10px; font: inherit; font-weight: 700; cursor: pointer; }
+.mp5.foco { animation: mp5foco 1.6s ease-out 2; }   /* V43.2: al llegar desde «✨ P3 PRO» */
+@keyframes mp5foco { 0% { box-shadow: 0 0 0 0 rgba(212,160,23,.75); } 70% { box-shadow: 0 0 0 14px rgba(212,160,23,0); } 100% { box-shadow: 0 0 0 0 rgba(212,160,23,0); } }
+.mp5-cab { display: flex; align-items: center; gap: 8px; }
+.mp5-sello { color: #fff; font-weight: 900; border-radius: 9px; padding: 4px 8px; font-size: .85rem; background: #1E88E5; }
+.mp5.PRO .mp5-sello { background: #7E57C2; } .mp5.PLUS .mp5-sello { background: linear-gradient(135deg,#8A5A00,#D4A017); color: #241800; }
+.mp5-nom { font-weight: 800; color: #0D47A1; flex: 1; } .mp5-precio { font-weight: 800; font-family: 'IBM Plex Mono', monospace; color: #0D47A1; white-space: nowrap; }
+.mp5-env { border-radius: 12px; padding: 6px; margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.mp5-env.e1 { background: #E3F2FD; border: 2px solid #1E88E5; } .mp5-env.e2 { background: #F5F0FC; border: 2px solid #7E57C2; } .mp5-env.e3 { background: #FFFBEF; border: 2px solid #D4A017; }
+.mp5-env b { font-size: .7rem; color: #fff; border-radius: 5px; padding: 1px 6px; background: #1E88E5; } .mp5-env.e2 > b { background: #7E57C2; } .mp5-env.e3 > b { background: #B07D12; }
+.mp5-ic { font-size: .72rem; font-weight: 700; background: rgba(255,255,255,.9); border-radius: 999px; padding: 2px 7px; color: #1C2533; }
+.mp5-tag { position: absolute; top: -11px; right: 12px; font-size: .68rem; font-weight: 900; border-radius: 999px; padding: 2px 9px; background: #7E57C2; color: #fff; }
+.mp5-tag.oro { background: linear-gradient(135deg,#8A5A00,#D4A017); color: #241800; } .mp5-tag.tuyo { left: 12px; right: auto; background: #2CCB6F; color: #0E1A12; }
+.mp5-pie { display: flex; justify-content: flex-end; margin-top: 8px; }
+.mp5-pie button { border: 0; border-radius: 10px; padding: 9px 16px; font-weight: 800; font-family: inherit; cursor: pointer; background: #0D47A1; color: #fff; }
+.mp5.PRO .mp5-pie button { background: #7E57C2; } .mp5.PLUS .mp5-pie button { background: #B07D12; }
+.mp5c { display: flex; align-items: center; gap: 8px; border-left: 4px solid #2E8B57; background: #F1FAF4; border-radius: 10px; padding: 8px 10px; margin: 6px 0; }
+.mp5c div { flex: 1; } .mp5c small { display: block; color: #555; } .mp5c button { border: 0; border-radius: 10px; padding: 8px 12px; font-weight: 800; background: #2E8B57; color: #fff; font-family: inherit; cursor: pointer; }
+.tp-cab { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.tp-sello { flex: 0 0 auto; background: var(--tp-color); color: #fff; font-weight: 800; font-size: .78rem; border-radius: 8px; padding: 3px 7px; letter-spacing: .3px; }
+.tp-titulo { font-size: .86rem; font-weight: 800; color: var(--tp-tinta); line-height: 1.1; margin: 0; }
+.tp-desc { font-size: .68rem; color: #5f6b7a; line-height: 1.15; margin: 1px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tp-cab > div { min-width: 0; }
+.tp-botones { display: flex; gap: 6px; }
+.tarjeta-plan .btn-tool { flex: 1 1 0; min-width: 0; min-height: 44px; background: var(--tp-fondo); color: var(--tp-tinta); border-radius: 10px;
+                          flex-direction: column; gap: 1px; padding: 5px 3px; font-size: .7rem; letter-spacing: 0; line-height: 1.1; }
+.tarjeta-plan .btn-tool .ico { font-size: 1.05rem; }
+.tarjeta-plan .btn-tool:active { filter: brightness(.94); }
+.tarjeta-plan .btn-tool:focus-visible, .btn-cuenta:focus-visible { outline: 2px solid var(--tp-color, #fff); outline-offset: 2px; }
+.planes-cuenta { flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+.tarjeta-plan.muchos .tp-botones { flex-wrap: wrap; }   /* V42: con varios complementos, la tarjeta P3 usa dos filas */
+.tarjeta-plan.muchos .btn-tool { flex: 1 1 22%; }
+.btn-cuenta { border: none; border-radius: 12px; background: rgba(255,255,255,.16); color: #fff; font-weight: 800; font-family: inherit; font-size: .74rem;
+              padding: 8px 10px; min-height: 40px; cursor: pointer; white-space: nowrap; }
+.btn-cuenta.salir { background: rgba(214,66,66,.55); }
+@media (min-width: 600px) and (max-width: 1099px) {   /* tablet: hasta dos tarjetas por fila; Mi plan y Salir en una fila aparte */
+    .tarjeta-plan { flex: 1 1 340px; }
+    .planes-cuenta { flex: 1 0 100%; flex-direction: row; justify-content: flex-end; }
+    .btn-cuenta { min-height: 36px; padding: 6px 14px; }
+}
+@media (max-width: 599px) {   /* celular: tarjetas una debajo de otra, compactas */
+    .planes-pos { flex-direction: column; gap: 6px; padding: 6px 8px 8px; }
+    .tarjeta-plan { flex: 0 0 auto; padding: 6px 7px 7px; gap: 5px; }
+    .tp-cab { gap: 6px; }
+    .tp-cab > div { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+    .tp-titulo { flex: 0 0 auto; font-size: .82rem; }
+    .tp-desc { font-size: .66rem; margin: 0; }
+    .tp-botones { gap: 5px; }
+    .tarjeta-plan .btn-tool { min-height: 46px; font-size: .66rem; }
+    .planes-cuenta { flex-direction: row; justify-content: flex-end; }
+    .btn-cuenta { min-height: 34px; padding: 5px 12px; }
+}
+/* V43.2: en el celular las tarjetas se pliegan (acordeón: una abierta, las demás en una línea con sus íconos) */
+.tp-mini, .tp-flecha { display: none; }
+.btn-cuenta.p3pro { background: linear-gradient(135deg, #8A5A00, #D4A017 60%, #F3D27A); color: #241800; }
+@media (max-width: 599px) {
+    .planes-pos.plegable .tarjeta-plan .tp-cab { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .planes-pos.plegable .tp-flecha { display: inline-block; margin-left: auto; flex: 0 0 auto; color: var(--tp-tinta); font-weight: 900; font-size: .8rem; transition: transform .15s; }
+    .planes-pos.plegable .tarjeta-plan:not(.plegada) .tp-flecha { transform: rotate(90deg); }
+    .planes-pos.plegable .tarjeta-plan.plegada { padding-top: 5px; padding-bottom: 5px; }
+    .planes-pos.plegable .tarjeta-plan.plegada .tp-botones { display: none; }
+    .planes-pos.plegable .tarjeta-plan.plegada .tp-desc { display: none; }
+    .planes-pos.plegable .tarjeta-plan.plegada .tp-mini { display: inline-flex; gap: 3px; font-size: .85rem; min-width: 0; overflow: hidden; white-space: nowrap; }
+}
+.mp-grupo { font-weight: 800; font-size: 0.8rem; color: #0A2472; margin: 10px 0 4px; }
+.mp-chip { display: inline-block; background: #EEF4FB; color: #0A2472; border-radius: 8px; padding: 3px 8px; font-size: 0.8rem; margin: 0 4px 4px 0; }
+.mp-chip.off { background: #FFEBEE; color: #B71C1C; }
 /* V22 (P3): filtro por categoría en la lista ☰ */
 .chips-cat { display:flex; gap:6px; overflow-x:auto; padding:8px 10px; border-bottom:1px solid #f0ecf7; position:sticky; top:0; background:white; z-index:1; }
 .chip-cat { flex:0 0 auto; padding:6px 12px; border-radius:16px; border:1.5px solid var(--lavanda-light); background:white; font-size:0.75rem; font-weight:700; color:var(--lavanda-dark); cursor:pointer; white-space:nowrap; }
@@ -484,6 +575,15 @@ body {
     padding: 0 20px 14px;
     flex-wrap: wrap;
 }
+.mx-linea { display:flex; gap:6px; margin-bottom:6px; align-items:center; }
+.mx-linea select, .mx-linea input { padding:9px 6px; border:1.5px solid #e0e0e0; border-radius:10px; font-size:0.9rem; min-width:0; background:#fff; }
+.mx-linea select { flex:1.3; } .mx-linea input { flex:1; }
+.mx-linea button { border:none; background:#ffebee; color:#c62828; border-radius:8px; padding:8px 10px; font-weight:900; cursor:pointer; }
+.mx-agregar { width:100%; padding:9px; border:1.5px dashed #90caf9; background:#f5faff; color:#1565c0; border-radius:10px; font-weight:800; cursor:pointer; margin-bottom:8px; }
+.mx-resumen { background:#f7f7fb; border-radius:10px; padding:8px 10px; font-size:0.85rem; margin-bottom:8px; line-height:1.5; }
+.mx-check { display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700; margin:6px 0; }
+.mx-previa { margin-top:8px; padding:10px; border-radius:10px; font-size:0.85rem; line-height:1.45; white-space:pre-wrap; display:none; }
+.mx-previa.ok { display:block; background:#e8f5e9; color:#1b5e20; } .mx-previa.aviso { display:block; background:#fff3e0; color:#e65100; } .mx-previa.error { display:block; background:#ffebee; color:#b71c1c; }
 .btn-metodo {
     flex: 1;
     min-width: calc(50% - 4px);
@@ -618,6 +718,10 @@ body {
 }
 
 @media (max-width: 600px) { .txt-soporte { display:none; } } /* V34 */
+/* V36: reloj del PIN y aviso de actualización */
+.pin-reloj { width:20px; height:20px; border:3px solid rgba(255,255,255,0.35); border-top-color:#fff; border-radius:50%; animation:pinGira .8s linear infinite; flex-shrink:0; }
+@keyframes pinGira { to { transform: rotate(360deg); } }
+#avisoVersion { position:fixed; left:50%; top:14px; transform:translateX(-50%); z-index:6000; background:#2CCB6F; color:#0E1A12; font-weight:800; font-size:0.9rem; padding:10px 16px; border-radius:999px; box-shadow:0 6px 18px rgba(0,0,0,.25); max-width:92vw; text-align:center; }
 </style>
 </head>
 <body>
@@ -629,13 +733,20 @@ body {
         <div id="overlayPinTitulo" style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;margin-bottom:4px;">Verificando sesión...</div>
         <div id="overlayPinSub" style="font-size:0.8rem;opacity:0.75;margin-bottom:24px;">VAO Sistemas</div>
 
+        <div id="overlayPinCargando" role="status" aria-live="polite" style="display:none;align-items:center;justify-content:center;gap:10px;margin:0 0 14px;padding:12px;border-radius:12px;background:rgba(255,255,255,0.16);font-weight:800;font-size:1rem;">
+            <span class="pin-reloj" aria-hidden="true"></span><span>Verificando…</span>
+        </div>
         <div id="overlayPinForm" style="display:none;">
-            <input type="text" id="overlayPinInput" maxlength="6" inputmode="numeric" pattern="[0-9]*"
-                   placeholder="PIN de 6 dígitos" autocomplete="off"
+            <div style="position:relative;">
+            <input type="password" id="overlayPinInput" maxlength="6" inputmode="numeric" pattern="[0-9]*"
+                   placeholder="6 números" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true"
                    onkeydown="if(event.key==='Enter')intentarLoginPin()"
                    style="width:100%;padding:16px;border:none;border-radius:12px;font-size:1.4rem;
                           text-align:center;letter-spacing:0.4em;outline:none;margin-bottom:14px;
-                          font-family:'DM Sans',sans-serif;box-sizing:border-box;">
+                          font-family:'DM Sans',sans-serif;box-sizing:border-box;padding-right:52px;padding-left:52px;">
+            <button type="button" id="overlayPinOjo" onclick="alternarVerPin()" aria-label="Mostrar el PIN" title="Mostrar / ocultar el PIN"
+                    style="position:absolute;right:8px;top:8px;width:40px;height:40px;border:none;border-radius:10px;background:#EEF3FB;font-size:1.15rem;cursor:pointer;">👁️</button>
+            </div>
             <div id="overlayPinError" style="color:#ffcdd2;font-size:0.85rem;min-height:18px;margin-bottom:10px;"></div>
             <button id="overlayPinBtn" onclick="intentarLoginPin()"
                     style="width:100%;padding:14px;border:none;border-radius:50px;
@@ -654,6 +765,12 @@ body {
                            color:#B9F6CA;font-size:0.88rem;font-weight:700;
                            cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:2px;">
                 💬 ¿No podés entrar? Escribinos por WhatsApp
+            </button>
+            <button type="button" onclick="abrirSoporte('robo')"
+                    style="width:100%;padding:6px;border:none;background:transparent;
+                           color:rgba(255,255,255,0.7);font-size:0.8rem;font-weight:600;
+                           cursor:pointer;font-family:'DM Sans',sans-serif;">
+                📵 ¿Perdiste o te robaron el celular?
             </button>
         </div>
     </div>
@@ -682,9 +799,6 @@ body {
         <button onclick="abrirRecomendar()" title="Recomendar VAO POS" aria-label="Recomendar VAO POS" style="background:rgba(255,255,255,0.15);border:none;
                 color:white;border-radius:20px;padding:5px 10px;font-size:0.72rem;
                 font-weight:700;cursor:pointer;font-family:inherit;margin-right:6px;">📣</button>
-        <button onclick="irAlInicio()" style="background:rgba(255,255,255,0.15);border:none;
-                color:white;border-radius:20px;padding:5px 10px;font-size:0.72rem;
-                font-weight:700;cursor:pointer;font-family:inherit;">🏠</button>
     </div>
 </div>
 
@@ -693,6 +807,8 @@ body {
   <div style="background:#fff;width:100%;max-width:480px;border-radius:18px 18px 0 0;padding:18px 16px 22px;font-family:inherit;">
     <div style="font-weight:900;font-size:1.05rem;color:#0D47A1;margin-bottom:4px;">Recomendar VAO POS</div>
     <div style="font-size:0.88rem;color:#555;margin-bottom:12px;">Pasale el enlace a otro comerciante: puede probarlo gratis 7 días.</div>
+    <button id="recCompartir" onclick="compartirConAfiche()" style="display:none;width:100%;background:#1E8E4E;color:#fff;border:none;border-radius:12px;padding:13px;font-weight:800;font-family:inherit;font-size:1rem;margin-bottom:6px;cursor:pointer;">📤 Compartir con el afiche</button>
+    <div id="recCompartirNota" style="display:none;font-size:0.78rem;color:#666;text-align:center;margin:0 0 10px;">Se abre el menú del celular: elegí <b>WhatsApp</b> o <b>WhatsApp Business</b>.</div>
     <a id="recWhatsApp" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;background:#1E8E4E;color:#fff;border-radius:12px;padding:13px;font-weight:800;text-decoration:none;margin-bottom:8px;">Compartir por WhatsApp</a>
     <button id="recCopiar" onclick="copiarRecomendar()" style="width:100%;background:#fff;border:2px solid #C9D8EA;color:#0D47A1;border-radius:12px;padding:12px;font-weight:800;font-family:inherit;margin-bottom:8px;cursor:pointer;">Copiar enlace</button>
     <a id="recPagina" href="planes.html" target="_blank" rel="noopener" style="display:block;text-align:center;color:#1E88E5;font-weight:700;padding:6px;">Ver la página y el código QR</a>
@@ -700,17 +816,60 @@ body {
   </div>
 </div>
 
+<!-- V37: confirmación de Salir -->
+<div id="modalSalir" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:4000;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)cancelarSalir()">
+  <div style="background:#fff;width:100%;max-width:380px;border-radius:20px;padding:22px 20px;font-family:inherit;text-align:center;">
+    <div style="font-size:2rem;">🚪</div>
+    <div style="font-weight:900;font-size:1.15rem;color:#0D47A1;margin:6px 0 8px;">¿Cerrar sesión?</div>
+    <div style="font-size:0.92rem;color:#444;line-height:1.4;">Vas a tener que poner tu PIN de nuevo para entrar.</div>
+    <div style="font-size:0.8rem;color:#777;line-height:1.4;margin-top:10px;">Si perdiste un celular donde tenías VAO POS abierto, escribinos y lo cerramos a distancia.</div>
+    <button onclick="irAlInicio()" style="width:100%;margin-top:16px;background:#C62828;color:#fff;border:none;border-radius:12px;padding:13px;font-weight:800;font-family:inherit;font-size:1rem;cursor:pointer;">Sí, cerrar sesión</button>
+    <button onclick="cancelarSalir()" style="width:100%;margin-top:8px;background:#eee;color:#333;border:none;border-radius:12px;padding:12px;font-weight:800;font-family:inherit;font-size:1rem;cursor:pointer;">Seguir trabajando</button>
+  </div>
+</div>
+
 <!-- TOOLBAR -->
 <div id="avisoPrueba" style="display:none;"></div>
-<div class="toolbar">
-    <button class="btn-tool ingreso" id="btnIngreso" onclick="abrirIngreso()"><span class="ico">📦</span><span class="txt">Ingresar</span></button>
-    <button class="btn-tool ajuste" id="btnAjuste" onclick="abrirAjuste()"><span class="ico">✏️</span><span class="txt">Ajustar</span></button>
-    <button class="btn-tool hoy" id="btnHoy" onclick="abrirResumen()"><span class="ico">📋</span><span class="txt">Hoy</span></button>
-    <button class="btn-tool stats" id="btnReportes" onclick="window.location.href='reportes.html?p='+PREFIJO"><span class="ico">📊</span><span class="txt">Reportes</span></button>
-    <button class="btn-tool fiados" id="btnFiados" onclick="window.location.href='fiados.html?p='+PREFIJO"><span class="ico">🧾</span><span class="txt">Fiados</span></button>
-    <button class="btn-tool datos" id="btnMisDatos" onclick="abrirMisDatos()"><span class="ico">📥</span><span class="txt">Mis datos</span></button>
-    <button class="btn-tool datos" id="btnMiPlan" onclick="abrirPagoPlan()" title="Mi plan" aria-label="Mi plan"><span class="ico">💳</span><span class="txt">Mi plan</span></button>
-    <button class="btn-tool cerrar" onclick="irAlInicio()"><span class="ico">🚪</span><span class="txt">Salir</span></button>
+<!-- V41 (v043): funciones en tarjetas por plan comercial. Se muestran solo las contratadas y habilitadas
+     (lo decide el servidor en getConfig.prestaciones); el servidor igual controla cada acción. -->
+<div class="planes-pos" id="planesPos">
+    <section class="tarjeta-plan" id="tarjetaP1" data-plan="P1" aria-labelledby="tituloP1">
+        <div class="tp-cab"><span class="tp-sello">P1</span><div><h2 class="tp-titulo" id="tituloP1">Esencial</h2><p class="tp-desc">Mercadería, caja y fiado del día</p></div></div>
+        <div class="tp-botones">
+            <button class="btn-tool ingreso" id="btnIngreso" onclick="abrirIngreso()"><span class="ico">📦</span><span class="txt">Ingresar</span></button>
+            <button class="btn-tool hoy" id="btnHoy" onclick="abrirResumen()"><span class="ico">📋</span><span class="txt">Hoy</span></button>
+            <button class="btn-tool fiados" id="btnFiados" onclick="window.location.href='fiados.html?p='+PREFIJO"><span class="ico">🧾</span><span class="txt">Fiados</span></button>
+            <button class="btn-tool datos" id="btnMisDatos" onclick="window.location.href='misdatos.html?p='+PREFIJO"><span class="ico">🏪</span><span class="txt">Mis datos</span></button>
+        </div>
+    </section>
+    <section class="tarjeta-plan" id="tarjetaP2" data-plan="P2" aria-labelledby="tituloP2">
+        <div class="tp-cab"><span class="tp-sello">P2</span><div><h2 class="tp-titulo" id="tituloP2">Gestión</h2><p class="tp-desc">Stock, reportes y clientes</p></div></div>
+        <div class="tp-botones">
+            <button class="btn-tool ajuste" id="btnAjuste" onclick="abrirAjuste()"><span class="ico">✏️</span><span class="txt">Ajustar</span></button>
+            <button class="btn-tool inventario" id="btnInventarioP2" onclick="window.location.href='inventario.html?p='+PREFIJO"><span class="ico">🗂️</span><span class="txt">Inventario</span></button>
+            <button class="btn-tool stats" id="btnReportes" onclick="window.location.href='reportes.html?p='+PREFIJO"><span class="ico">📊</span><span class="txt">Reportes</span></button>
+            <button class="btn-tool clientes" id="btnClientesP2" onclick="window.location.href='clientes.html?p='+PREFIJO"><span class="ico">👥</span><span class="txt">Clientes</span></button>
+            <button class="btn-tool anular" id="btnAnularP2" onclick="window.location.href='anular.html?p='+PREFIJO"><span class="ico">↩️</span><span class="txt">Anular</span></button>
+        </div>
+    </section>
+    <section class="tarjeta-plan" id="tarjetaP3" data-plan="P3" aria-labelledby="tituloP3">
+        <div class="tp-cab"><span class="tp-sello">P3</span><div><h2 class="tp-titulo" id="tituloP3">PRO</h2><p class="tp-desc" id="descP3">Herramientas avanzadas del comercio</p></div></div>
+        <div class="tp-botones"><span id="p3Complementos" style="display:contents"></span></div>
+    </section>
+    <!-- V43 (v044.1): complementos opcionales (se contratan aparte, para cualquier plan) -->
+    <section class="tarjeta-plan" id="tarjetaC" data-plan="C" aria-labelledby="tituloC">
+        <div class="tp-cab"><span class="tp-sello">➕</span><div><h2 class="tp-titulo" id="tituloC">Complementos</h2><p class="tp-desc">Lo que sumaste a tu plan</p></div></div>
+        <div class="tp-botones">
+            <button class="btn-tool mixto" id="btnCobroAvanzado" onclick="abrirCobroAvanzadoV41()"><span class="ico">🔀</span><span class="txt">Cobro mixto</span></button>
+            <button class="btn-tool monedas" id="btnCotizaciones" onclick="verCotizacionesV41()"><span class="ico">💱</span><span class="txt">Monedas</span></button>
+            <span id="cComplementos" style="display:contents"></span>
+        </div>
+    </section>
+    <div class="planes-cuenta">
+        <button class="btn-cuenta p3pro" id="btnVerP3" onclick="verP3V432()" style="display:none" title="Conocé P3 PRO: el plan completo" aria-label="Conocé P3 PRO">✨ <span>P3 PRO</span></button>
+        <button class="btn-cuenta" id="btnMiPlan" onclick="abrirPagoPlan()" title="Mi plan" aria-label="Mi plan">💳 <span>Mi plan</span></button>
+        <button class="btn-cuenta salir" onclick="confirmarSalir()" aria-label="Salir">🚪 <span>Salir</span></button>
+    </div>
 </div>
 
 <!-- BUSCADOR -->
@@ -793,12 +952,36 @@ body {
             <button class="btn-metodo" id="metodo-debito" onclick="seleccionarMetodo('debito')">💳 Débito</button>
             <button class="btn-metodo" id="metodo-qr_posnet" onclick="seleccionarMetodo('qr_posnet')">💳 QR / Posnet</button>
             <button class="btn-metodo" id="metodo-fiado" onclick="seleccionarMetodo('fiado')">🧾 Fiado</button>
+            <button class="btn-metodo" id="metodo-mixto" style="display:none;" onclick="seleccionarMetodo('mixto')">🔀 Mixto</button>
+        </div>
+
+        <!-- V39: PANEL MIXTO (cobro avanzado; el servidor calcula todo y lo vuelve a controlar) -->
+        <div id="panelMixto" style="display:none;padding:0 20px 14px;">
+            <div id="mxLineas"></div>
+            <button type="button" class="mx-agregar" id="mxBtnAgregar" onclick="mxAgregarLinea()">＋ Agregar pago</button>
+            <div class="mx-resumen" id="mxResumen"></div>
+            <label class="mx-check"><input type="checkbox" id="mxFiar" onchange="mxOpcion('fiar')"> 🧾 Fiar lo que falta</label>
+            <label class="mx-check"><input type="checkbox" id="mxDeuda" onchange="mxOpcion('deuda')"> 💳 Cobrar también deuda de un cliente</label>
+            <div id="mxClienteBox" style="display:none;">
+                <input type="text" class="form-input" id="mxCliente" placeholder="Nombre del cliente" style="margin-bottom:6px;" oninput="mxCambio()">
+                <input type="tel" class="form-input" id="mxTelefono" placeholder="Teléfono (opcional)" style="margin-bottom:6px;" oninput="mxCambio()">
+                <div id="mxDeudaBox" style="display:none;">
+                    <select class="form-input" id="mxDeudaModo" style="margin-bottom:6px;" onchange="mxCambio()">
+                        <option value="VUELTO">El vuelto va a la deuda</option>
+                        <option value="SUMAR">Pagar un monto de la deuda</option>
+                    </select>
+                    <input type="number" class="form-input" id="mxDeudaMonto" placeholder="Monto a la deuda (vacío = toda)" min="0" style="display:none;" oninput="mxCambio()">
+                </div>
+            </div>
+            <div class="mx-previa" id="mxPrevia"></div>
         </div>
 
         <!-- PANEL FIADO -->
         <div id="panelFiado" style="display:none;padding:0 20px 14px;">
             <input type="text" class="form-input" id="fiadoCliente" placeholder="Nombre del cliente" style="margin-bottom:8px;">
             <input type="tel" class="form-input" id="fiadoTelefono" placeholder="Teléfono (opcional)">
+            <!-- V38: aviso si el cliente ya debe (solo informa, no bloquea) -->
+            <div id="fiadoDeudaAviso" style="display:none;margin-top:8px;padding:8px 10px;border-radius:10px;background:#fff3e0;border:1px solid #ffb74d;color:#e65100;font-size:0.85rem;font-weight:700;line-height:1.3;"></div>
         </div>
 
         <!-- PANEL QR -->
@@ -980,7 +1163,7 @@ if (!/^[A-Z0-9]{2,10}$/.test(PREFIJO)) {
 
 // ========== CONFIG ==========
 const API_URL  = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
-const APP_VERSION = 35; // V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
+const APP_VERSION = 43; // V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
 const HOY_KEY    = 'vao_ventas_' + PREFIJO + '_' + new Date().toISOString().slice(0, 10);
 const CARRITO_KEY= 'vao_carrito_' + PREFIJO;
 
@@ -1014,21 +1197,146 @@ function _borrarBorrador(form) { try { localStorage.removeItem(_borradorKey(form
 // ========== SESIÓN CLIENTE (PIN) ==========
 const TOKEN_KEY = 'vao_token_' + PREFIJO;
 let CONFIG_ACTUAL = null;
+let COBRO_ACTUAL = { avanzado: false, cot: {} }; // V39: cobro avanzado (lo prende VAO desde Admin)
 let MODO_CONSULTA = null; // V25: { motivo: 'VENCIDA' | 'SUSPENDIDA', mensaje } cuando el negocio está en solo lectura
 
+let PRESTACIONES_ACTUAL = null; // V40 (v043): módulos efectivos que manda el servidor (plan + complementos − suspendidos)
 function generarToolbarSegunPacks(config) {
+    if (PRESTACIONES_ACTUAL && PRESTACIONES_ACTUAL.modulos) config = Object.assign({}, config, PRESTACIONES_ACTUAL.modulos);
+    const conGestion = PRESTACIONES_ACTUAL && PRESTACIONES_ACTUAL.modulos ? config.extra_fiados_gestion === true : false; // V41: sin servidor v043 la tarjeta P2 no lleva «Clientes» (Fiados ya está en P1)
     const botonesPorPack = {
         btnIngreso:  config.pack1_ingreso,
         btnHoy:      config.pack1_hoy,
         btnAjuste:   config.pack2_editor_stock,
+        btnInventarioP2: config.pack2_editor_stock,
         btnReportes: config.pack2_reportes,
-        btnFiados:   config.extra_fiados
+        btnFiados:   config.extra_fiados,                     // P1: fiado sencillo (fiar y cobrar completo)
+        btnClientesP2: config.extra_fiados && conGestion,     // P2: gestión completa de fiados y clientes
+        btnMisDatos: true,
+        btnAnularP2: config.pack2_editor_stock === true && !(CONFIG_ACTUAL && CONFIG_ACTUAL.modoConsulta),
+        btnCobroAvanzado: _cobroAvanzadoV41_(config),
+        btnCotizaciones: _cobroAvanzadoV41_(config) && _hayCotizacionV41_()
     };
     Object.keys(botonesPorPack).forEach(function(id) {
         const btn = document.getElementById(id);
         if (btn) btn.style.display = (botonesPorPack[id] === true) ? '' : 'none';
     });
+    _aplicarAppsV43_(botonesPorPack);    // V43: si el servidor manda la matriz central de aplicaciones, ella decide (mismo resultado que el permiso real)
+    _pintarComplementosP3V42_(config);   // V42: un botón por complemento contratado
+    ['tarjetaP1', 'tarjetaP2', 'tarjetaP3', 'tarjetaC'].forEach(function (g) { // V41: una tarjeta sin botones no se muestra
+        const el = document.getElementById(g); if (!el) return;
+        el.style.display = [...el.querySelectorAll('.btn-tool')].some(b => b.style.display !== 'none') ? '' : 'none';
+    });
+    const inv = document.getElementById('btnRevisarInv'); if (inv) inv.style.display = config.pack2_editor_stock === true ? '' : 'none'; // V40: revisión de inventario = P2
+    _plegablesV432_();
 }
+
+// V43.2: tarjetas plegables en el celular. Con más de una tarjeta, queda una abierta y las demás en una línea con sus íconos;
+// tocar el título abre esa y pliega las otras. Se recuerda cuál quedó abierta (solo en este equipo). En tablet y computadora no cambia nada.
+// También: pastilla dorada «✨ P3 PRO» (abre Mi plan) para quien todavía no tiene P3 PRO.
+function _claveTarjetaV432_() { return 'vao_tarjeta_' + (typeof PREFIJO !== 'undefined' ? PREFIJO : ''); }
+function _plegablesV432_() {
+    const cont = document.getElementById('planesPos'); if (!cont) return;
+    const vis = ['tarjetaP1', 'tarjetaP2', 'tarjetaP3', 'tarjetaC'].map(id => document.getElementById(id)).filter(t => t && t.style.display !== 'none');
+    vis.forEach(function (t) {
+        const cab = t.querySelector('.tp-cab'); if (!cab) return;
+        let mini = cab.querySelector('.tp-mini'); if (!mini) { mini = document.createElement('span'); mini.className = 'tp-mini'; mini.setAttribute('aria-hidden', 'true'); cab.querySelector('div').appendChild(mini); }
+        mini.textContent = [...t.querySelectorAll('.btn-tool')].filter(b => b.style.display !== 'none').map(b => (b.querySelector('.ico') || {}).textContent || '').join(' ');
+        if (!cab.querySelector('.tp-flecha')) { const f = document.createElement('span'); f.className = 'tp-flecha'; f.textContent = '▸'; f.setAttribute('aria-hidden', 'true'); cab.appendChild(f); }
+        if (!cab.dataset.v432) {
+            cab.dataset.v432 = '1'; cab.setAttribute('tabindex', '0'); cab.setAttribute('role', 'button');
+            cab.addEventListener('click', function () { _abrirTarjetaV432_(t.id, true); });
+            cab.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirTarjetaV432_(t.id, true); } });
+        }
+    });
+    cont.classList.toggle('plegable', vis.length > 1);
+    let abierta = null; try { abierta = localStorage.getItem(_claveTarjetaV432_()); } catch (e) {}
+    if (!vis.some(t => t.id === abierta)) abierta = vis.length ? vis[0].id : null;
+    _abrirTarjetaV432_(abierta, false);
+    const apps = _appsV43_(), p3 = document.getElementById('btnVerP3');
+    if (p3) p3.style.display = (PRESTACIONES_ACTUAL && PRESTACIONES_ACTUAL.planesP1P2P3 && apps && !apps.some(a => a.grupo === 'P3' && a.habilitada)) ? '' : 'none';
+}
+// V43.3: «✨ P3 PRO» abre SU propia ventana (no Mi plan): precio, las herramientas que suma con su explicación y «Pedir P3 PRO».
+// Las herramientas salen de la matriz central del servidor (getConfig.prestaciones.apps, grupo P3); el precio, de getPlanesPublicos.
+async function verP3V432() {
+    const m = document.getElementById('modalP3'); m.classList.add('open');
+    const andr = /Android/i.test(navigator.userAgent || ''), apps = (_appsV43_() || []).filter(a => a.grupo === 'P3');
+    document.getElementById('p3Herramientas').innerHTML = apps.map(a => '<div class="p3h"><span class="p3h-ic">' + _escHTML(a.icono) + '</span><div><b>' + _escHTML(a.nombre) + (a.soloAndroid ? ' <small>(celular Android)</small>' : '') + '</b><span>' + _escHTML(a.descripcion || '') + '</span></div></div>').join('') ||
+        '<div style="color:#777">Cotizar, Compras, Salidas, Egresos, Finanzas, Mis deudas y Voz.</div>';
+    document.getElementById('p3Cuantas').textContent = apps.length || 7;   // se listan todas (Voz con la aclaración «celular Android»)
+    const pr = document.getElementById('p3Precio'); pr.textContent = '…';
+    try { const r = await _llamarAPI('getPlanesPublicos', {}); const p3 = ((r && r.planes) || []).find(p => p.codigo === 'PLUS');
+          pr.textContent = p3 && p3.precioRegular > 0 ? '$' + Number(p3.precioRegular).toLocaleString('es-AR') + ' por mes' : 'precio a confirmar';
+          if (p3 && p3.nombre) document.getElementById('p3Nombre').textContent = p3.nombre; } catch (e) { pr.textContent = ''; }
+    try { if (!_MIPLAN_V40) await cargarMiPlanV40(); } catch (e) {}
+}
+function cerrarP3V433() { document.getElementById('modalP3').classList.remove('open'); }
+function pedirP3V433() { _pedirV42_(document.getElementById('p3Nombre').textContent || 'P3 PRO'); }
+function compararPlanesV433() { cerrarP3V433(); abrirPagoPlan(); }
+function _abrirTarjetaV432_(id, guardar) {
+    ['tarjetaP1', 'tarjetaP2', 'tarjetaP3', 'tarjetaC'].forEach(function (g) {
+        const t = document.getElementById(g); if (!t) return;
+        const abierta = g === id; t.classList.toggle('plegada', !abierta);
+        const cab = t.querySelector('.tp-cab'); if (cab) cab.setAttribute('aria-expanded', abierta ? 'true' : 'false');
+    });
+    if (guardar && id) { try { localStorage.setItem(_claveTarjetaV432_(), id); } catch (e) {} }
+}
+
+// V43 (v044.1): botonera desde la MATRIZ CENTRAL (getConfig.prestaciones.apps): cada aplicación tiene un solo botón y su destino.
+const BOTON_APP_V43_ = { btnIngreso: 'ingresar', btnHoy: 'hoy', btnFiados: 'fiados', btnMisDatos: 'misdatos', btnAjuste: 'ajustar', btnInventarioP2: 'inventario',
+                         btnReportes: 'reportes', btnClientesP2: 'clientes', btnAnularP2: 'anular', btnCobroAvanzado: 'mixto', btnCotizaciones: 'monedas' };
+function _appsV43_() { return (PRESTACIONES_ACTUAL && PRESTACIONES_ACTUAL.apps) || null; }
+function _ocultosV432_() { return (PRESTACIONES_ACTUAL && Array.isArray(PRESTACIONES_ACTUAL.ocultos)) ? PRESTACIONES_ACTUAL.ocultos : []; }   // V43.2 (servidor v044.2)
+function _aplicarAppsV43_(botones) {
+    const apps = _appsV43_(); if (!apps) return;
+    const hab = {}, ocu = _ocultosV432_(); apps.forEach(a => { hab[a.id] = a.habilitada === true && ocu.indexOf(a.id) === -1; });   // V43.2: lo que el comercio ocultó en Mis datos → Ajustes (no cambia el permiso)
+    Object.keys(BOTON_APP_V43_).forEach(id => {
+        const b = document.getElementById(id); if (!b) return;
+        const ok = hab[BOTON_APP_V43_[id]] === true && (id !== 'btnAnularP2' || !(CONFIG_ACTUAL && CONFIG_ACTUAL.modoConsulta)) &&
+                   (id !== 'btnCobroAvanzado' || _cobroAvanzadoV41_({})) && (id !== 'btnCotizaciones' || (_cobroAvanzadoV41_({}) && _hayCotizacionV41_()));
+        b.style.display = ok ? '' : 'none';
+    });
+}
+// V42: tarjeta P3 — un botón por cada complemento contratado y habilitado (el catálogo y los nombres vienen del servidor).
+// El servidor vuelve a validar cada acción: ocultar un botón no reemplaza el permiso.
+function _pintarComplementosP3V42_(config) {
+    const box = document.getElementById('p3Complementos'); if (!box) return;
+    const apps = _appsV43_();
+    if (apps) {   // V43: páginas del paquete P3 PRO en su tarjeta; las páginas de complementos opcionales en la tarjeta ➕
+        const andr = /Android/i.test(navigator.userAgent || '');
+        const btn = a => '<button class="btn-tool p3mod" id="btnApp_' + _escHTML(a.id) + '" title="' + _escHTML(a.descripcion || a.nombre) + '" onclick="window.location.href=\'' + _escHTML(a.destino) + '?p=\'+PREFIJO"><span class="ico">' + _escHTML(a.icono) + '</span><span class="txt">' + _escHTML(a.nombre) + '</span></button>';
+        const ocu = _ocultosV432_(), vis = g => apps.filter(a => a.grupo === g && a.pagina && a.habilitada && ocu.indexOf(a.id) === -1 && (!a.soloAndroid || andr));
+        box.innerHTML = vis('P3').map(btn).join('');
+        const cbox = document.getElementById('cComplementos'); if (cbox) cbox.innerHTML = vis('C').map(btn).join('');
+        const t = document.getElementById('tarjetaP3'); if (t) t.classList.toggle('muchos', vis('P3').length > 4);
+        return;
+    }
+    const cat = (PRESTACIONES_ACTUAL && PRESTACIONES_ACTUAL.complementos) || [];
+    const cortos = { extra_cotizador: 'Cotizar', extra_lista_compras: 'Compras', extra_retiro_local: 'Salidas', pack3_finanzas: 'Finanzas', extra_prestamos: 'Mis deudas', extra_retiro_caja: 'Egresos', extra_raspadita: 'Juego', extra_voz: 'Voz' };
+    const vis = cat.filter(c => c.pagina && config[c.clave] === true && (c.clave !== 'extra_voz' || /Android/i.test(navigator.userAgent || '')));
+    box.innerHTML = vis.map(c => '<button class="btn-tool p3mod" id="btnP3_' + c.clave + '" title="' + _escHTML(c.nombre) + '" onclick="window.location.href=\'' + _escHTML(c.pagina) + '?p=\'+PREFIJO"><span class="ico">' + _escHTML(c.icono) + '</span><span class="txt">' + _escHTML(cortos[c.clave] || c.nombre) + '</span></button>').join('');
+    const t = document.getElementById('tarjetaP3'); if (t) t.classList.toggle('muchos', vis.length + 2 > 4);
+}
+// V41: tarjeta P3 — el complemento Cobro avanzado (lo confirma el servidor: getConfig.cobro y getConfig.prestaciones)
+function _cobroAvanzadoV41_(config) {
+    if (CONFIG_ACTUAL && CONFIG_ACTUAL.modoConsulta) return false;
+    if (PRESTACIONES_ACTUAL && PRESTACIONES_ACTUAL.modulos) return PRESTACIONES_ACTUAL.modulos.extra_cobro_avanzado === true && !!(COBRO_ACTUAL && COBRO_ACTUAL.avanzado);
+    return !!(COBRO_ACTUAL && COBRO_ACTUAL.avanzado);
+}
+function _hayCotizacionV41_() { const c = (COBRO_ACTUAL && COBRO_ACTUAL.cot) || {}; return Object.keys(c).some(k => Number(c[k]) > 0); }
+function abrirCobroAvanzadoV41() {
+    if (!ventaActual.length) { mostrarToast('🔀 Cargá los productos y tocá acá para cobrar con varios medios o monedas', 'naranja'); return; }
+    abrirConfirm();
+    if (!_leerVentaEnCurso()) seleccionarMetodo('mixto');
+}
+function verCotizacionesV41() {
+    const c = (COBRO_ACTUAL && COBRO_ACTUAL.cot) || {};
+    const f = (COBRO_ACTUAL && COBRO_ACTUAL.fechas) || {};
+    const l = Object.keys(c).filter(k => Number(c[k]) > 0).map(k => '1 ' + k + ' = $' + Number(c[k]).toLocaleString('es-AR') + (f[k] && f[k].fecha ? ' (' + f[k].fecha + ')' : ''));
+    const rev = Object.keys(f).some(k => f[k] && f[k].revisar);
+    mostrarToast('💱 ' + (l.length ? 'Tu cotización: ' + l.join(' · ') + (rev ? ' · ⚠️ Hace más de 7 días: revisá la oficial y actualizala en Mis datos → ⚙️ Ajustes' : '') : 'Sin cotizaciones cargadas: se cargan en Mis datos → ⚙️ Ajustes'), rev ? 'naranja' : 'verde');
+}
+function abrirRevisionInventarioV41() { window.location.href = 'inventario.html?p=' + PREFIJO; }   // V43: Inventario es su propia aplicación (antes abría Mis datos)
 
 function mostrarFormularioPin(mensajeError) {
     document.getElementById('overlayPinTitulo').textContent = 'Ingresá tu PIN';
@@ -1057,6 +1365,9 @@ async function intentarLoginPin() {
         return;
     }
     btn.disabled = true; btn.textContent = 'Verificando...';
+    // V36: cerrar el teclado (sacar el foco) y mostrar el reloj ARRIBA del PIN, visible aunque el teclado tarde en bajar.
+    try { document.getElementById('overlayPinInput').blur(); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {}
+    const _cargando = document.getElementById('overlayPinCargando'); if (_cargando) _cargando.style.display = 'flex';
     try {
         const url = API_URL + '?action=clienteLogin&data=' + encodeURIComponent(JSON.stringify({ prefijo: PREFIJO, pin: pin, modoConsulta: true })); // V25
         const r = await fetch(url, { redirect: 'follow' });
@@ -1071,6 +1382,7 @@ async function intentarLoginPin() {
     } catch (e) {
         mostrarFormularioPin('Sin conexión');
     }
+    if (_cargando) _cargando.style.display = 'none'; // V36
     btn.disabled = false; btn.textContent = 'Ingresar';
 }
 
@@ -1086,12 +1398,16 @@ async function verificarSesionCliente() {
             mostrarFormularioPin(d.error);
         } else {
             CONFIG_ACTUAL = d.config;
+            COBRO_ACTUAL = d.cobro || { avanzado: false, cot: {} }; // V39
+            PRESTACIONES_ACTUAL = d.prestaciones || null; // V40 (servidor v043; con uno anterior sigue como antes)
             generarToolbarSegunPacks(CONFIG_ACTUAL);
+            mxMostrarBoton(); // V39
             ocultarOverlayPin();
             cargarDatosVendedor(); // V21: nombre/alias del negocio, ya con sesión
             mostrarEstadoPrueba(CONFIG_ACTUAL.estadoPrueba); // V23
             aplicarModoConsulta(CONFIG_ACTUAL.modoConsulta); // V25: vencido o suspendido → solo lectura
             mpRetornoSiCorresponde(); // V29: volviendo de Mercado Pago
+            avisarVersionNueva(); // V36
             // Paso 11: el catálogo (con costos y proveedores) recién se
             // pide una vez que la sesión quedó confirmada como válida —
             // antes se pedía en el INIT del script, sin esperar el login.
@@ -1148,7 +1464,33 @@ function abrirRecomendar() {
     const url = _urlPlanes();
     document.getElementById('recWhatsApp').href = 'https://wa.me/?text=' + encodeURIComponent('Te recomiendo VAO POS para organizar tu comercio (ventas, stock y fiados desde el celular). Probalo gratis 7 días: ' + url);
     document.getElementById('recPagina').href = url;
+    // V36: si el celular permite compartir archivos, se ofrece compartir el afiche + el texto con el menú del sistema
+    // (ahí se elige WhatsApp o WhatsApp Business). El enlace de WhatsApp queda como segunda opción.
+    const puede = !!(navigator.share && navigator.canShare);
+    document.getElementById('recCompartir').style.display = puede ? 'block' : 'none';
+    document.getElementById('recCompartirNota').style.display = puede ? 'block' : 'none';
+    document.getElementById('recWhatsApp').textContent = puede ? 'Solo el enlace por WhatsApp' : 'Compartir por WhatsApp';
+    const w = document.getElementById('recWhatsApp'); // V36: con afiche disponible, el enlace solo queda como opción secundaria
+    w.style.background = puede ? '#fff' : '#1E8E4E'; w.style.color = puede ? '#1E8E4E' : '#fff'; w.style.border = puede ? '2px solid #1E8E4E' : 'none';
     document.getElementById('panelRecomendar').style.display = 'flex';
+}
+const _TEXTO_RECOMENDAR = 'Te recomiendo VAO POS para organizar tu comercio (ventas, stock y fiados desde el celular). Probalo gratis 7 días: ';
+async function compartirConAfiche() {
+    const url = _urlPlanes(), texto = _TEXTO_RECOMENDAR + url, b = document.getElementById('recCompartir');
+    b.disabled = true; const t0 = b.textContent; b.textContent = 'Preparando…';
+    try {
+        let datos = { title: 'VAO POS', text: texto };
+        try {
+            const r = await fetch(new URL('og-vao-pos.jpg', location.href).href, { cache: 'force-cache' });
+            if (r.ok) {
+                const f = new File([await r.blob()], 'VAO-POS.jpg', { type: 'image/jpeg' });
+                if (navigator.canShare({ files: [f] })) datos = { files: [f], title: 'VAO POS', text: texto };
+            }
+        } catch (e) {}
+        await navigator.share(datos);
+    } catch (e) {
+        if (!e || e.name !== 'AbortError') window.open(document.getElementById('recWhatsApp').href, '_blank', 'noopener');
+    } finally { b.disabled = false; b.textContent = t0; }
 }
 function cerrarRecomendar() { document.getElementById('panelRecomendar').style.display = 'none'; }
 async function copiarRecomendar() {
@@ -1157,18 +1499,45 @@ async function copiarRecomendar() {
     b.textContent = 'Enlace copiado'; setTimeout(() => { b.textContent = 'Copiar enlace'; }, 2000);
 }
 
+// V36: mostrar/ocultar el PIN un momento (estándar: oculto por defecto).
+function alternarVerPin() {
+    const i = document.getElementById('overlayPinInput'), b = document.getElementById('overlayPinOjo');
+    const ver = i.type === 'password';
+    i.type = ver ? 'text' : 'password';
+    b.textContent = ver ? '🙈' : '👁️'; b.setAttribute('aria-label', ver ? 'Ocultar el PIN' : 'Mostrar el PIN');
+}
+
+// V36: una sola vez por aparato, cuando cambia la versión: "VAO POS se actualizó a VNN". No en la primera vez.
+function avisarVersionNueva() {
+    let ant = null; try { ant = localStorage.getItem('vao_version_vista'); localStorage.setItem('vao_version_vista', String(APP_VERSION)); } catch (e) { return; }
+    if (!ant || Number(ant) >= APP_VERSION) return;
+    const d = document.createElement('div'); d.id = 'avisoVersion';
+    d.textContent = '✅ VAO POS se actualizó a V' + APP_VERSION;
+    document.body.appendChild(d); setTimeout(() => d.remove(), 4500);
+}
+
 // V34: soporte de VAO Sistemas por WhatsApp. Solo abre un chat con un texto armado:
 // nombre del comercio y prefijo (NUNCA el PIN ni datos de ventas o clientes).
 const SOPORTE_WHATSAPP = '542944907380';
-function abrirSoporte() {
+function abrirSoporte(motivo) {
     let nombre = '';
     try { nombre = (document.getElementById('headerTitulo').textContent || '').trim(); } catch (e) {}
     if (/^(Cargando|Verificando)/i.test(nombre) || nombre.toUpperCase() === PREFIJO) nombre = '';
+    if (motivo === 'robo') { // V37: celular perdido o robado → cerrar sesiones y PIN nuevo (lo hace VAO con Reset PIN)
+        const t = 'Hola VAO Sistemas, perdí / me robaron el celular. Necesito cerrar las sesiones abiertas y un PIN nuevo.\n' +
+            'Comercio: ' + (nombre ? nombre + ' ' : '') + '(' + PREFIJO + ')';
+        window.open('https://wa.me/' + SOPORTE_WHATSAPP + '?text=' + encodeURIComponent(t), '_blank', 'noopener');
+        return;
+    }
     const txt = 'Hola VAO Sistemas, necesito ayuda con VAO POS.\n' +
         'Comercio: ' + (nombre ? nombre + ' ' : '') + '(' + PREFIJO + ')\n' +
         'Versión: V' + APP_VERSION + '\n\nMi consulta: ';
     window.open('https://wa.me/' + SOPORTE_WHATSAPP + '?text=' + encodeURIComponent(txt), '_blank', 'noopener');
 }
+
+// V37: Salir = cerrar sesión. Se confirma con una ventana propia (sin confirm nativo).
+function confirmarSalir() { document.getElementById('modalSalir').style.display = 'flex'; }
+function cancelarSalir() { document.getElementById('modalSalir').style.display = 'none'; }
 
 function irAlInicio() {
     const token = _tokenActual();
@@ -1686,6 +2055,7 @@ function abrirConfirm() {
 
 function cerrarConfirm() {
     document.getElementById('modalConfirm').classList.remove('open');
+    _deudaFiadoClave = ''; _deudaFiadoSeq++; _ocultarAvisoDeudaFiado(); // V38: la próxima venta vuelve a consultar
     const btnTicket = document.getElementById('btnTicketWA');
     if (btnTicket) btnTicket.style.display = 'none';
     const btnOk = document.getElementById('btnOkConfirm');
@@ -1702,7 +2072,7 @@ function seleccionarMetodo(metodo) {
         return;
     }
     metodoPagoActual = metodo;
-    ['efectivo','qr','transferencia','debito','qr_posnet','fiado'].forEach(m => {
+    ['efectivo','qr','transferencia','debito','qr_posnet','fiado','mixto'].forEach(m => {
         const btn = document.getElementById('metodo-' + m);
         if (btn) btn.className = 'btn-metodo' + (m === metodo ? ' activo' : '');
     });
@@ -1711,6 +2081,9 @@ function seleccionarMetodo(metodo) {
     const panelTransf = document.getElementById('panelQRTransf');
     const panelFiado = document.getElementById('panelFiado');
     const total = ventaActual.reduce((s, i) => s + i.price * i.qty, 0);
+    document.getElementById('panelMixto').style.display = metodo === 'mixto' ? 'block' : 'none'; // V39
+    if (metodo === 'mixto') { panelQR.style.display = 'none'; panelFiado.style.display = 'none'; mxAbrir(); return; }
+    _mxRevisado = null; const _bOk = document.getElementById('btnOkConfirm'); if (_bOk && _bOk.textContent.indexOf('Confirmado') === -1 && !_bOk.disabled) _bOk.textContent = '✅ Confirmar';
     if (metodo === 'qr') {
         panelQR.style.display = 'block';
         panelMP.style.display = 'block';
@@ -1738,6 +2111,7 @@ function seleccionarMetodo(metodo) {
         panelMP.style.display = 'none';
         panelTransf.style.display = 'none';
         panelFiado.style.display = 'block';
+        consultarDeudaFiado(); // V38
     } else {
         panelQR.style.display = 'none';
         panelMP.style.display = 'none';
@@ -1840,6 +2214,7 @@ async function confirmarVenta() {
 
     // V13: un fiado en curso se reintenta por su propio camino.
     if (enCurso && enCurso.metodoPago === 'fiado') { return confirmarVentaFiado(); }
+    if (enCurso && enCurso.metodoPago === 'mixto') { return confirmarVentaMixto(); } // V39
 
     if (enCurso) {
         // Reintento: el carrito congelado guardado es la operación (una venta
@@ -1847,6 +2222,7 @@ async function confirmarVenta() {
         ventaActual = JSON.parse(localStorage.getItem(CARRITO_KEY) || '[]');
     } else {
         if (metodoPagoActual === 'fiado') { return confirmarVentaFiado(); }
+        if (metodoPagoActual === 'mixto') { return confirmarVentaMixto(); } // V39
         // VALIDACIÓN FINAL antes de confirmar
         const sinStock = ventaActual.filter(item => {
             const p = productos.find(pr => pr.id === item.id);
@@ -2111,7 +2487,7 @@ function enviarTicketWA() {
     var v = window._ultimaVenta;
     if (!v) return;
     var fecha = new Date().toLocaleDateString('es-AR', { weekday:'short', day:'2-digit', month:'2-digit' });
-    var metodoLabel = { efectivo:'Efectivo', qr:'QR MP', transferencia:'Transferencia', debito:'Débito', qr_posnet:'QR / Posnet', fiado:'Fiado' }[v.metodo] || v.metodo;
+    var metodoLabel = { efectivo:'Efectivo', qr:'QR MP', transferencia:'Transferencia', debito:'Débito', qr_posnet:'QR / Posnet', fiado:'Fiado', mixto:'Mixto' }[v.metodo] || v.metodo;
     var lineas = v.items.map(function(i) {
         var nombre = i.name.length > 28 ? i.name.substring(0,28)+'...' : i.name;
         return i.qty+'x '+nombre+' $'+(i.price*i.qty).toLocaleString('es-AR');
@@ -2153,6 +2529,176 @@ function abrirResumen() {
             '</div>';
     }
     document.getElementById('modalResumen').classList.add('open');
+    mostrarCajaServidor(); // V39
+}
+
+// V39: caja del día según el servidor (todos los equipos del comercio, incluye cobros de fiados). Solo lectura.
+async function mostrarCajaServidor() {
+    const div = document.getElementById('resumenContenido');
+    const caja = document.createElement('div'); caja.id = 'cajaServidor'; caja.className = 'resumen-card';
+    caja.innerHTML = '<div class="resumen-label">🏦 Caja del día (servidor)</div><div style="font-size:0.85rem;color:#888;padding-top:6px;">Consultando…</div>';
+    const vieja = document.getElementById('cajaServidor'); if (vieja) vieja.remove();
+    div.insertBefore(caja, div.firstChild);
+    let r = null; try { r = await _llamarAPI('getCaja', { token: _tokenActual() }); } catch (e) { r = null; }
+    if (!r || !r.success) { caja.innerHTML = '<div class="resumen-label">🏦 Caja del día (servidor)</div><div style="font-size:0.85rem;color:#c62828;padding-top:6px;">' + _escH(r && r.error ? (/Acción no reconocida/i.test(r.error) ? 'El servidor todavía no tiene la caja del día (falta actualizarlo).' : r.error) : 'Sin conexión: no se pudo consultar la caja. Las ventas no se ven afectadas.') + '</div>'; return; }
+    const lista = (o) => { const k = Object.keys(o || {}); return k.length ? k.map(m => '<div style="display:flex;justify-content:space-between;font-size:0.88rem;padding:2px 0;"><span>' + _escH(m) + '</span><b>$' + Number(o[m]).toLocaleString('es-AR') + '</b></div>').join('') : '<div style="font-size:0.85rem;color:#999;">Sin movimientos</div>'; };
+    const mon = Object.keys(r.cajonPorMoneda || {}).filter(m => m !== 'ARS' && r.cajonPorMoneda[m]).map(m => m + ' ' + Number(r.cajonPorMoneda[m]).toLocaleString('es-AR')).join(' · ');
+    caja.innerHTML = '<div class="resumen-label">🏦 Caja del día (servidor, todos los equipos)</div>' +
+        '<div class="resumen-total" style="font-size:1.4rem;">$' + Number(r.totalCaja || 0).toLocaleString('es-AR') + '</div>' +
+        '<div style="font-size:0.72rem;color:#888;margin:6px 0 2px;text-transform:uppercase;letter-spacing:1px;">Entró por medio (ventas + cobros de fiados − vueltos)</div>' + lista(r.cajaPorMedio) +
+        (r.fiadoDelDia ? '<div style="font-size:0.85rem;margin-top:6px;">🧾 Quedó fiado hoy: <b>$' + Number(r.fiadoDelDia).toLocaleString('es-AR') + '</b></div>' : '') +
+        (mon ? '<div style="font-size:0.85rem;margin-top:6px;">💱 En el cajón también: <b>' + _escH(mon) + '</b></div>' : '');
+}
+function _escH(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+// =================== V39: COBRO MIXTO ===================
+// Cada parte entra como un medio de pago normal (nunca como texto). El servidor calcula y controla todo:
+// Revisar (previsualizarCobro, no escribe) → Confirmar (cobrar, con el mismo número de operación).
+let _mxLineas = [], _mxRevisado = null;
+const MX_MEDIOS = [['EFECTIVO', '💵 Efectivo'], ['DEBITO', '💳 Débito'], ['QR_POSNET', '💳 QR / Posnet'], ['TRANSFERENCIA', '🏦 Transferencia']];
+function mxMostrarBoton() {
+    const b = document.getElementById('metodo-mixto');
+    if (b) b.style.display = (COBRO_ACTUAL && COBRO_ACTUAL.avanzado && !(CONFIG_ACTUAL && CONFIG_ACTUAL.modoConsulta)) ? '' : 'none';
+    if (CONFIG_ACTUAL) generarToolbarSegunPacks(CONFIG_ACTUAL); // V41: la tarjeta P3 sigue al complemento
+}
+function _mxFmt(n) { return '$' + Number(n || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 }); }
+function _mxTotal() { return ventaActual.reduce((s, i) => s + i.price * i.qty, 0); }
+function mxAbrir() {
+    const enCurso = _leerVentaEnCurso();
+    if (enCurso && enCurso.metodoPago === 'mixto' && enCurso.op) {
+        _mxLineas = (enCurso.op.pagos || []).map(p => ({ medio: p.medio, moneda: p.moneda || 'ARS', monto: p.monto }));
+        document.getElementById('mxFiar').checked = !!enCurso.op.fiado;
+        document.getElementById('mxDeuda').checked = !!enCurso.op.deuda;
+        const c = enCurso.op.fiado || enCurso.op.deuda || {};
+        document.getElementById('mxCliente').value = c.cliente || ''; document.getElementById('mxTelefono').value = c.telefono || '';
+        if (enCurso.op.deuda) { document.getElementById('mxDeudaModo').value = enCurso.op.deuda.modo || 'VUELTO'; document.getElementById('mxDeudaMonto').value = enCurso.op.deuda.monto || ''; }
+    } else if (!_mxLineas.length) {
+        _mxLineas = [{ medio: 'EFECTIVO', moneda: 'ARS', monto: '' }];
+    }
+    _mxRevisado = null; mxRender(!!(enCurso && enCurso.metodoPago === 'mixto'));
+}
+function mxAgregarLinea() { if (_leerVentaEnCurso()) return; _mxLineas.push({ medio: 'DEBITO', moneda: 'ARS', monto: '' }); mxRender(false); }
+function mxQuitar(i) { if (_leerVentaEnCurso()) return; _mxLineas.splice(i, 1); if (!_mxLineas.length) _mxLineas.push({ medio: 'EFECTIVO', moneda: 'ARS', monto: '' }); mxRender(false); }
+function mxSet(i, campo, valor) { if (_leerVentaEnCurso()) return; _mxLineas[i][campo] = valor; if (campo === 'medio' && valor !== 'EFECTIVO') _mxLineas[i].moneda = 'ARS'; if (campo !== 'monto') mxRender(false); else mxCambio(); }
+function mxOpcion(cual) {
+    if (_leerVentaEnCurso()) return;
+    if (cual === 'fiar' && document.getElementById('mxFiar').checked) document.getElementById('mxDeuda').checked = false;
+    if (cual === 'deuda' && document.getElementById('mxDeuda').checked) document.getElementById('mxFiar').checked = false;
+    mxRender(false);
+}
+function mxRender(congelado) {
+    const monedas = ['ARS'].concat(Object.keys((COBRO_ACTUAL && COBRO_ACTUAL.cot) || {}));
+    document.getElementById('mxLineas').innerHTML = _mxLineas.map((l, i) =>
+        '<div class="mx-linea">' +
+        '<select ' + (congelado ? 'disabled ' : '') + 'onchange="mxSet(' + i + ',\'medio\',this.value)">' + MX_MEDIOS.map(m => '<option value="' + m[0] + '"' + (m[0] === l.medio ? ' selected' : '') + '>' + m[1] + '</option>').join('') + '</select>' +
+        (l.medio === 'EFECTIVO' && monedas.length > 1 ? '<select style="flex:0.7" ' + (congelado ? 'disabled ' : '') + 'onchange="mxSet(' + i + ',\'moneda\',this.value)">' + monedas.map(m => '<option' + (m === l.moneda ? ' selected' : '') + '>' + m + '</option>').join('') + '</select>' : '') +
+        '<input type="number" inputmode="decimal" min="0" step="0.01" placeholder="Monto" value="' + (l.monto === '' ? '' : Number(l.monto)) + '" ' + (congelado ? 'readonly ' : '') + 'oninput="mxSet(' + i + ',\'monto\',this.value)">' +
+        (congelado ? '' : '<button type="button" onclick="mxQuitar(' + i + ')" aria-label="Quitar">✕</button>') + '</div>').join('');
+    document.getElementById('mxBtnAgregar').style.display = congelado ? 'none' : '';
+    const fiar = document.getElementById('mxFiar').checked, deuda = document.getElementById('mxDeuda').checked;
+    document.getElementById('mxClienteBox').style.display = (fiar || deuda) ? 'block' : 'none';
+    document.getElementById('mxDeudaBox').style.display = deuda ? 'block' : 'none';
+    document.getElementById('mxDeudaMonto').style.display = (deuda && document.getElementById('mxDeudaModo').value === 'SUMAR') ? '' : 'none';
+    ['mxFiar', 'mxDeuda', 'mxCliente', 'mxTelefono', 'mxDeudaModo', 'mxDeudaMonto'].forEach(id => { document.getElementById(id).disabled = congelado; });
+    mxCambio();
+}
+function mxCambio() {
+    // Cuenta orientativa en pantalla; la que vale es la del servidor (Revisar).
+    const cot = (COBRO_ACTUAL && COBRO_ACTUAL.cot) || {};
+    let pagado = 0, sinCot = false;
+    _mxLineas.forEach(l => { const m = Number(l.monto) || 0; if (l.moneda && l.moneda !== 'ARS') { if (cot[l.moneda]) pagado += m * cot[l.moneda]; else sinCot = true; } else pagado += m; });
+    const total = _mxTotal(), dif = Math.round((pagado - total) * 100) / 100;
+    document.getElementById('mxResumen').innerHTML = 'Total: <b>' + _mxFmt(total) + '</b> · Pagado: <b>' + _mxFmt(pagado) + '</b><br>' +
+        (dif < 0 ? 'Falta: <b style="color:#c62828">' + _mxFmt(-dif) + '</b>' : 'Vuelto (en pesos): <b style="color:#1b5e20">' + _mxFmt(dif) + '</b>') +
+        (sinCot ? '<br>⚠️ Hay una moneda sin cotización.' : '') + _mxAvisoCotV432_();
+    if (!_leerVentaEnCurso()) {
+        _mxRevisado = null;
+        const p = document.getElementById('mxPrevia'); p.className = 'mx-previa'; p.textContent = '';
+        const b = document.getElementById('btnOkConfirm'); if (b && !b.disabled) b.textContent = '🔎 Revisar cobro';
+    }
+}
+// V43.2: en el cobro con moneda extranjera, recordar que la cotización es la del comercio y si hace más de 7 días que no se cambia.
+function _mxAvisoCotV432_() {
+    const cot = (COBRO_ACTUAL && COBRO_ACTUAL.cot) || {}, f = (COBRO_ACTUAL && COBRO_ACTUAL.fechas) || {};
+    const usadas = [...new Set(_mxLineas.filter(l => l.moneda && l.moneda !== 'ARS' && cot[l.moneda]).map(l => l.moneda))];
+    return usadas.map(k => '<br><small>1 ' + k + ' = ' + _mxFmt(cot[k]) + ' (tu cotización' + (f[k] && f[k].fecha ? ' del ' + f[k].fecha : '') + ')' +
+        (f[k] && f[k].revisar ? ' · <b style="color:#B26A00">⚠️ hace ' + (f[k].dias === null ? 'tiempo' : f[k].dias + ' días') + ' que no la cambiás: revisá la oficial</b>' : '') + '</small>').join('');
+}
+function _mxArmarOp(opId) {
+    const op = { opId: opId, items: ventaActual.map(i => ({ id: i.id, codigo: i.codigo || '', name: i.name, qty: i.qty, precioVenta: i.price, precioModificado: i.precioModificado || false, precioOriginal: i.precioOriginal || 0 })),
+                 pagos: _mxLineas.filter(l => Number(l.monto) > 0).map(l => ({ medio: l.medio, moneda: l.medio === 'EFECTIVO' ? (l.moneda || 'ARS') : 'ARS', monto: Number(l.monto) })) };
+    const cli = document.getElementById('mxCliente').value.trim(), tel = document.getElementById('mxTelefono').value.trim();
+    if (document.getElementById('mxFiar').checked) op.fiado = { cliente: cli, telefono: tel };
+    if (document.getElementById('mxDeuda').checked) {
+        op.deuda = { cliente: cli, telefono: tel, modo: document.getElementById('mxDeudaModo').value };
+        const md = document.getElementById('mxDeudaMonto').value; if (op.deuda.modo === 'SUMAR' && md !== '') op.deuda.monto = Number(md);
+    }
+    return op;
+}
+function _mxPrevia(texto, tipo) { const p = document.getElementById('mxPrevia'); p.className = 'mx-previa ' + tipo; p.textContent = texto; }
+async function confirmarVentaMixto() {
+    const btn = document.getElementById('btnOkConfirm');
+    let enCurso = _leerVentaEnCurso();
+    if (!enCurso) {
+        if (!ventaActual.length) { mostrarToast('Agregá productos primero', 'rojo'); return; }
+        const op = _mxArmarOp('PREVIA0000');
+        if ((op.fiado || op.deuda) && !op.fiado && !op.deuda.cliente) { _mxPrevia('Escribí el nombre del cliente de la deuda. No se cobró nada.', 'error'); return; }
+        if (op.fiado && !op.fiado.cliente) { _mxPrevia('Escribí el nombre del cliente al que se fía. No se cobró nada.', 'error'); return; }
+        const firma = JSON.stringify(op);
+        if (_mxRevisado && _mxRevisado.firma === firma) {
+            // Segundo toque: se congela la operación y se cobra.
+            guardarCarrito();
+            const opId = _generarVentaId();
+            const opFinal = _mxArmarOp(opId); opFinal.esperado = _mxRevisado.esperado;
+            enCurso = { ventaId: opId, metodoPago: 'mixto', op: opFinal };
+            localStorage.setItem(_ventaEnCursoKey(), JSON.stringify(enCurso));
+            mxRender(true);
+        } else {
+            btn.disabled = true; btn.textContent = '⏳ Revisando...';
+            let r = null; try { r = await _llamarAPI('previsualizarCobro', { token: _tokenActual(), op: op }); } catch (e) { r = null; }
+            btn.disabled = false;
+            if (!r) { btn.textContent = '🔎 Revisar cobro'; _mxPrevia('Sin conexión: no se pudo revisar. No se cobró nada.', 'error'); return; }
+            if (!r.success) { btn.textContent = '🔎 Revisar cobro'; _mxPrevia('❌ ' + (r.error || 'No se pudo revisar.'), 'error'); return; }
+            const e = r.esperado;
+            const lineas = ['Revisión (todavía no se cobró nada):', 'Compra: ' + _mxFmt(e.total)].concat(
+                r.ingresos.map(i => '· ' + i.medio + (i.moneda !== 'ARS' ? ' ' + i.moneda : '') + ': ' + _mxFmt(i.importe)),
+                e.deuda ? ['A la deuda: ' + _mxFmt(e.deuda)] : [], e.fiado ? ['Queda fiado: ' + _mxFmt(e.fiado)] : [],
+                ['Vuelto (efectivo en pesos): ' + _mxFmt(e.vuelto)], (r.avisos || []).map(a => '⚠️ ' + a));
+            _mxPrevia(lineas.join('\n'), (r.avisos && r.avisos.length) ? 'aviso' : 'ok');
+            _mxRevisado = { firma: firma, esperado: e };
+            btn.textContent = '✅ Confirmar cobro';
+            return;
+        }
+    }
+    btn.disabled = true; btn.textContent = '⏳ Procesando...';
+    const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+    let resp = null; try { resp = await _llamarAPI('cobrar', { token: _tokenActual(), op: enCurso.op }); } catch (e) { resp = null; }
+    if (resp && resp.success) {
+        localStorage.removeItem(_ventaEnCursoKey());
+        const rs = resp.resumen || {}, items = (enCurso.op.items || []).map(i => ({ name: i.name, qty: i.qty, price: i.precioVenta }));
+        const total = items.reduce((s, i) => s + i.price * i.qty, 0);
+        window._ultimaVenta = { items, total, hora, metodo: 'mixto' };
+        if (items.length) guardarVentaDia({ items, total, hora, metodoPago: 'mixto' });
+        ventaActual = []; _mxLineas = []; _mxRevisado = null; localStorage.removeItem(CARRITO_KEY); renderVenta(); cargarProductos();
+        ['mxFiar', 'mxDeuda'].forEach(id => { document.getElementById(id).checked = false; }); ['mxCliente', 'mxTelefono', 'mxDeudaMonto'].forEach(id => { document.getElementById(id).value = ''; }); // la próxima venta empieza limpia
+        const av = (rs.avisos || []).map(a => '⚠️ ' + a);
+        _mxPrevia([resp.mensaje || 'Cobro registrado.'].concat(rs.deuda ? ['A la deuda: ' + _mxFmt(rs.deuda)] : [], rs.fiado ? ['Quedó fiado: ' + _mxFmt(rs.fiado)] : [], av).join('\n'), av.length ? 'aviso' : 'ok');
+        if (items.length) document.getElementById('btnTicketWA').style.display = 'block';
+        btn.textContent = '✅ Confirmado';
+        mostrarToast(resp.yaExistia ? '✅ Ese cobro ya estaba registrado (no se cobró dos veces)' : '✅ Cobro registrado' + (rs.vuelto ? ' · Vuelto ' + _mxFmt(rs.vuelto) : ''), 'verde');
+        return;
+    }
+    btn.disabled = false; btn.textContent = '✅ Confirmar cobro';
+    if (resp && resp.definitivo) {
+        // El servidor no escribió nada: la operación se libera y el cobro se puede corregir.
+        localStorage.removeItem(_ventaEnCursoKey()); _mxRevisado = null; mxRender(false);
+        _mxPrevia('❌ ' + resp.error, 'error'); btn.textContent = '🔎 Revisar cobro';
+        if (resp.stockInsuficiente || /inventario cambió/.test(resp.error || '')) cargarProductos();
+        return;
+    }
+    // Sin respuesta, ocupado o a medias: la operación SE CONSERVA (Confirmar reintenta el mismo número).
+    _mxPrevia(resp ? ('⚠️ ' + resp.error) : MSG_SIN_RESPUESTA_VENTA, 'aviso');
+    mostrarToast(resp && resp.ocupado ? '⏳ Sistema ocupado: tocá Confirmar de nuevo (no se cobra dos veces).' : MSG_SIN_RESPUESTA_VENTA, 'rojo');
 }
 
 function cerrarResumen() {
@@ -2713,7 +3259,7 @@ const MSG_SIN_RESPUESTA_VENTA = '📡 Sin respuesta del servidor. La venta qued�
 async function verificarPendientesAlIniciar() {
     const enCurso = _leerVentaEnCurso();
     if (enCurso && enCurso.ventaId) {
-        const tipo = enCurso.metodoPago === 'fiado' ? 'fiado' : 'venta';
+        const tipo = enCurso.metodoPago === 'fiado' ? 'fiado' : (enCurso.metodoPago === 'mixto' ? 'cobro' : 'venta'); // V39
         let r = null;
         try { r = await _llamarAPI('verificarOperacion', { token: _tokenActual(), tipo: tipo, id: enCurso.ventaId }); } catch (e) { r = null; }
         // Puede haberse resuelto mientras tanto (el cajero tocó Confirmar).
@@ -2735,7 +3281,7 @@ async function verificarPendientesAlIniciar() {
             cargarProductos();
             mostrarToast('✅ La venta que había quedado sin confirmar ya estaba registrada ($' + total.toLocaleString('es-AR') + '). Carrito liberado.', 'verde');
         } else if (r && r.success && r.enProceso) {
-            mostrarToast('⚠️ Hay un fiado a medio registrar: tocá Cobrar → Confirmar para completarlo (no se duplica).', 'naranja');
+            mostrarToast(tipo === 'cobro' ? '⚠️ Hay un cobro a medio registrar: tocá Cobrar → Confirmar para completarlo (no se cobra dos veces).' : '⚠️ Hay un fiado a medio registrar: tocá Cobrar → Confirmar para completarlo (no se duplica).', 'naranja');
         } else if (r && r.success) {
             mostrarToast('⚠️ Hay una venta enviada que NO llegó al servidor: Cobrar → Confirmar la reintenta, o Limpiar la descarta.', 'naranja');
         }
@@ -2757,6 +3303,44 @@ async function verificarPendientesAlIniciar() {
 // ========== V22 (A1): guardar borradores mientras se escribe ==========
 document.getElementById('modalIngreso').addEventListener('input', guardarBorradorIngreso);
 document.getElementById('modalAjuste').addEventListener('input', function (ev) { if (ev.target.id !== 'ajusteQ') guardarBorradorAjuste(); });
+// ========== V38: aviso "este cliente ya debe" al fiar ==========
+// Solo LEE (getFiadosCliente, motor v040.x). Nunca bloquea Confirmar.
+// Si falla, tarda o no debe nada: no muestra nada. Una respuesta vieja
+// (se cambió de cliente mientras tanto) se descarta.
+let _deudaFiadoSeq = 0;
+let _deudaFiadoClave = '';
+function _ocultarAvisoDeudaFiado() {
+    const av = document.getElementById('fiadoDeudaAviso');
+    if (av) { av.style.display = 'none'; av.textContent = ''; }
+}
+async function consultarDeudaFiado() {
+    if (_leerVentaEnCurso()) return; // fiado ya enviado: datos congelados, no se consulta
+    const cliente = (document.getElementById('fiadoCliente').value || '').trim();
+    const telefono = (document.getElementById('fiadoTelefono').value || '').replace(/\D/g, '');
+    const clave = telefono ? 'T:' + telefono : (cliente ? 'C:' + cliente.toUpperCase() : '');
+    if (!clave) { _deudaFiadoClave = ''; _deudaFiadoSeq++; _ocultarAvisoDeudaFiado(); return; }
+    if (clave === _deudaFiadoClave) return; // ya consultado para este cliente
+    _deudaFiadoClave = clave;
+    const miSeq = ++_deudaFiadoSeq;
+    _ocultarAvisoDeudaFiado();
+    let r = null;
+    try {
+        r = await _llamarAPI('getFiadosCliente', telefono ? { token: _tokenActual(), telefono: telefono } : { token: _tokenActual(), cliente: cliente });
+    } catch (e) { r = null; }
+    if (miSeq !== _deudaFiadoSeq) return; // cambió el cliente mientras se consultaba
+    if (!r || r.error || !(r.totalDeuda > 0) || !(r.cantFiados > 0)) { _ocultarAvisoDeudaFiado(); return; }
+    const vencidos = (r.fiados || []).filter(f => String(f.estado || '').toUpperCase() === 'VENCIDO').length;
+    const nombre = String(r.cliente || cliente || 'Este cliente').trim().toUpperCase();
+    const txt = '⚠️ ' + nombre + ' ya debe $' + Math.round(r.totalDeuda).toLocaleString('es-AR') +
+        ' en ' + r.cantFiados + (r.cantFiados === 1 ? ' fiado' : ' fiados') +
+        (vencidos ? ' (' + vencidos + (vencidos === 1 ? ' vencido)' : ' vencidos)') : '') +
+        '. Podés fiar igual.';
+    const av = document.getElementById('fiadoDeudaAviso');
+    if (av) { av.textContent = txt; av.style.display = 'block'; }
+}
+['fiadoCliente', 'fiadoTelefono'].forEach(function (id) {
+    document.getElementById(id).addEventListener('change', consultarDeudaFiado); // V38: al pasar al otro campo
+});
 ['fiadoCliente', 'fiadoTelefono'].forEach(function (id) {
     document.getElementById(id).addEventListener('input', function () {
         if (_leerVentaEnCurso()) return; // un fiado en curso ya tiene sus datos congelados
@@ -2971,12 +3555,44 @@ function _mpSolicitudId(plan) {
     try { localStorage.setItem(k, JSON.stringify({ id: id, ts: Date.now() })); } catch (e) {}
     return id;
 }
+// V40 (v043): «Mi plan» — qué tiene contratado el comercio. Solo lectura; los cambios los hace VAO Sistemas.
+async function cargarMiPlanV40() {
+    const box = document.getElementById('miPlanV40'); if (!box) return;
+    box.innerHTML = '<div style="color:#bbb;padding:8px 0;">Cargando tu plan…</div>';
+    let r = null; try { r = await _llamarAPI('getMiPlan', { token: _tokenActual() }); } catch (e) { r = null; }
+    if (!r || !r.success) { box.innerHTML = ''; return; } // servidor anterior: solo se muestra el pago, como antes
+    const grupos = { P1: 'P1 Esencial', P2: 'P2 Gestión', P3: 'P3 PRO', C: 'Complementos' };
+    const conGrupos = r.planesP1P2P3 !== false;   // V42: si los planes todavía no se pasaron a P1/P2/P3, no se mezclan nombres viejos y nuevos
+    const porG = g => (r.prestaciones || []).filter(x => conGrupos ? x.grupo === g : g === 'P1');
+    const est = { ACTIVO: '🟢 Activo', VENCIDO: '🔴 Vencido', SUSPENDIDO: '🔴 Suspendido' }[r.estado] || _escHTML(String(r.estado || '').replace('_', ' '));
+    let h = '<div class="md-fila" style="border:none;"><div><b>' + _escHTML(r.planNombre || r.plan || 'Sin plan') + '</b><small>' + est + (r.vence ? ' · vence ' + _escHTML(r.vence) : '') + '</small></div></div>' +
+        '<div class="mp-chip">Ventas con medios simples</div><div class="mp-chip">📥 Mis datos e historial</div>';
+    if (conGrupos) h = h.replace('<div class="mp-chip">Ventas con medios simples</div><div class="mp-chip">📥 Mis datos e historial</div>', '');
+    if (!conGrupos) ['P1', 'P2', 'P3', 'C'].forEach(g => { const ps = porG(g); if (ps.length) h += '<div class="mp-grupo">' + (conGrupos ? grupos[g] : 'Lo que incluye') + '</div>' + ps.map(x => '<span class="mp-chip">' + _escHTML(x.nombre) + '</span>').join(''); });
+    (r.complementos || []).forEach(c => { h += '<div style="font-size:0.78rem;color:#555;">➕ ' + _escHTML(c.nombre) + (c.vence ? ' · hasta ' + _escHTML(c.vence) : '') + '</div>'; });
+    if ((r.suspendidas || []).length) h += '<div class="mp-grupo" style="color:#B71C1C;">Suspendido por VAO Sistemas</div>' + r.suspendidas.map(x => '<span class="mp-chip off">' + _escHTML(x.nombre || x) + '</span>').join('');
+    if (r.totalMensual !== null && r.totalMensual !== undefined) h += '<div style="font-size:0.85rem;margin-top:6px;"><b>Total mensual:</b> $' + Number(r.totalMensual).toLocaleString('es-AR') + '</div>';
+    if (!conGrupos) h += '<button onclick="pedirCambioPlanV40()" style="width:100%;margin:10px 0 14px;padding:12px;border:none;border-radius:12px;background:#E8F5E9;color:#1B5E20;font-weight:800;font-family:inherit;font-size:0.92rem;cursor:pointer;">💬 Pedir un cambio de plan o un complemento</button>' +
+        '<div style="font-size:0.75rem;color:#777;margin-bottom:10px;">El cambio lo hace VAO Sistemas cuando se registra el pago. Tus ventas, fiados y pagos nunca se borran al cambiar de plan.</div>';
+    box.innerHTML = h; _MIPLAN_V40 = r;
+}
+let _MIPLAN_V40 = null;
+function pedirCambioPlanV40() {
+    let nombre = ''; try { nombre = (document.getElementById('headerTitulo').textContent || '').trim(); } catch (e) {}
+    const r = _MIPLAN_V40 || {};
+    const t = 'Hola VAO Sistemas, quiero cambiar mi plan de VAO POS.\nComercio: ' + (nombre ? nombre + ' ' : '') + '(' + PREFIJO + ')\nPlan actual: ' + (r.planNombre || '-') +
+        ((r.complementos || []).length ? ' + ' + r.complementos.map(c => c.nombre).join(' + ') : '') + '\n\nQuiero: ';
+    window.open('https://wa.me/' + SOPORTE_WHATSAPP + '?text=' + encodeURIComponent(t), '_blank', 'noopener');
+}
+window.addEventListener('load', () => { if (location.hash === '#miplan') setTimeout(() => { try { if (_tokenActual()) abrirPagoPlan(); } catch (e) {} }, 1500); });   // V43
 async function abrirPagoPlan() {
     document.getElementById('modalPagoPlan').classList.add('open');
     const lista = document.getElementById('pagoPlanLista'), est = document.getElementById('pagoPlanEstado');
     est.textContent = ''; lista.innerHTML = '<div style="text-align:center;padding:30px;color:#bbb;">Cargando planes…</div>';
+    await cargarMiPlanV40();
     try {
         const r = await _llamarAPI('getPlanesPublicos', {});
+        if (_MIPLAN_V40 && _MIPLAN_V40.pagoEnLinea === false) { lista.innerHTML = _planesSinPagoV42_(r); return; }   // V42: sin pago en línea no hay botón «Pagar»
         const planes = ((r && r.planes) || []).filter(p => p.codigo !== 'PRUEBA' && p.contratable && !p.proximamente && !p.cotizacion && p.precioRegular > 0);
         if (!planes.length) { lista.innerHTML = '<div style="color:#C62828;padding:14px 0;">No hay planes disponibles para pagar en línea.</div>'; return; }
         const promo = r.promo && r.promoActiva !== false ? r.promo : null;
@@ -2988,6 +3604,50 @@ async function abrirPagoPlan() {
     } catch (e) { lista.innerHTML = '<div style="color:#C62828;padding:14px 0;">📡 Sin conexión. Probá de nuevo.</div>'; }
 }
 function cerrarPagoPlan() { document.getElementById('modalPagoPlan').classList.remove('open'); }
+// V42: planes y complementos para cambiar o sumar. El pago lo confirma VAO Sistemas (manual): el botón pide el cambio por WhatsApp.
+function _planesSinPagoV42_(r) {
+    if (r && r.catalogoV043 && r.catalogoV043.migrado && r.catalogoV043.apps) return _miPlanTarjetasV431_(r);   // V43.1: tarjetas (misma composición que planes.html)
+    return _planesSinPagoV42viejo_(r);
+}
+function _miPlanTarjetasV431_(r) {
+    const apps = r.catalogoV043.apps || [], actual = (_MIPLAN_V40 && _MIPLAN_V40.plan) || '';
+    const pesos = n => n === null || n === undefined ? 'a confirmar' : '$' + Number(n).toLocaleString('es-AR') + '/mes';
+    const ic = g => apps.filter(a => a.grupo === g).map(a => '<span class="mp5-ic">' + _escHTML(a.icono + ' ' + a.nombre) + '</span>').join('');
+    const env = (n, tit, g, adentro) => '<div class="mp5-env e' + n + '"><b>' + tit + '</b>' + (adentro || '') + ic(g) + '</div>';
+    const planes = ['BASICO', 'PRO', 'PLUS'].map(c => (r.planes || []).find(p => p.codigo === c)).filter(Boolean);
+    let h = '<div class="mp-grupo" style="margin-top:4px;">Planes</div>' + planes.map(p => {
+        const n = { BASICO: 1, PRO: 2, PLUS: 3 }[p.codigo], tuyo = p.codigo === actual;
+        let cuerpo = env(1, 'P1', 'P1'); if (n >= 2) cuerpo = env(2, 'P2', 'P2', cuerpo); if (n >= 3) cuerpo = env(3, 'PRO', 'P3', cuerpo);
+        return '<div class="mp5 ' + p.codigo + (tuyo ? ' actual' : '') + '">' + (tuyo ? '<span class="mp5-tag tuyo">✔ TU PLAN</span>' : '') + (n === 2 ? '<span class="mp5-tag">⭐ RECOMENDADO</span>' : n === 3 ? '<span class="mp5-tag oro">COMPLETO</span>' : '') +
+            '<div class="mp5-cab"><span class="mp5-sello">' + ['', 'P1', 'P2', 'P3'][n] + '</span><span class="mp5-nom">' + _escHTML(p.nombre) + '</span><span class="mp5-precio">' + pesos(p.precioRegular) + '</span></div>' + cuerpo +
+            (tuyo ? '' : '<div class="mp5-pie"><button data-pedir="' + _escHTML(p.nombre) + '">Pedir ' + _escHTML(p.nombre) + '</button></div>') + '</div>';
+    }).join('');
+    const cat = r.catalogoV043.complementos || [];
+    if (cat.length) h += '<div class="mp-grupo" style="color:#1B5E20;">➕ Complementos (se suman a cualquier plan)</div>' + cat.map(c => '<div class="mp5c"><div><b>' + _escHTML(c.nombre) + '</b><small>' + pesos(c.precioRegular) + '</small></div><button data-pedir="' + _escHTML(c.nombre) + '">Pedir</button></div>').join('');
+    h += '<div style="font-size:0.75rem;color:#777;margin-top:8px;">«Pedir» le avisa a VAO Sistemas por WhatsApp. El cambio se activa cuando VAO confirma tu pago.</div>';
+    setTimeout(() => document.querySelectorAll('#pagoPlanLista [data-pedir]').forEach(b => b.onclick = () => _pedirV42_(b.getAttribute('data-pedir'))), 0);
+    return h;
+}
+function _planesSinPagoV42viejo_(r) {
+    const planes = ((r && r.planes) || []).filter(p => p.codigo !== 'PRUEBA' && p.contratable && !p.proximamente && !p.cotizacion);
+    const cat = r && r.catalogoV043 && r.catalogoV043.migrado ? r.catalogoV043.complementos || [] : [];
+    const precio = (reg, lan) => reg === null || reg === undefined ? 'precio a confirmar' : '$' + Number(reg).toLocaleString('es-AR') + ' por mes' + (lan ? ' (lanzamiento $' + Number(lan).toLocaleString('es-AR') + ')' : '');
+    const color = c => c === 'PLUS' ? '#8A5A00' : (c === 'PRO' ? '#4527A0' : '#0D47A1');
+    const actual = (_MIPLAN_V40 && _MIPLAN_V40.plan) || '', apps = (r && r.catalogoV043 && r.catalogoV043.apps) || [];
+    const sumaDe = c => { const g = { BASICO: ['P1'], PRO: ['P1', 'P2'], PLUS: ['P1', 'P2', 'P3'] }[c] || []; const ext = { BASICO: 'P1', PRO: 'P2', PLUS: 'P3' }[c];   // V43: lo que trae cada plan (sale de la matriz central)
+        const l = apps.filter(a => a.grupo === ext).map(a => a.icono + ' ' + a.nombre); return (c === 'PRO' ? 'Todo P1 + ' : c === 'PLUS' ? 'Todo P1 y P2 + ' : '') + l.join(' · '); };
+    let h = '<div class="mp-grupo" style="margin-top:4px;">Planes</div>' + planes.map(p => '<div class="md-fila" style="border-left:4px solid ' + color(p.codigo) + ';padding-left:8px;"><div><b style="color:' + color(p.codigo) + '">' + _escHTML(p.nombre) + (p.codigo === actual ? ' · tu plan' : '') + '</b><small>' + precio(p.precioRegular, r.promo && p.conPromo ? p.precioLanzamiento : null) + (apps.length ? '<br>' + _escHTML(sumaDe(p.codigo)) : '') + '</small></div>' + (p.codigo === actual ? '' : '<button data-pedir="' + _escHTML(p.nombre) + '">Pedir</button>') + '</div>').join('');
+    if (cat.length) h += '<div class="mp-grupo" style="color:#1B5E20;">Complementos opcionales (se suman a cualquier plan)</div>' + cat.map(c => '<div class="md-fila" style="border-left:4px solid #2E8B57;padding-left:8px;"><div><b style="color:#1B5E20">' + _escHTML(c.nombre) + '</b><small>' + precio(c.precioRegular) + '</small></div><button style="background:#2E8B57" data-pedir="' + _escHTML(c.nombre) + '">Pedir</button></div>').join('');
+    h += '<div style="font-size:0.75rem;color:#777;margin-top:8px;">«Pedir» le avisa a VAO Sistemas por WhatsApp. El cambio se activa cuando VAO confirma tu pago (transferencia).</div>';
+    setTimeout(() => document.querySelectorAll('#pagoPlanLista [data-pedir]').forEach(b => b.onclick = () => _pedirV42_(b.getAttribute('data-pedir'))), 0);
+    return h;
+}
+function _pedirV42_(que) {
+    let nombre = ''; try { nombre = (document.getElementById('headerTitulo').textContent || '').trim(); } catch (e) {}
+    const r = _MIPLAN_V40 || {};
+    const t = 'Hola VAO Sistemas, quiero contratar: ' + que + '.\nComercio: ' + (nombre ? nombre + ' ' : '') + '(' + PREFIJO + ')\nPlan actual: ' + (r.planNombre || '-');
+    window.open('https://wa.me/' + SOPORTE_WHATSAPP + '?text=' + encodeURIComponent(t), '_blank', 'noopener');
+}
 async function pagarPlanMP(btn) {
     const plan = btn.getAttribute('data-plan'), est = document.getElementById('pagoPlanEstado');
     document.querySelectorAll('#pagoPlanLista button').forEach(b => b.disabled = true);
@@ -3045,6 +3705,15 @@ async function abrirMisDatos() {
     } catch (e) { lista.innerHTML = '<div style="color:#C62828;padding:14px 0;">📡 Sin conexión. Probá de nuevo.</div>'; }
 }
 function cerrarMisDatos() { document.getElementById('modalMisDatos').classList.remove('open'); }
+// V39: revisión del inventario (solo lectura: no cambia nada). Lista lo que conviene corregir antes de vender.
+async function revisarInventarioV39() {
+    const d = document.getElementById('invRevision'); d.style.display = 'block'; d.style.background = '#f5f5f5'; d.style.color = '#555'; d.textContent = 'Revisando…';
+    let r = null; try { r = await _llamarAPI('verificarInventario', { token: _tokenActual() }); } catch (e) { r = null; }
+    if (!r) { d.style.background = '#ffebee'; d.style.color = '#b71c1c'; d.textContent = '📡 Sin conexión. Probá de nuevo.'; return; }
+    if (!r.success) { d.style.background = '#ffebee'; d.style.color = '#b71c1c'; d.textContent = '❌ ' + (r.error || 'No se pudo revisar.'); return; }
+    const ok = r.listo; d.style.background = ok ? '#e8f5e9' : '#fff3e0'; d.style.color = ok ? '#1b5e20' : '#e65100';
+    d.textContent = (ok ? '✅ ' : '⚠️ ') + r.mensaje + (r.problemas.length ? '\n' + r.problemas.slice(0, 20).join('\n') + (r.problemas.length > 20 ? '\n… y ' + (r.problemas.length - 20) + ' más' : '') : '');
+}
 
 // ========== V31: HISTORIAL DE CAMBIOS (solo lectura · backend v040.4 getCambios) ==========
 let _cambios = [], _cambiosTotal = 0;
@@ -3173,12 +3842,31 @@ async function descargarDatos(que) {
     <div class="modal-sheet">
         <div class="modal-handle"></div>
         <div class="modal-header">
-            <span class="modal-titulo">💳 Pagar mi plan</span>
+            <span class="modal-titulo">💳 Mi plan</span>
             <button class="modal-cerrar" onclick="cerrarPagoPlan()">✕</button>
         </div>
         <div style="overflow-y:auto;max-height:78vh;padding:0 16px 18px;">
+            <div id="miPlanV40"></div>
             <div id="pagoPlanLista"></div>
             <div id="pagoPlanEstado" style="font-size:0.82rem;color:#0D47A1;font-weight:700;margin-top:10px;"></div>
+        </div>
+    </div>
+</div>
+<!-- ===== V43.3: ventana «✨ P3 PRO» (lo que suma el plan completo) ===== -->
+<div class="modal-bg" id="modalP3" onclick="if(event.target===this)cerrarP3V433()">
+    <div class="modal-sheet p3-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <span class="modal-titulo">✨ <span id="p3Nombre">P3 PRO</span></span>
+            <button class="modal-cerrar" onclick="cerrarP3V433()" aria-label="Cerrar">✕</button>
+        </div>
+        <div style="overflow-y:auto;max-height:78vh;padding:0 16px 18px;">
+            <div class="p3-cab"><span class="p3-sello">P3</span><div><b>El plan completo</b><span id="p3Precio">…</span></div></div>
+            <p class="p3-intro">Todo lo que ya usás de <b>P1</b> y <b>P2</b>, y además <b><span id="p3Cuantas">7</span> herramientas</b> para manejar el comercio entero:</p>
+            <div id="p3Herramientas"></div>
+            <button class="p3-pedir" onclick="pedirP3V433()">Pedir P3 PRO por WhatsApp</button>
+            <p class="p3-nota">Se activa cuando VAO Sistemas confirma tu pago. Tus ventas, productos y fiados no cambian.</p>
+            <button class="p3-comparar" onclick="compararPlanesV433()">Ver y comparar todos los planes</button>
         </div>
     </div>
 </div>
@@ -3193,6 +3881,8 @@ async function descargarDatos(que) {
         <div style="overflow-y:auto;max-height:78vh;padding:0 16px 18px;">
             <div style="font-size:0.82rem;color:#555;margin:2px 0 8px;">Tus registros son tuyos. Descargá cada hoja en un archivo que abre Excel o Google Sheets (CSV). Solo tus datos: nunca los de otros comercios.</div>
             <!-- V31: herramientas de control del comercio -->
+            <button id="btnRevisarInv" onclick="revisarInventarioV39()" style="width:100%;margin:4px 0 6px;padding:12px;border:none;border-radius:12px;background:#E8F5E9;color:#1B5E20;font-weight:800;font-family:inherit;font-size:0.92rem;cursor:pointer;">✔️ Revisar inventario antes de vender</button>
+            <div id="invRevision" style="display:none;font-size:0.82rem;line-height:1.4;padding:8px 10px;border-radius:10px;margin-bottom:8px;white-space:pre-wrap;"></div>
             <button onclick="abrirCambios()" style="width:100%;margin:4px 0 12px;padding:12px;border:none;border-radius:12px;background:#EDE7F6;color:#4527A0;font-weight:800;font-family:inherit;font-size:0.92rem;cursor:pointer;">🕵️ Historial de cambios (precios, stock e ingresos)</button>
             <div id="misDatosLista"><div style="text-align:center;padding:30px;color:#bbb;">Cargando…</div></div>
             <div id="misDatosEstado" style="font-size:0.82rem;color:#0D47A1;font-weight:700;margin-top:10px;"></div>

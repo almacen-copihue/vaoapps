@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Clientes · VAO POS</title>
+<style>
+/* clientes.html v1 (v044.1) — P2 Gestión. Gestión de clientes: lista, deuda, ficha con movimientos, desactivar / reactivar / eliminar.
+   Antes el botón «Clientes» abría Fiados. Para fiar o cobrar se sigue usando 🧾 Fiados (este módulo no cobra). */
+.filtros { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; }
+.filtros button { border: 2px solid var(--borde); background: var(--papel); color: var(--texto); border-radius: 999px; padding: 6px 12px; font: 700 .82rem inherit; cursor: pointer; min-height: 36px; }
+.filtros button.activo { border-color: var(--grupo); background: var(--grupo-fondo); color: var(--grupo-tinta); }
+.deuda { font-weight: 900; color: var(--rojo); white-space: nowrap; }
+.mov { border-bottom: 1px solid var(--borde); padding: 6px 0; font-size: .86rem; }
+</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <div class="vao-kpis" id="kpis"></div>
+  <div class="vao-tarjeta">
+    <div class="vao-campo"><label for="buscar">Buscar cliente</label><input id="buscar" placeholder="Nombre o teléfono"></div>
+    <div class="filtros" id="filtros"><button data-f="todos" class="activo">Todos</button><button data-f="deben">💰 Con deuda</button><button data-f="inactivos">⛔ Desactivados</button></div>
+    <div id="msg" class="oculto"></div>
+    <ul class="vao-lista" id="lista"></ul>
+  </div>
+</main>
+<script src="vao-comun.js"></script>
+<script>
+const $ = id => document.getElementById(id); let CLI = [], DEUDA = {}, FILTRO = 'todos';
+const norm = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
+function pintar() {
+  const q = norm($('buscar').value);
+  let l = CLI.filter(c => !q || norm(c.nombre + ' ' + c.telefono).includes(q));
+  if (FILTRO === 'deben') l = l.filter(c => (DEUDA[norm(c.nombre)] || 0) > 0); if (FILTRO === 'inactivos') l = l.filter(c => !c.activo);
+  $('lista').innerHTML = l.length ? l.map((c, i) => { const d = DEUDA[norm(c.nombre)] || 0;
+    return '<li class="vao-item"><div class="izq"><b>' + VAO.esc(c.nombre) + (c.activo ? '' : ' <span class="vao-chip gris">desactivado</span>') + '</b><small>' + VAO.esc(c.telefono || 'sin teléfono') + '</small></div>' +
+      (d > 0 ? '<span class="deuda">' + VAO.pesos(d) + '</span>' : '') + '<button class="vao-btn chico" data-i="' + CLI.indexOf(c) + '">Ficha</button></li>'; }).join('')
+    : VAO.vacio('👥', CLI.length ? 'Ningún cliente con ese filtro.' : 'Todavía no hay clientes. Se crean solos cuando fiás desde 🧾 Fiados o el POS.');
+  $('lista').querySelectorAll('[data-i]').forEach(b => b.onclick = () => ficha(CLI[+b.dataset.i]));
+}
+async function cargar() {
+  $('lista').innerHTML = '<li class="vao-item">Cargando…</li>';
+  try {
+    const [rc, rf] = await Promise.all([VAO.api('getClientes', {}), VAO.api('getFiados', {})]);
+    if (rc.error) { $('lista').innerHTML = ''; return VAO.msg('msg', rc.error, 'error'); }
+    CLI = rc.clientes || []; DEUDA = {};
+    (rf.fiados || []).forEach(f => { const s = Number(f.total) || 0; if (s > 0 && !f.fechaPago) DEUDA[norm(f.cliente)] = (DEUDA[norm(f.cliente)] || 0) + s; });
+    const total = Object.values(DEUDA).reduce((a, b) => a + b, 0);
+    $('kpis').innerHTML = '<div class="vao-kpi"><small>Clientes</small><b>' + CLI.length + '</b></div><div class="vao-kpi"><small>Con deuda</small><b>' + CLI.filter(c => DEUDA[norm(c.nombre)] > 0).length + '</b></div>' +
+      '<div class="vao-kpi"><small>Te deben en total</small><b style="color:var(--rojo)">' + VAO.pesos(total) + '</b></div>';
+    pintar();
+  } catch (e) { VAO.msg('msg', VAO.sinConexion, 'error'); $('lista').innerHTML = ''; }
+}
+async function ficha(c) {
+  const m = document.createElement('div'); m.className = 'vao-modal'; m.setAttribute('role', 'dialog');
+  m.innerHTML = '<div><h2 style="margin:0 0 6px">👤 ' + VAO.esc(c.nombre) + '</h2><div id="fz">Cargando…</div><div id="fMsg" class="oculto"></div><div class="vao-fila" style="margin-top:10px" id="fAcc"></div></div>';
+  document.body.appendChild(m); m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  let r; try { r = await VAO.api('getFichaCliente', { clienteId: c.clienteId, cliente: c.nombre }); } catch (e) { r = { success: false, error: VAO.sinConexion }; }
+  if (!r.success) { m.querySelector('#fz').innerHTML = VAO.vacio('⚠️', r.error || 'No se pudo cargar.'); return; }
+  if (r.sinFicha) { m.querySelector('#fz').innerHTML = VAO.vacio('🗂️', 'Este cliente todavía no tiene ficha (se arma al pasar los fiados al libro desde la planilla).'); }
+  else m.querySelector('#fz').innerHTML = '<p style="margin:0">' + VAO.esc(r.telefono || 'sin teléfono') + ' · ' + (r.activo ? 'activo' : '<b>desactivado</b>') + '</p>' +
+    '<p style="font-size:1.1rem;margin:6px 0">Debe <b class="deuda">' + VAO.pesos(r.deuda) + '</b> en ' + r.cantAbiertos + ' fiado(s)</p>' +
+    '<h3 style="font-size:.85rem;margin:10px 0 4px;color:var(--suave)">Últimos pagos</h3>' +
+    (r.movimientos.length ? r.movimientos.slice(0, 12).map(x => '<div class="mov">' + VAO.esc(x.fecha) + ' · ' + VAO.pesos(x.importe) + (x.medios.length ? ' · ' + VAO.esc(x.medios.join(' + ')) : '') + (x.anulado ? ' <span class="vao-chip rojo">anulado</span>' : '') + '</div>').join('') : '<div class="mov" style="color:var(--suave)">Sin pagos todavía.</div>');
+  const acc = m.querySelector('#fAcc');
+  acc.innerHTML = '<a class="vao-btn primario" href="fiados.html?p=' + encodeURIComponent(VAO.prefijo) + '">🧾 Fiar o cobrar en Fiados</a>' +
+    (r.clienteId ? (r.activo ? '<button class="vao-btn vao-escribe" data-a="desactivar">⛔ Desactivar</button>' : '<button class="vao-btn vao-escribe" data-a="reactivar">✅ Reactivar</button>') +
+      (!r.tieneHistorial ? '<button class="vao-btn peligro vao-escribe" data-a="eliminar">🗑️ Eliminar</button>' : '') : '') + '<button class="vao-btn" data-a="cerrar">Cerrar</button>';
+  acc.querySelectorAll('[data-a]').forEach(b => b.onclick = async () => {
+    const a = b.dataset.a; if (a === 'cerrar') return m.remove();
+    const txt = { desactivar: 'Desactivar a ' + c.nombre + '? Se conserva su ficha y su historial; no se le puede fiar, pero sí cobrarle lo que debe.', reactivar: '¿Reactivar a ' + c.nombre + '?', eliminar: '¿Eliminar a ' + c.nombre + '? Solo se puede porque no tiene fiados ni pagos.' }[a];
+    if (!confirm(txt)) return;
+    b.disabled = true;
+    try { const x = await VAO.api('gestionarCliente', { accion: a, clienteId: r.clienteId }); VAO.msg(m.querySelector('#fMsg'), x.success ? x.mensaje : x.error, x.success ? 'ok' : 'error'); if (x.success) { setTimeout(() => m.remove(), 900); cargar(); } }
+    catch (e) { VAO.msg(m.querySelector('#fMsg'), VAO.sinConexion, 'error'); }
+    b.disabled = false;
+  });
+}
+VAO.iniciar({ modulo: 'extra_fiados_gestion', titulo: 'Clientes', icono: '👥', grupo: 'P2' }).then(ok => {
+  if (!ok) return;
+  $('buscar').oninput = pintar;
+  $('filtros').querySelectorAll('button').forEach(b => b.onclick = () => { FILTRO = b.dataset.f; $('filtros').querySelectorAll('button').forEach(x => x.classList.toggle('activo', x === b)); pintar(); });
+  cargar();
+});
+</script>
+</body>
+</html>

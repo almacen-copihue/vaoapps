@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Lista de compra · VAO POS</title>
+<style>
+/* compras.html v1 (v044) — paquete P3 PRO. La lista es una SUGERENCIA: no cambia el inventario. El pedido tampoco suma stock. */
+.prov-cab { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.it { display: grid; grid-template-columns: 30px 1fr 78px; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--borde); }
+.it input[type=checkbox] { width: 24px; height: 24px; }
+.it input.cant { width: 100%; min-height: 40px; border: 2px solid var(--borde); border-radius: 8px; text-align: center; font: inherit; background: var(--papel); color: var(--texto); }
+.it small { color: var(--suave); font-size: .76rem; }
+</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <nav class="vao-pestanas" id="tabs" role="tablist">
+    <button data-tab="lista" class="activo">🛒 Qué comprar</button>
+    <button data-tab="pedidos">📦 Pedidos</button>
+  </nav>
+  <section data-panel="lista">
+    <div class="vao-tarjeta">
+      <div class="vao-fila">
+        <div class="vao-campo" style="flex:0 1 200px;"><label for="cobertura">Comprar para cubrir</label>
+          <select id="cobertura"><option value="7">7 días</option><option value="14" selected>14 días</option><option value="21">21 días</option><option value="30">30 días</option></select></div>
+        <button class="vao-btn" id="btnTodos">☑️ Elegir todo</button>
+        <button class="vao-btn" id="btnNinguno">⬜ Ninguno</button>
+        <button class="vao-btn" id="btnCompartirTodo">📤 Compartir la lista completa</button>
+      </div>
+      <p class="vao-msg info" id="nota">Calculando…</p>
+    </div>
+    <div id="msgLista" class="oculto"></div>
+    <div id="grupos"></div>
+  </section>
+  <section data-panel="pedidos" class="oculto">
+    <div class="vao-tarjeta"><h2>Pedidos preparados</h2><div id="msgPed" class="oculto"></div><ul class="vao-lista" id="pedidos"></ul></div>
+  </section>
+</main>
+<script src="vao-comun.js"></script>
+<script>
+let DATOS = null; const SEL = {}, CANT = {}, OPS = {};
+const $ = id => document.getElementById(id);
+const chipUrg = { AGOTADO: 'rojo', ALTA: 'naranja', MEDIA: '', BAJA: 'gris' };
+function pintar() {
+  if (!DATOS.proveedores.length) { $('grupos').innerHTML = '<div class="vao-tarjeta"><p>✅ No hay nada urgente para comprar con esta cobertura.</p></div>'; return; }
+  $('grupos').innerHTML = DATOS.proveedores.map((g, gi) => {
+    const elegidos = g.items.filter(i => SEL[i.id]), est = elegidos.reduce((s, i) => s + (CANT[i.id] || 0) * i.ultimoCosto, 0);
+    return '<div class="vao-tarjeta"><div class="prov-cab"><h2>🏷️ ' + VAO.esc(g.proveedor) + '</h2><span class="vao-chip">' + g.items.length + ' producto(s)</span></div>' +
+      g.items.map(i => '<label class="it"><input type="checkbox" data-sel="' + i.id + '"' + (SEL[i.id] ? ' checked' : '') + '>' +
+        '<span><b>' + VAO.esc(i.nombre) + '</b> <span class="vao-chip ' + chipUrg[i.urgencia] + '">' + i.urgencia + '</span><br><small>Stock ' + i.stock + ' · vendiste ' + i.ventas7 + ' en 7 días y ' + i.ventas30 + ' en 30' +
+        (i.diasStock !== null ? ' · alcanza ~' + i.diasStock + ' días' : '') + ' · último costo ' + VAO.pesos(i.ultimoCosto) + (i.ultimoCostoFecha ? ' (' + i.ultimoCostoFecha + ')' : ' (del inventario)') + '</small></span>' +
+        '<input class="cant" inputmode="decimal" data-cant="' + i.id + '" value="' + (CANT[i.id] || i.sugerido) + '" aria-label="Cantidad a pedir de ' + VAO.esc(i.nombre) + '"></label>').join('') +
+      '<div class="vao-fila" style="margin-top:10px;justify-content:space-between;"><small>' + elegidos.length + ' elegido(s) · estimado ' + VAO.pesos(est) + '</small>' +
+      '<div class="vao-fila"><button class="vao-btn chico" data-todo="' + gi + '">Elegir todos</button><button class="vao-btn primario vao-escribe" data-pedir="' + gi + '">💬 Pedir lo elegido por WhatsApp</button></div></div></div>';
+  }).join('');
+  $('grupos').querySelectorAll('[data-sel]').forEach(c => c.addEventListener('change', () => { SEL[c.dataset.sel] = c.checked; pintar(); }));
+  $('grupos').querySelectorAll('[data-cant]').forEach(c => c.addEventListener('change', () => { const v = VAO.num(c.value); CANT[c.dataset.cant] = v > 0 ? v : 0; pintar(); }));
+  $('grupos').querySelectorAll('[data-todo]').forEach(b => b.addEventListener('click', () => { DATOS.proveedores[+b.dataset.todo].items.forEach(i => SEL[i.id] = true); pintar(); }));
+  $('grupos').querySelectorAll('[data-pedir]').forEach(b => b.addEventListener('click', () => pedir(+b.dataset.pedir, b)));
+}
+async function cargar() {
+  $('nota').textContent = 'Calculando…'; VAO.msg('msgLista', '');
+  try {
+    const r = await VAO.api('getListaCompra', { cobertura: +$('cobertura').value });
+    if (!r.success) { VAO.msg('msgLista', r.error, 'error'); return; }
+    DATOS = r; DATOS.proveedores.forEach(g => g.items.forEach(i => { if (CANT[i.id] === undefined) CANT[i.id] = i.sugerido; if (SEL[i.id] === undefined) SEL[i.id] = i.urgencia === 'AGOTADO' || i.urgencia === 'ALTA'; }));
+    $('nota').textContent = r.nota + ' ' + r.total + ' producto(s) para revisar.'; pintar();
+  } catch (e) { VAO.msg('msgLista', VAO.sinConexion, 'error'); }
+}
+async function pedir(gi, btn) {
+  const g = DATOS.proveedores[gi], items = g.items.filter(i => SEL[i.id] && CANT[i.id] > 0).map(i => ({ id: i.id, cantidad: CANT[i.id], costo: i.ultimoCosto }));
+  if (!items.length) { VAO.toast('Elegí al menos un producto con cantidad', 'error'); return; }
+  const clave = g.proveedor + '|' + JSON.stringify(items); OPS[clave] = OPS[clave] || VAO.opId('PED');
+  btn.disabled = true;
+  try {
+    const r = await VAO.api('crearPedido', { opId: OPS[clave], proveedor: g.proveedor, items });
+    if (!r.success) { VAO.toast(r.error, 'error'); } else { VAO.toast('Pedido ' + r.id + ' guardado. Elegí el contacto en WhatsApp.', 'ok'); VAO.whatsapp(r.mensaje); }
+  } catch (e) { VAO.toast(VAO.sinConexion, 'error'); }
+  btn.disabled = false;
+}
+function compartirTodo() {
+  if (!DATOS) return;
+  const t = ['🛒 *Lista de compra completa* (' + VAO.hoy() + ')', ''].concat(DATOS.proveedores.flatMap(g => ['*' + g.proveedor + '*'].concat(g.items.map(i => '• ' + i.nombre + ' — ' + (CANT[i.id] || i.sugerido))).concat(['']))).join('\n');
+  if (navigator.share) navigator.share({ text: t }).catch(() => {}); else VAO.whatsapp(t);
+}
+async function cargarPedidos() {
+  $('pedidos').innerHTML = '<li class="vao-item">Cargando…</li>';
+  try {
+    const r = await VAO.api('listarPedidos', {});
+    if (!r.success) { VAO.msg('msgPed', r.error, 'error'); return; }
+    if (!r.pedidos.length) { $('pedidos').innerHTML = '<li class="vao-item">Todavía no hay pedidos.</li>'; return; }
+    $('pedidos').innerHTML = r.pedidos.map((p, i) => '<li class="vao-item"><div class="izq"><b>' + VAO.esc(p.proveedor) + ' · ' + p.totalItems + ' producto(s)</b><small>' + VAO.esc(p.id) + ' · ' + p.fecha + ' · estimado ' + VAO.pesos(p.totalEstimado) + '</small> <span class="vao-chip ' + (p.estado === 'CANCELADO' ? 'rojo' : '') + '">' + p.estado + '</span></div>' +
+      '<div class="vao-fila" style="flex:0 0 auto;"><button class="vao-btn chico" data-wa="' + i + '">💬</button>' +
+      (p.estado === 'PREPARADO' || p.estado === 'ENVIADO' ? '<button class="vao-btn chico vao-escribe" data-e="' + i + ':ENVIADO">Enviado</button><button class="vao-btn chico vao-escribe" data-e="' + i + ':RECIBIDO">Recibido</button><button class="vao-btn chico peligro vao-escribe" data-e="' + i + ':CANCELADO">Cancelar</button>' : '') + '</div></li>').join('');
+    $('pedidos').querySelectorAll('[data-wa]').forEach(b => b.addEventListener('click', () => VAO.whatsapp(r.pedidos[+b.dataset.wa].mensaje)));
+    $('pedidos').querySelectorAll('[data-e]').forEach(b => b.addEventListener('click', async () => { const [i, e] = b.dataset.e.split(':'); const x = await VAO.api('estadoPedido', { id: r.pedidos[+i].id, estado: e }); VAO.toast(x.success ? x.mensaje : x.error, x.success ? 'ok' : 'error'); cargarPedidos(); }));
+  } catch (e) { VAO.msg('msgPed', VAO.sinConexion, 'error'); }
+}
+VAO.iniciar({ modulo: 'extra_lista_compras', titulo: 'Lista de compra', icono: '🛒', grupo: 'P3' }).then(ok => {
+  if (!ok) return;
+  VAO.pestanas('tabs', t => { if (t === 'pedidos') cargarPedidos(); });
+  $('cobertura').addEventListener('change', cargar);
+  $('btnTodos').addEventListener('click', () => { DATOS && DATOS.proveedores.forEach(g => g.items.forEach(i => SEL[i.id] = true)); pintar(); });
+  $('btnNinguno').addEventListener('click', () => { DATOS && DATOS.proveedores.forEach(g => g.items.forEach(i => SEL[i.id] = false)); pintar(); });
+  $('btnCompartirTodo').addEventListener('click', compartirTodo);
+  cargar();
+});
+</script>
+</body>
+</html>

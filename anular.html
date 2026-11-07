@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Anular venta · VAO POS</title>
+<style>/* anular.html v1 (v044) — P2 Gestión. Regla C2: nada se borra; la anulación es una operación nueva con motivo, operador y vista previa. */</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <p class="vao-msg info">Anulá una venta común cuando el cliente devuelve la mercadería o se cargó mal: vuelve el stock y se registra la devolución por el mismo medio. La venta original queda en el historial.</p>
+  <nav class="vao-pestanas" id="tabs" role="tablist"><button data-tab="ventas" class="activo">🧾 Ventas recientes</button><button data-tab="hist">📜 Anulaciones</button></nav>
+  <section data-panel="ventas">
+    <div class="vao-tarjeta">
+      <div class="vao-campo" style="max-width:200px;"><label for="dias">Ventas de</label><select id="dias"><option value="1">Hoy</option><option value="3" selected>Últimos 3 días</option><option value="7">Últimos 7 días</option><option value="31">Último mes</option></select></div>
+      <div id="msg" class="oculto"></div><ul class="vao-lista" id="ventas"></ul>
+    </div>
+  </section>
+  <section data-panel="hist" class="oculto"><div class="vao-tarjeta"><ul class="vao-lista" id="hist"></ul></div></section>
+</main>
+<script src="vao-comun.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+async function cargar() {
+  $('ventas').innerHTML = '<li class="vao-item">Cargando…</li>';
+  try {
+    const r = await VAO.api('ventasRecientes', { dias: +$('dias').value });
+    if (!r.success) { VAO.msg('msg', r.error, 'error'); $('ventas').innerHTML = ''; return; }
+    $('ventas').innerHTML = r.ventas.length ? r.ventas.map(v => '<li class="vao-item"><div class="izq"><b>' + VAO.pesos(v.total) + ' · ' + VAO.esc(v.medio) + '</b><small>' + v.fecha + ' ' + v.hora + ' · ' + v.items.map(i => VAO.esc(i.producto) + ' ×' + i.cantidad).join(', ') + '</small>' +
+      (v.anulada ? ' <span class="vao-chip rojo">ANULADA ' + v.anulada.fecha + '</span>' : (!v.anulable ? ' <span class="vao-chip gris">' + VAO.esc(v.motivoNoAnulable) + '</span>' : '')) + '</div>' +
+      (v.anulable ? '<button class="vao-btn chico peligro vao-escribe" data-v="' + v.ventaId + '">Anular</button>' : '') + '</li>').join('') : '<li class="vao-item">No hay ventas en el período.</li>';
+    $('ventas').querySelectorAll('[data-v]').forEach(b => b.onclick = () => VAO.anular({ titulo: 'Anular venta', accion: 'anularVenta', datos: { ventaId: b.dataset.v },
+      describir: p => '<ul style="padding-left:18px;margin:6px 0">' + p.lineas.map(l => '<li>' + VAO.esc(l.producto) + ': vuelven ' + l.cantidad + ' (stock ' + l.stockActual + ' → <b>' + l.stockDespues + '</b>)</li>').join('') + '</ul><p>' + VAO.esc(p.devolucion) + '</p>', alTerminar: cargar }));
+  } catch (e) { VAO.msg('msg', VAO.sinConexion, 'error'); }
+}
+async function hist() {
+  const r = await VAO.api('listarAnulaciones', {}); if (!r.success) return;
+  const ic = { VENTA: '🧾', SALIDA: '📤', EGRESO: '💸', JUEGO: '🎁' };
+  $('hist').innerHTML = r.anulaciones.length ? r.anulaciones.map(a => '<li class="vao-item"><div class="izq"><b>' + (ic[a.tipo] || '↩️') + ' ' + VAO.esc(a.tipo) + ' · ' + VAO.esc(a.referencia) + '</b><small>' + VAO.esc(a.fecha) + ' · ' + VAO.esc(a.operador) + ' · «' + VAO.esc(a.motivo) + '» · ' + VAO.esc(a.detalle) + '</small></div></li>').join('') : '<li class="vao-item">No hay anulaciones.</li>';
+}
+VAO.iniciar({ modulo: 'pack2_editor_stock', titulo: 'Anular venta', icono: '↩️', grupo: 'P2' }).then(ok => {
+  if (!ok) return; VAO.pestanas('tabs', t => { if (t === 'hist') hist(); }); $('dias').onchange = cargar; cargar();
+});
+</script>
+</body>
+</html>

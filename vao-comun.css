@@ -1,0 +1,96 @@
+/* vao-comun.css — v044.1. Estilos compartidos de las aplicaciones de VAO POS (misma familia visual que el POS).
+   Claro y oscuro (según el celular). P1 azul · P2 violeta · P3 PRO dorado (premium) · Complementos verde. */
+:root {
+  --fondo: #F4F7FB; --papel: #FFFFFF; --texto: #1C2533; --suave: #5F6B7A; --borde: #D7E0EC;
+  --azul: #1E88E5; --azul-osc: #0D47A1; --violeta: #7E57C2; --verde: #2E8B57; --verde-osc: #1B5E20;
+  --rojo: #C62828; --naranja: #E65100; --amarillo: #FFF4E5;
+  --grupo: var(--verde); --grupo-fondo: #E8F5E9; --grupo-tinta: #1B5E20;
+  --radio: 14px; --sombra: 0 2px 10px rgba(15, 30, 60, .10);
+}
+html[data-grupo="P1"] { --grupo: #1E88E5; --grupo-fondo: #E3F2FD; --grupo-tinta: #0D47A1; }
+html[data-grupo="P2"] { --grupo: #7E57C2; --grupo-fondo: #EDE7F6; --grupo-tinta: #4527A0; }
+html[data-grupo="P3"] { --grupo: #B07D12; --grupo-fondo: #FFF6DC; --grupo-tinta: #6B4A00; }   /* v044.1: P3 PRO premium */
+html[data-grupo="C"]  { --grupo: #2E8B57; --grupo-fondo: #E8F5E9; --grupo-tinta: #1B5E20; }   /* complementos opcionales */
+@media (prefers-color-scheme: dark) {
+  :root { --fondo: #0F1622; --papel: #182232; --texto: #E6ECF5; --suave: #9AA8BC; --borde: #2A3850; --amarillo: #3A2E14;
+          --grupo-fondo: #17301F; --grupo-tinta: #A5D6A7; --sombra: 0 2px 10px rgba(0, 0, 0, .4); }
+  html[data-grupo="P1"] { --grupo-fondo: #13283F; --grupo-tinta: #90CAF9; }
+  html[data-grupo="P2"] { --grupo-fondo: #251C3B; --grupo-tinta: #CE93D8; }
+  html[data-grupo="P3"] { --grupo-fondo: #2E2610; --grupo-tinta: #FFD978; }
+}
+html[data-grupo="P3"] .vao-sello { background: linear-gradient(135deg, #8A5A00, #D4A017 60%, #F3D27A); color: #241800; }
+/* v044.1: menú de aplicaciones (cambiar de aplicación sin volver al POS; misma sesión) */
+.vao-apps-btn { color: #fff; background: rgba(255,255,255,.16); border: 0; border-radius: 12px; padding: 8px 11px; font: 800 .9rem inherit; cursor: pointer; }
+.vao-apps { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.vao-apps a { display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: var(--texto); background: var(--fondo); border-radius: 12px; padding: 10px 6px; font-weight: 700; font-size: .8rem; text-align: center; border: 2px solid transparent; }
+.vao-apps a .i { font-size: 1.5rem; }
+.vao-apps a.actual { border-color: var(--grupo); }
+.vao-apps h3 { grid-column: 1 / -1; margin: 6px 0 0; font-size: .78rem; color: var(--suave); text-transform: uppercase; letter-spacing: .5px; }
+.vao-vacio { text-align: center; color: var(--suave); padding: 22px 10px; }
+.vao-vacio .i { font-size: 2rem; display: block; margin-bottom: 4px; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--fondo); color: var(--texto); font: 400 15px/1.45 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.oculto { display: none !important; }
+a { color: var(--azul); }
+:focus-visible { outline: 3px solid var(--grupo); outline-offset: 2px; border-radius: 6px; }
+#vaoCabecera { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: linear-gradient(135deg, #0A2472 0%, #0D47A1 45%, #1E88E5 100%); color: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.25); }
+.vao-volver { color: #fff; text-decoration: none; font-weight: 800; background: rgba(255,255,255,.16); border-radius: 12px; padding: 8px 12px; white-space: nowrap; }
+.vao-tit { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.vao-tit h1 { margin: 0; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vao-sello { background: var(--grupo); color: #fff; font-weight: 800; font-size: .75rem; border-radius: 8px; padding: 3px 7px; flex: 0 0 auto; }
+.vao-comercio { font-size: .78rem; opacity: .85; max-width: 32vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+main.vao { max-width: 980px; margin: 0 auto; padding: 14px 14px 80px; }
+.vao-tarjeta { background: var(--papel); border-radius: var(--radio); box-shadow: var(--sombra); padding: 14px; margin-bottom: 12px; border-top: 4px solid var(--grupo); }
+.vao-tarjeta h2 { margin: 0 0 8px; font-size: 1.02rem; color: var(--grupo-tinta); }
+.vao-centro { text-align: center; max-width: 520px; margin: 30px auto; }
+.vao-grande { font-size: 2.6rem; }
+.vao-pestanas { display: flex; flex-wrap: wrap; gap: 6px; padding: 2px 0 10px; }   /* v044: en celular las pestañas bajan de renglón (antes quedaba una tapada a la derecha) */
+.vao-pestanas button { border: 0; border-radius: 999px; padding: 9px 14px; font: 700 .86rem inherit; background: var(--grupo-fondo); color: var(--grupo-tinta); cursor: pointer; white-space: nowrap; min-height: 40px; }
+.vao-pestanas button.activo { background: var(--grupo); color: #fff; }
+.vao-fila { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+.vao-campo { display: flex; flex-direction: column; gap: 4px; flex: 1 1 160px; min-width: 0; margin-bottom: 8px; }
+.vao-campo label { font-size: .78rem; font-weight: 700; color: var(--suave); }
+.vao-campo input, .vao-campo select, .vao-campo textarea { font: inherit; color: var(--texto); background: var(--papel); border: 2px solid var(--borde); border-radius: 10px; padding: 10px; min-height: 44px; width: 100%; }
+.vao-campo input:focus, .vao-campo select:focus, .vao-campo textarea:focus { border-color: var(--grupo); outline: none; }
+.vao-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; border-radius: 12px; padding: 10px 16px; min-height: 44px;
+  font: 800 .92rem inherit; cursor: pointer; text-decoration: none; background: var(--grupo-fondo); color: var(--grupo-tinta); }
+.vao-btn.primario { background: var(--grupo); color: #fff; }
+.vao-btn.peligro { background: #FDECEA; color: var(--rojo); }
+.vao-btn.chico { min-height: 34px; padding: 6px 10px; font-size: .8rem; }
+.vao-btn[disabled] { opacity: .5; cursor: not-allowed; }
+html.vao-solo-lectura .vao-escribe { display: none !important; }
+.vao-msg { border-radius: 10px; padding: 10px 12px; margin: 0 0 10px; font-size: .9rem; }
+.vao-msg.ok { background: #E8F5E9; color: #1B5E20; } .vao-msg.error { background: #FDECEA; color: var(--rojo); }
+.vao-msg.info { background: #E3F2FD; color: #0D47A1; } .vao-msg.aviso { background: var(--amarillo); color: var(--naranja); }
+@media (prefers-color-scheme: dark) { .vao-msg.ok { background: #16301F; color: #A5D6A7; } .vao-msg.error { background: #3A1616; color: #EF9A9A; } .vao-msg.info { background: #13283F; color: #90CAF9; } }
+.vao-lista { list-style: none; margin: 0; padding: 0; }
+.vao-item { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 2px; border-bottom: 1px solid var(--borde); }
+.vao-item:last-child { border-bottom: 0; }
+.vao-item .izq { min-width: 0; flex: 1; }
+.vao-item b { display: block; overflow-wrap: anywhere; }
+.vao-item small { color: var(--suave); font-size: .78rem; }
+.vao-tabla { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.vao-tabla th { text-align: left; font-size: .74rem; text-transform: uppercase; letter-spacing: .4px; color: var(--suave); border-bottom: 2px solid var(--borde); padding: 6px; }
+.vao-tabla td { border-bottom: 1px solid var(--borde); padding: 7px 6px; vertical-align: top; }
+.vao-tabla .num { text-align: right; white-space: nowrap; }
+.vao-scroll { overflow-x: auto; }
+.vao-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.vao-kpi { background: var(--papel); border-radius: 12px; padding: 10px 12px; box-shadow: var(--sombra); }
+.vao-kpi small { display: block; color: var(--suave); font-size: .74rem; font-weight: 700; }
+.vao-kpi b { font-size: 1.15rem; }
+.vao-chip { display: inline-block; border-radius: 999px; padding: 2px 9px; font-size: .74rem; font-weight: 800; background: var(--grupo-fondo); color: var(--grupo-tinta); }
+.vao-chip.rojo { background: #FDECEA; color: var(--rojo); } .vao-chip.naranja { background: var(--amarillo); color: var(--naranja); } .vao-chip.gris { background: var(--borde); color: var(--suave); }
+.vao-toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(120px); background: #263238; color: #fff; padding: 12px 16px; border-radius: 12px; max-width: 92vw; z-index: 50; transition: transform .25s; font-weight: 700; }
+.vao-toast.visible { transform: translateX(-50%) translateY(0); }
+.vao-toast.ok { background: #1B5E20; } .vao-toast.error { background: #B71C1C; }
+.vao-modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: flex-end; justify-content: center; z-index: 40; }
+.vao-modal > div { background: var(--papel); width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; border-radius: 18px 18px 0 0; padding: 16px; }
+@media (min-width: 700px) { .vao-modal { align-items: center; } .vao-modal > div { border-radius: 18px; } }
+.vao-buscar { position: relative; }
+.vao-resultados { position: absolute; left: 0; right: 0; top: 100%; z-index: 10; background: var(--papel); border: 1px solid var(--borde); border-radius: 10px; box-shadow: var(--sombra); max-height: 260px; overflow-y: auto; }
+.vao-resultados button { display: flex; justify-content: space-between; gap: 8px; width: 100%; border: 0; background: none; color: var(--texto); padding: 10px; font: inherit; text-align: left; cursor: pointer; border-bottom: 1px solid var(--borde); }
+.vao-resultados button:hover, .vao-resultados button:focus { background: var(--grupo-fondo); }
+.staging-badge { position: fixed; left: 8px; bottom: 8px; background: #F57C00; color: #fff; font-size: .7rem; font-weight: 800; border-radius: 999px; padding: 3px 9px; z-index: 30; opacity: .9; }
+@media (max-width: 480px) { main.vao { padding: 10px 10px 80px; } .vao-comercio { display: none; } .vao-tabla { font-size: .8rem; } }

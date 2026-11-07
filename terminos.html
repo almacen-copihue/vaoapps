@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<title>VAO POS · Términos de uso</title>
+<!-- terminos.html v1 (v044.3, 06/11/2026) — Términos de uso simples, aprobados por el dueño. Página pública y estática:
+     no llama al servidor ni guarda nada. contrato.html la muestra cuando no hay un contrato publicado. -->
+<style>
+:root { --tinta: #0D47A1; --texto: #16263D; --suave: #4D6079; --borde: #C9D8EA; --fondo: #E9F1FA; --papel: #FFFFFF; --verde: #2E7D32; }
+@media (prefers-color-scheme: dark) { :root { --tinta: #8EC5FF; --texto: #E6ECF5; --suave: #9AA8BC; --borde: #2A3850; --fondo: #0F1622; --papel: #182232; --verde: #7BD389; } }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: var(--fondo); color: var(--texto); line-height: 1.5; }
+header { background: #0D47A1; color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+header img { height: 34px; } header h1 { margin: 0; font-size: 1.1rem; } header small { display: block; opacity: .85; font-weight: 400; }
+header a { margin-left: auto; color: #fff; text-decoration: none; border: 2px solid rgba(255,255,255,.5); border-radius: 999px; padding: 8px 14px; font-weight: 700; white-space: nowrap; }
+main { max-width: 720px; margin: 0 auto; padding: 16px; }
+.intro { background: var(--papel); border-radius: 14px; padding: 14px 16px; border: 1px solid var(--borde); margin-bottom: 12px; }
+.intro p { margin: 0; color: var(--suave); }
+.punto { display: flex; gap: 12px; background: var(--papel); border: 1px solid var(--borde); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+.punto .ic { font-size: 1.5rem; line-height: 1; flex: 0 0 auto; }
+.punto h2 { margin: 0 0 2px; font-size: 1rem; color: var(--tinta); }
+.punto p { margin: 0; }
+.destacado { border-color: var(--verde); }
+footer { text-align: center; color: var(--suave); font-size: .82rem; padding: 10px 16px 28px; }
+a { color: var(--tinta); }
+</style>
+</head>
+<body>
+<header>
+  <img src="favicon-48.png" alt="">
+  <h1>VAO POS<small>Términos de uso</small></h1>
+  <a href="#" id="volver">← Volver</a>
+</header>
+<main>
+  <div class="intro"><p>Son pocas reglas y están escritas claras, sin letra chica. Al usar VAO POS aceptás estos términos.</p></div>
+
+  <div class="punto"><span class="ic">🏪</span><div><h2>Qué es</h2>
+    <p>Un sistema de caja, stock y fiados para tu comercio. Lo usás desde el navegador o lo instalás como app en el celular o la computadora.</p></div></div>
+
+  <div class="punto"><span class="ic">🎁</span><div><h2>Prueba gratis</h2>
+    <p>7 días gratis y 3 días más de gracia. No hace falta tarjeta.</p></div></div>
+
+  <div class="punto"><span class="ic">💳</span><div><h2>Planes y pago</h2>
+    <p>Hay tres planes: P1 Esencial, P2 Gestión y P3 PRO. Mirá precios y qué incluye cada uno en <a href="planes.html">la página de planes</a>. El pago es mensual, por transferencia, y tu plan se activa cuando VAO Sistemas confirma que llegó. Si un precio cambia, te avisamos antes de tu próximo mes.</p></div></div>
+
+  <div class="punto destacado"><span class="ic">📂</span><div><h2>Tus datos son tuyos</h2>
+    <p>Tus ventas, productos y fiados son tuyos. Los descargás cuando quieras desde <b>Mis datos → Descargas</b>. VAO Sistemas no los vende ni los comparte.</p></div></div>
+
+  <div class="punto"><span class="ic">👥</span><div><h2>Datos de tus clientes</h2>
+    <p>Si anotás nombres o teléfonos de tus clientes, por ejemplo para fiarles, usalos solo para tu comercio. Sos responsable de ese uso.</p></div></div>
+
+  <div class="punto"><span class="ic">⏸️</span><div><h2>Si dejás de pagar</h2>
+    <p>El sistema queda en modo consulta: podés ver y descargar tu información, pero no cargar ventas nuevas. Guardamos tu información por lo menos 90 días.</p></div></div>
+
+  <div class="punto"><span class="ic">🌐</span><div><h2>Funcionamiento</h2>
+    <p>VAO POS funciona sobre los servicios de Google y necesita internet. Trabajamos para que ande siempre bien, pero puede haber cortes que no dependen de nosotros. Seguí controlando tu caja como siempre.</p></div></div>
+
+  <div class="punto destacado"><span class="ic">👋</span><div><h2>Baja cuando quieras</h2>
+    <p>Pedila por WhatsApp cuando quieras. No hay permanencia mínima ni multa.</p></div></div>
+
+  <div class="punto"><span class="ic">💬</span><div><h2>Contacto</h2>
+    <p>Soporte por WhatsApp, desde el botón <b>💬 Soporte</b> del sistema.</p></div></div>
+</main>
+<footer>VAO POS es un servicio de VAO Sistemas · Términos de uso v1 · noviembre 2026</footer>
+<script>
+(function () {
+  var p = (new URLSearchParams(location.search).get('p') || '').trim().toUpperCase(), v = document.getElementById('volver');
+  if (/^[A-Z0-9]{2,10}$/.test(p)) v.href = 'pos.html?p=' + encodeURIComponent(p);
+  else v.href = 'planes.html';
+  v.addEventListener('click', function (e) { if (history.length > 1 && document.referrer && document.referrer.indexOf(location.host) !== -1) { e.preventDefault(); history.back(); } });
+})();
+</script>
+</body>
+</html>

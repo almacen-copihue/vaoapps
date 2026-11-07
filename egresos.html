@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Caja · egresos · VAO POS</title>
+<style>/* egresos.html v1 (v044) — paquete P3 PRO. Un formulario para registrar y un historial para consultar (sin pantallas repetidas). */</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <nav class="vao-pestanas" id="tabs" role="tablist">
+    <button data-tab="registrar" class="activo">💸 Registrar egreso</button>
+    <button data-tab="historial">📜 Historial</button>
+  </nav>
+  <section data-panel="registrar">
+    <div class="vao-tarjeta vao-escribe">
+      <h2>Plata que sale de la caja</h2>
+      <div class="vao-fila">
+        <div class="vao-campo"><label for="monto">Monto ($)</label><input id="monto" inputmode="decimal" placeholder="Ej.: 12.500"></div>
+        <div class="vao-campo"><label for="categoria">Categoría</label><select id="categoria"><option value="">Elegí…</option></select></div>
+        <div class="vao-campo"><label for="medio">Pagado con</label><select id="medio"><option value="EFECTIVO">💵 Efectivo</option><option value="TRANSFERENCIA">🏦 Transferencia</option><option value="DEBITO">💳 Débito</option><option value="QR_POSNET">💳 QR / Posnet</option></select></div>
+      </div>
+      <div class="vao-campo"><label for="motivo">Motivo (qué se pagó)</label><input id="motivo" maxlength="120" placeholder="Ej.: pago a Distribuidora Sur, factura 1234"></div>
+      <div class="vao-fila">
+        <div class="vao-campo"><label for="obs">Observación (opcional)</label><input id="obs" maxlength="150"></div>
+        <div class="vao-campo"><label for="operador">Quién lo registra</label><input id="operador" maxlength="60"></div>
+      </div>
+      <div id="msg" class="oculto"></div>
+      <button class="vao-btn primario" id="btnRegistrar">💸 Registrar egreso</button>
+    </div>
+  </section>
+  <section data-panel="historial" class="oculto">
+    <div class="vao-tarjeta">
+      <div class="vao-fila">
+        <div class="vao-campo" style="flex:0 1 170px;"><label for="desde">Desde</label><input id="desde" type="date"></div>
+        <div class="vao-campo" style="flex:0 1 170px;"><label for="hasta">Hasta</label><input id="hasta" type="date"></div>
+        <button class="vao-btn" id="btnFiltrar">Ver</button>
+      </div>
+      <div class="vao-kpis" id="kpis"></div>
+      <div id="msgHist" class="oculto"></div>
+      <ul class="vao-lista" id="historial"></ul>
+    </div>
+  </section>
+</main>
+<script src="vao-comun.js"></script>
+<script>
+const CATS = { PROVEEDORES: '🚚 Proveedores', SERVICIOS: '💡 Servicios', ALQUILER: '🏠 Alquiler', SUELDOS: '👥 Sueldos', IMPUESTOS: '🧾 Impuestos', COMPRAS: '🛒 Compras', DEUDAS: '🏦 Deudas', 'RETIRO DEL DUEÑO': '👤 Retiro del dueño', OTROS: '📌 Otros' };
+let OP = null; const $ = id => document.getElementById(id);
+['monto', 'categoria', 'medio', 'motivo'].forEach(id => document.getElementById(id).addEventListener('input', () => { OP = null; }));
+async function registrar() {
+  const monto = VAO.num($('monto').value);
+  if (!(monto > 0)) return VAO.msg('msg', 'Escribí el monto.', 'error');
+  if (!$('categoria').value) return VAO.msg('msg', 'Elegí la categoría.', 'error');
+  if ($('motivo').value.trim().length < 3) return VAO.msg('msg', 'Escribí qué se pagó.', 'error');
+  OP = OP || VAO.opId('EGR'); VAO.operador($('operador').value.trim());
+  const b = $('btnRegistrar'); b.disabled = true;
+  try {
+    const r = await VAO.api('registrarEgreso', { opId: OP, monto, categoria: $('categoria').value, medio: $('medio').value, motivo: $('motivo').value, observacion: $('obs').value, operador: $('operador').value.trim() || 'Comercio' });
+    if (!r.success) VAO.msg('msg', r.error, 'error'); else { VAO.msg('msg', r.mensaje, 'ok'); OP = null; ['monto', 'motivo', 'obs'].forEach(i => $(i).value = ''); $('categoria').value = ''; }
+  } catch (e) { VAO.msg('msg', VAO.sinConexion, 'error'); }
+  b.disabled = false;
+}
+async function cargar() {
+  $('historial').innerHTML = '<li class="vao-item">Cargando…</li>';
+  try {
+    const r = await VAO.api('listarEgresos', { desde: $('desde').value, hasta: $('hasta').value });
+    if (!r.success) { VAO.msg('msgHist', r.error, 'error'); $('historial').innerHTML = ''; return; }
+    $('kpis').innerHTML = '<div class="vao-kpi"><small>Total del período</small><b>' + VAO.pesos(r.total) + '</b></div>' + Object.keys(r.porCategoria).map(k => '<div class="vao-kpi"><small>' + (CATS[k] || k) + '</small><b>' + VAO.pesos(r.porCategoria[k]) + '</b></div>').join('');
+    $('historial').innerHTML = r.egresos.length ? r.egresos.map(x => '<li class="vao-item"><div class="izq"><b>' + VAO.pesos(x.monto) + ' · ' + VAO.esc(x.motivo) + '</b><small>' + x.fecha + ' ' + VAO.esc(x.hora) + ' · ' + (CATS[x.categoria] || VAO.esc(x.categoria)) + ' · ' + VAO.esc(x.medio) + (x.operador ? ' · ' + VAO.esc(x.operador) : '') + (x.observacion ? ' · ' + VAO.esc(x.observacion) : '') + '</small>' +
+      (x.automatico ? ' <span class="vao-chip gris">automático (Fiados)</span>' : '') + (x.anulado ? ' <span class="vao-chip rojo">ANULADO ' + x.anulado.fecha + ': ' + VAO.esc(x.anulado.motivo) + '</span>' : '') + '</div>' +
+      (x.automatico || x.anulado ? '' : '<button class="vao-btn chico peligro vao-escribe" data-f="' + x.fila + '">Anular</button>') + '</li>').join('') : '<li class="vao-item">No hay egresos en el período.</li>';
+    $('historial').querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => VAO.anular({ titulo: 'Anular egreso', accion: 'anularEgreso', datos: { fila: +b.dataset.f },
+      describir: p => '<p>Se registra la devolución de <b>' + VAO.pesos(p.monto) + '</b> (' + VAO.esc(p.medio) + ') a la caja. El egreso del ' + p.fecha + ' («' + VAO.esc(p.motivo) + '») queda en el historial, marcado anulado.</p>', alTerminar: cargar })));
+  } catch (e) { VAO.msg('msgHist', VAO.sinConexion, 'error'); }
+}
+VAO.iniciar({ modulo: 'extra_retiro_caja', titulo: 'Caja · egresos', icono: '💸', grupo: 'P3' }).then(ok => {
+  if (!ok) return;
+  $('categoria').innerHTML += Object.keys(CATS).map(k => '<option value="' + k + '">' + CATS[k] + '</option>').join('');
+  $('operador').value = VAO.operador();
+  const h = VAO.hoy(); $('hasta').value = h; $('desde').value = h.slice(0, 8) + '01';
+  VAO.pestanas('tabs', t => { if (t === 'historial') cargar(); });
+  $('btnRegistrar').addEventListener('click', registrar); $('btnFiltrar').addEventListener('click', cargar);
+});
+</script>
+</body>
+</html>

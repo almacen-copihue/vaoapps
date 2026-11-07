@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Cotización de productos · VAO POS</title>
+<style>
+/* cotizador.html v1 (v044) — paquete P3 PRO. Presupuestos: NO descuentan stock, NO tocan la caja, NO crean fiados. */
+.lin { display: grid; grid-template-columns: 1fr 86px 92px 34px; gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--borde); }
+.lin input { width: 100%; min-height: 40px; border: 2px solid var(--borde); border-radius: 8px; padding: 6px; font: inherit; background: var(--papel); color: var(--texto); text-align: center; }
+.lin .imp { text-align: right; font-weight: 700; }
+.totales { margin-top: 10px; display: grid; gap: 4px; }
+.totales div { display: flex; justify-content: space-between; }
+.totales .tot { font-size: 1.2rem; font-weight: 800; border-top: 2px dashed var(--borde); padding-top: 6px; }
+#hojaImprimir { display: none; }
+@media print {
+  body * { visibility: hidden; } #hojaImprimir, #hojaImprimir * { visibility: visible; }
+  #hojaImprimir { display: block; position: absolute; left: 0; top: 0; width: 100%; color: #000; background: #fff; padding: 20px; font-family: Arial, sans-serif; }
+  #hojaImprimir table { width: 100%; border-collapse: collapse; } #hojaImprimir td, #hojaImprimir th { border-bottom: 1px solid #999; padding: 6px; text-align: left; }
+}
+</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <nav class="vao-pestanas" id="tabs" role="tablist">
+    <button data-tab="nuevo" class="activo">🧾 Nuevo presupuesto</button>
+    <button data-tab="historial">📜 Presupuestos</button>
+  </nav>
+
+  <section data-panel="nuevo">
+    <div class="vao-tarjeta">
+      <h2>Para quién es</h2>
+      <div class="vao-fila">
+        <div class="vao-campo"><label for="cliente">Cliente (opcional)</label><input id="cliente" maxlength="60" autocomplete="off"></div>
+        <div class="vao-campo"><label for="telefono">WhatsApp del cliente (opcional)</label><input id="telefono" inputmode="tel" maxlength="20" placeholder="2944 123456"></div>
+      </div>
+    </div>
+    <div class="vao-tarjeta">
+      <h2>Productos</h2>
+      <div class="vao-campo vao-buscar"><label for="buscar">Buscar producto</label><input id="buscar" autocomplete="off" placeholder="Escribí parte del nombre o el código">
+        <div class="vao-resultados oculto" id="resultados"></div></div>
+      <div id="lineas"><p class="vao-msg info">Buscá un producto y tocalo para agregarlo. El precio es el de tu inventario.</p></div>
+      <div class="vao-fila" style="margin-top:8px;">
+        <div class="vao-campo" style="flex:0 1 150px;"><label for="descTipo">Descuento</label><select id="descTipo"><option value="MONTO">$ (monto)</option><option value="PCT">% (porcentaje)</option></select></div>
+        <div class="vao-campo" style="flex:0 1 120px;"><label for="descValor">Valor</label><input id="descValor" inputmode="decimal" value="0"></div>
+        <div class="vao-campo" style="flex:0 1 140px;"><label for="validez">Válido por (días)</label><input id="validez" type="number" min="1" max="90" value="7"></div>
+      </div>
+      <div class="vao-campo"><label for="notas">Notas para el cliente (opcional)</label><input id="notas" maxlength="300" placeholder="Ej.: precios sujetos a disponibilidad"></div>
+      <div class="totales" id="totales"></div>
+    </div>
+    <div id="msgNuevo" class="oculto"></div>
+    <div class="vao-fila vao-escribe">
+      <button class="vao-btn primario" id="btnGuardar">💾 Guardar presupuesto</button>
+      <button class="vao-btn" id="btnLimpiar">Empezar de nuevo</button>
+    </div>
+    <div class="vao-tarjeta oculto" id="listo">
+      <h2>✅ Presupuesto <span id="listoId"></span></h2>
+      <p id="listoTxt" class="vao-msg ok"></p>
+      <div class="vao-fila">
+        <button class="vao-btn primario" id="btnWA">💬 Enviar por WhatsApp</button>
+        <button class="vao-btn" id="btnCopiar">📋 Copiar texto</button>
+        <button class="vao-btn" id="btnImprimir">🖨️ Imprimir o PDF</button>
+      </div>
+    </div>
+  </section>
+
+  <section data-panel="historial" class="oculto">
+    <div class="vao-tarjeta"><h2>Presupuestos guardados</h2><div id="msgHist" class="oculto"></div><ul class="vao-lista" id="historial"></ul></div>
+  </section>
+</main>
+<div id="hojaImprimir"></div>
+<script src="vao-comun.js"></script>
+<script>
+// cotizador.html v1 — los precios y el total los calcula el servidor desde el inventario; acá se muestran.
+let PRODUCTOS = [], LINEAS = [], ACTUAL = null, OP_PEND = null;
+const $ = id => document.getElementById(id);
+function totalesLocales() {
+  const sub = LINEAS.reduce((s, l) => s + l.precio * l.cantidad, 0);
+  const tipo = $('descTipo').value, val = VAO.num($('descValor').value);
+  const desc = tipo === 'PCT' ? Math.round(sub * Math.min(100, Math.max(0, val))) / 100 : Math.min(sub, Math.max(0, val));
+  return { sub, desc, tot: sub - desc };
+}
+function pintarLineas() {
+  if (!LINEAS.length) { $('lineas').innerHTML = '<p class="vao-msg info">Buscá un producto y tocalo para agregarlo. El precio es el de tu inventario.</p>'; $('totales').innerHTML = ''; return; }
+  $('lineas').innerHTML = '<div class="lin" style="font-size:.74rem;color:var(--suave);font-weight:700;border:0;"><span>PRODUCTO</span><span style="text-align:center">CANT.</span><span style="text-align:right">IMPORTE</span><span></span></div>' +
+    LINEAS.map((l, i) => '<div class="lin"><span><b>' + VAO.esc(l.nombre) + '</b><br><small>' + VAO.pesos(l.precio) + ' c/u' + (l.cantidad > l.stock ? ' · <span class="vao-chip naranja">stock ' + l.stock + '</span>' : '') + '</small></span>' +
+      '<input inputmode="decimal" value="' + l.cantidad + '" aria-label="Cantidad de ' + VAO.esc(l.nombre) + '" data-i="' + i + '">' +
+      '<span class="imp">' + VAO.pesos(l.precio * l.cantidad) + '</span><button class="vao-btn peligro chico" data-q="' + i + '" aria-label="Quitar">✕</button></div>').join('');
+  $('lineas').querySelectorAll('input[data-i]').forEach(inp => inp.addEventListener('change', () => { const v = VAO.num(inp.value); LINEAS[+inp.dataset.i].cantidad = v > 0 ? v : 1; pintarLineas(); }));
+  $('lineas').querySelectorAll('button[data-q]').forEach(b => b.addEventListener('click', () => { LINEAS.splice(+b.dataset.q, 1); pintarLineas(); }));
+  const t = totalesLocales();
+  $('totales').innerHTML = '<div><span>Subtotal</span><b>' + VAO.pesos(t.sub) + '</b></div>' + (t.desc ? '<div><span>Descuento</span><b>-' + VAO.pesos(t.desc) + '</b></div>' : '') + '<div class="tot"><span>TOTAL</span><span>' + VAO.pesos(t.tot) + '</span></div>';
+  OP_PEND = null;   // cambió el contenido: será un presupuesto nuevo
+}
+function buscar() {
+  const q = $('buscar').value.trim().toUpperCase(), box = $('resultados');
+  if (q.length < 2) { box.classList.add('oculto'); return; }
+  const pal = q.split(/\s+/);
+  const r = PRODUCTOS.filter(p => pal.every(w => (p.name + ' ' + p.codigo).toUpperCase().includes(w))).slice(0, 12);
+  box.innerHTML = r.length ? r.map(p => '<button data-id="' + p.id + '"><span>' + VAO.esc(p.name) + '</span><b>' + VAO.pesos(p.price) + '</b></button>').join('') : '<div style="padding:10px;color:var(--suave)">Sin resultados</div>';
+  box.classList.remove('oculto');
+  box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    const p = PRODUCTOS.find(x => String(x.id) === b.dataset.id), ya = LINEAS.find(l => l.id === p.id);
+    if (ya) ya.cantidad += 1; else LINEAS.push({ id: p.id, nombre: p.name, precio: p.price, cantidad: 1, stock: p.stock });
+    $('buscar').value = ''; box.classList.add('oculto'); pintarLineas(); $('buscar').focus();
+  }));
+}
+function textoPresupuesto(p) {
+  const nom = (VAO.config && (VAO.config.nombre_empresa || VAO.config.title)) || VAO.prefijo;
+  return ['🧾 *Presupuesto ' + p.id + '*', nom, 'Fecha: ' + p.fecha + (p.cliente ? ' · Para: ' + p.cliente : ''), '']
+    .concat(p.items.map(l => '• ' + l.nombre + ' × ' + l.cantidad + ' = ' + VAO.pesos(l.importe)))
+    .concat(['', 'Subtotal: ' + VAO.pesos(p.subtotal)]).concat(p.descuento ? ['Descuento: -' + VAO.pesos(p.descuento)] : [])
+    .concat(['*Total: ' + VAO.pesos(p.total) + '*', 'Válido hasta: ' + p.validoHasta]).concat(p.notas ? ['', p.notas] : []).join('\n');
+}
+function hojaImprimir(p) {
+  const nom = (VAO.config && (VAO.config.nombre_empresa || VAO.config.title)) || VAO.prefijo;
+  $('hojaImprimir').innerHTML = '<h2>' + VAO.esc(nom) + '</h2><h3>Presupuesto ' + VAO.esc(p.id) + '</h3><p>Fecha: ' + VAO.esc(p.fecha) + (p.cliente ? ' · Cliente: ' + VAO.esc(p.cliente) : '') + '</p>' +
+    '<table><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Importe</th></tr>' + p.items.map(l => '<tr><td>' + VAO.esc(l.nombre) + '</td><td>' + l.cantidad + '</td><td>' + VAO.pesos(l.precio) + '</td><td>' + VAO.pesos(l.importe) + '</td></tr>').join('') + '</table>' +
+    '<p>Subtotal: ' + VAO.pesos(p.subtotal) + (p.descuento ? ' · Descuento: -' + VAO.pesos(p.descuento) : '') + '</p><h3>Total: ' + VAO.pesos(p.total) + '</h3><p>Válido hasta ' + VAO.esc(p.validoHasta) + '.</p>' + (p.notas ? '<p>' + VAO.esc(p.notas) + '</p>' : '') +
+    '<p style="font-size:11px;color:#555">Presupuesto: no es una factura ni una venta.</p>';
+}
+async function guardar() {
+  if (!LINEAS.length) { VAO.msg('msgNuevo', 'Agregá al menos un producto.', 'error'); return; }
+  const b = $('btnGuardar'); b.disabled = true; b.textContent = '⏳ Guardando…'; VAO.msg('msgNuevo', '');
+  OP_PEND = OP_PEND || VAO.opId('PRE');
+  try {
+    const r = await VAO.api('guardarPresupuesto', { opId: OP_PEND, cliente: $('cliente').value, telefono: $('telefono').value, items: LINEAS.map(l => ({ id: l.id, cantidad: l.cantidad })),
+      descuentoTipo: $('descTipo').value, descuentoValor: VAO.num($('descValor').value), validezDias: +$('validez').value, notas: $('notas').value });
+    if (!r.success) { VAO.msg('msgNuevo', r.error || 'No se pudo guardar.', 'error'); }
+    else { ACTUAL = r.presupuesto; $('listoId').textContent = ACTUAL.id; $('listoTxt').textContent = (r.yaExistia ? 'Ya estaba guardado (no se duplicó). ' : '') + 'Total ' + VAO.pesos(ACTUAL.total) + '. No se descontó stock ni se tocó la caja.';
+      $('listo').classList.remove('oculto'); hojaImprimir(ACTUAL); $('listo').scrollIntoView({ behavior: 'smooth' }); }
+  } catch (e) { VAO.msg('msgNuevo', VAO.sinConexion, 'error'); }
+  b.disabled = false; b.textContent = '💾 Guardar presupuesto';
+}
+async function cargarHistorial() {
+  $('historial').innerHTML = '<li class="vao-item">Cargando…</li>';
+  try {
+    const r = await VAO.api('listarPresupuestos', {});
+    if (!r.success) { VAO.msg('msgHist', r.error, 'error'); $('historial').innerHTML = ''; return; }
+    if (!r.presupuestos.length) { $('historial').innerHTML = '<li class="vao-item">Todavía no hay presupuestos.</li>'; return; }
+    const chip = { EMITIDO: '', ENVIADO: '', ACEPTADO: '', ANULADO: 'rojo' };
+    $('historial').innerHTML = r.presupuestos.map((p, i) => '<li class="vao-item"><div class="izq"><b>' + VAO.esc(p.id) + ' · ' + VAO.pesos(p.total) + '</b><small>' + VAO.esc(p.fecha) + (p.cliente ? ' · ' + VAO.esc(p.cliente) : '') + ' · ' + p.items.length + ' producto(s) · válido hasta ' + VAO.esc(p.validoHasta) + '</small> <span class="vao-chip ' + (chip[p.estado] || '') + '">' + p.estado + '</span></div>' +
+      '<div class="vao-fila" style="flex:0 0 auto;justify-content:flex-end;"><button class="vao-btn chico" data-wa="' + i + '">💬</button>' +
+      (p.estado !== 'ANULADO' ? '<button class="vao-btn chico vao-escribe" data-est="' + i + ':ACEPTADO">Aceptado</button><button class="vao-btn chico peligro vao-escribe" data-est="' + i + ':ANULADO">Anular</button>' : '') + '</div></li>').join('');
+    $('historial').querySelectorAll('[data-wa]').forEach(b => b.addEventListener('click', () => { const p = r.presupuestos[+b.dataset.wa]; VAO.whatsapp(textoPresupuesto(p), p.telefono); }));
+    $('historial').querySelectorAll('[data-est]').forEach(b => b.addEventListener('click', async () => {
+      const [i, est] = b.dataset.est.split(':'), p = r.presupuestos[+i];
+      if (est === 'ANULADO' && !confirm('¿Anular el presupuesto ' + p.id + '? Queda en el historial como anulado.')) return;
+      const x = await VAO.api('estadoPresupuesto', { id: p.id, estado: est }); VAO.toast(x.success ? x.mensaje : x.error, x.success ? 'ok' : 'error'); cargarHistorial();
+    }));
+  } catch (e) { VAO.msg('msgHist', VAO.sinConexion, 'error'); }
+}
+VAO.iniciar({ modulo: 'extra_cotizador', titulo: 'Cotización de productos', icono: '📝', grupo: 'P3' }).then(async ok => {
+  if (!ok) return;
+  VAO.pestanas('tabs', t => { if (t === 'historial') cargarHistorial(); });
+  try { const r = await VAO.api('getProductos', {}); PRODUCTOS = (r.productos || []); } catch (e) { VAO.msg('msgNuevo', VAO.sinConexion, 'error'); }
+  $('buscar').addEventListener('input', buscar);
+  ['descTipo', 'descValor'].forEach(id => $(id).addEventListener('input', pintarLineas));
+  $('btnGuardar').addEventListener('click', guardar);
+  $('btnLimpiar').addEventListener('click', () => { LINEAS = []; ACTUAL = null; OP_PEND = null; ['cliente', 'telefono', 'notas'].forEach(i => $(i).value = ''); $('descValor').value = '0'; $('listo').classList.add('oculto'); pintarLineas(); });
+  $('btnWA').addEventListener('click', () => ACTUAL && VAO.whatsapp(textoPresupuesto(ACTUAL), ACTUAL.telefono));
+  $('btnCopiar').addEventListener('click', async () => { if (!ACTUAL) return; try { await navigator.clipboard.writeText(textoPresupuesto(ACTUAL)); VAO.toast('Texto copiado', 'ok'); } catch (e) { VAO.toast('No se pudo copiar', 'error'); } });
+  $('btnImprimir').addEventListener('click', () => { if (ACTUAL) { hojaImprimir(ACTUAL); window.print(); } });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Inventario · VAO POS</title>
+<style>
+/* inventario.html v1 (v044.1) — P2 Gestión. Stock, faltantes, valorización y revisión antes de vender.
+   Solo lectura: el stock se cambia con 📦 Ingresar, ✏️ Ajustar, ventas, salidas o anulaciones (una sola lógica de stock). */
+.filtros { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; }
+.filtros button { border: 2px solid var(--borde); background: var(--papel); color: var(--texto); border-radius: 999px; padding: 6px 12px; font: 700 .82rem inherit; cursor: pointer; min-height: 36px; }
+.filtros button.activo { border-color: var(--grupo); background: var(--grupo-fondo); color: var(--grupo-tinta); }
+.st0 { color: var(--rojo); font-weight: 900; } .stb { color: var(--naranja); font-weight: 900; }
+.revision { white-space: pre-wrap; font-size: .86rem; }
+</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <div class="vao-kpis" id="kpis"></div>
+  <nav class="vao-pestanas" id="tabs" role="tablist">
+    <button data-tab="stock" class="activo">📦 Stock</button>
+    <button data-tab="revision">✔️ Revisar antes de vender</button>
+  </nav>
+  <section data-panel="stock">
+    <div class="vao-tarjeta">
+      <div class="vao-campo"><label for="buscar">Buscar</label><input id="buscar" placeholder="Nombre, código o proveedor"></div>
+      <div class="filtros" id="filtros">
+        <button data-f="todos" class="activo">Todos</button><button data-f="agotados">🔴 Agotados</button><button data-f="bajo">🟠 Poco stock (≤ <span id="umbralTxt">3</span>)</button><button data-f="sinCosto">Sin costo</button>
+      </div>
+      <div class="vao-scroll"><table class="vao-tabla"><thead><tr><th>Producto</th><th class="num">Stock</th><th class="num">Costo</th><th class="num">Venta</th><th>Proveedor</th></tr></thead><tbody id="tabla"></tbody></table></div>
+      <div id="pie" style="color:var(--suave);font-size:.8rem;margin-top:6px"></div>
+    </div>
+  </section>
+  <section data-panel="revision" class="oculto">
+    <div class="vao-tarjeta"><h2>Revisión del inventario</h2>
+      <p style="margin:0 0 8px;color:var(--suave);font-size:.86rem">Busca códigos repetidos, nombres vacíos, stock o precios mal cargados. Solo mira: no cambia nada.</p>
+      <button class="vao-btn primario" id="btnRevisar">✔️ Revisar ahora</button>
+      <div id="revision" class="revision" style="margin-top:10px"></div></div>
+  </section>
+</main>
+<script src="vao-comun.js"></script>
+<script>
+const $ = id => document.getElementById(id); let PRODS = [], FILTRO = 'todos'; const UMBRAL = 3;
+function pintar() {
+  const q = $('buscar').value.trim().toUpperCase().split(/\s+/).filter(Boolean);
+  let l = PRODS.filter(p => q.every(w => (p.name + ' ' + p.codigo + ' ' + (p.proveedor || '')).toUpperCase().includes(w)));
+  if (FILTRO === 'agotados') l = l.filter(p => p.stock <= 0); if (FILTRO === 'bajo') l = l.filter(p => p.stock > 0 && p.stock <= UMBRAL); if (FILTRO === 'sinCosto') l = l.filter(p => !(p.costo > 0));
+  l.sort((a, b) => a.stock - b.stock || a.name.localeCompare(b.name, 'es'));
+  $('tabla').innerHTML = l.length ? l.slice(0, 400).map(p => '<tr><td><b>' + VAO.esc(p.name) + '</b><br><small style="color:var(--suave)">' + VAO.esc(p.codigo || '') + '</small></td><td class="num ' + (p.stock <= 0 ? 'st0' : p.stock <= UMBRAL ? 'stb' : '') + '">' + p.stock + '</td><td class="num">' + (p.costo > 0 ? VAO.pesos(p.costo) : '—') + '</td><td class="num">' + VAO.pesos(p.precio || p.price || 0) + '</td><td>' + VAO.esc(p.proveedor || '') + '</td></tr>').join('')
+    : '<tr><td colspan="5">' + VAO.vacio('📦', PRODS.length ? 'Ningún producto con ese filtro.' : 'Todavía no cargaste productos: usá 📦 Ingresar en el POS.') + '</td></tr>';
+  $('pie').textContent = l.length > 400 ? 'Mostrando 400 de ' + l.length + '. Usá el buscador para encontrar el resto.' : l.length + ' producto(s).';
+}
+async function cargar() {
+  $('tabla').innerHTML = '<tr><td colspan="5">Cargando…</td></tr>';
+  try {
+    const r = await VAO.api('getProductos', {});
+    if (!r || r.error) { $('tabla').innerHTML = '<tr><td colspan="5">' + VAO.vacio('⚠️', (r && r.error) || 'No se pudo cargar.') + '</td></tr>'; return; }
+    PRODS = (r.productos || []).map(p => Object.assign({}, p, { stock: Number(p.stock) || 0, costo: Number(p.costo) || 0 }));
+    const ag = PRODS.filter(p => p.stock <= 0).length, ba = PRODS.filter(p => p.stock > 0 && p.stock <= UMBRAL).length, val = PRODS.reduce((s, p) => s + Math.max(0, p.stock) * (p.costo || 0), 0);
+    $('kpis').innerHTML = '<div class="vao-kpi"><small>Productos</small><b>' + PRODS.length + '</b></div><div class="vao-kpi"><small>Agotados</small><b style="color:' + (ag ? 'var(--rojo)' : 'inherit') + '">' + ag + '</b></div>' +
+      '<div class="vao-kpi"><small>Poco stock</small><b>' + ba + '</b></div><div class="vao-kpi"><small>Stock valorizado (al costo)</small><b>' + VAO.pesos(Math.round(val)) + '</b></div>';
+    pintar();
+  } catch (e) { $('tabla').innerHTML = '<tr><td colspan="5">' + VAO.vacio('📡', VAO.sinConexion) + '</td></tr>'; }
+}
+async function revisar() {
+  const d = $('revision'); d.className = 'revision vao-msg info'; d.textContent = 'Revisando…';
+  try {
+    const r = await VAO.api('verificarInventario', {});
+    if (!r.success) { d.className = 'revision vao-msg error'; d.textContent = r.error || 'No se pudo revisar.'; return; }
+    d.className = 'revision vao-msg ' + (r.listo ? 'ok' : 'aviso');
+    d.textContent = (r.listo ? '✅ ' : '⚠️ ') + r.mensaje + (r.problemas.length ? '\n' + r.problemas.slice(0, 40).join('\n') + (r.problemas.length > 40 ? '\n… y ' + (r.problemas.length - 40) + ' más' : '') : '');
+  } catch (e) { d.className = 'revision vao-msg error'; d.textContent = VAO.sinConexion; }
+}
+VAO.iniciar({ modulo: 'pack2_editor_stock', titulo: 'Inventario', icono: '🗂️', grupo: 'P2' }).then(ok => {
+  if (!ok) return;
+  VAO.pestanas('tabs'); $('umbralTxt').textContent = UMBRAL; $('buscar').oninput = pintar; $('btnRevisar').onclick = revisar;
+  $('filtros').querySelectorAll('button').forEach(b => b.onclick = () => { FILTRO = b.dataset.f; $('filtros').querySelectorAll('button').forEach(x => x.classList.toggle('activo', x === b)); pintar(); });
+  cargar();
+});
+</script>
+</body>
+</html>

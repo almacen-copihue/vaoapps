@@ -19,7 +19,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-/* planes.html v2 (STAGING) — página pública de VAO POS. Precios y condiciones vienen del servidor. */
+/* planes.html v5 (STAGING · v044.1) — tres planes como composición envolvente: P1 es la base, P2 abraza a P1, P3 PRO abraza a P1 y P2 y suma el paquete PRO.
+   Complementos opcionales aparte (verdes). Íconos y nombres salen de la matriz central del servidor (catalogoV043.apps).
+   planes.html v4 (STAGING · v044) — «Armá tu plan» como rompecabezas: arrastrar y encajar, o tocar las piezas.
+   planes.html v3 (STAGING · v043) — página pública. Planes P1/P2, complementos P3 «Armá tu plan». Nombres, prestaciones y precios vienen del servidor (PLANES_VAO y COMPLEMENTOS_VAO). */
 :root {
   --tinta:   #0D47A1;   /* azul VAO oscuro: títulos y texto fuerte */
   --azul:    #1E88E5;   /* azul VAO: acciones */
@@ -95,6 +98,77 @@ ul.hace b { color: var(--tinta); }
 .mods { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
 .mods li { background: #EEF4FB; color: var(--tinta); border-radius: 8px; padding: 2px 9px; font-size: .88rem; }
 .estado-carga { background: #fff; border-radius: var(--radio); padding: 18px; color: var(--suave); }
+/* v3: elegir plan y complementos */
+.plan.elegible { cursor: pointer; position: relative; }
+.plan.elegible:hover { border-color: var(--azul); }
+.plan.elegido { border-color: var(--azul); box-shadow: 0 0 0 3px #CFE3FA; }
+.plan .grupo { display: inline-block; background: var(--tinta); color: #fff; border-radius: 6px; padding: 1px 7px; font-size: .78rem; font-weight: 700; margin-right: 6px; }
+.plan .elegir { margin-top: 12px; display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--tinta); }
+.plan .elegir input { width: 22px; height: 22px; margin: 0; }
+.mods li.base { background: #F1F1F1; color: #333; }
+.mods li.g2 { background: #E3EEFB; }
+.comp { background: #fff; border: 2px solid var(--borde); border-radius: var(--radio); padding: 14px 16px; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; margin-bottom: 10px; }
+.comp input { width: 24px; height: 24px; margin: 3px 0 0; }
+.comp.no { opacity: .55; }
+.comp b { color: var(--tinta); }
+/* v4: rompecabezas. P1 y P2 = misma familia (azul / violeta); P3 = complementos verdes */
+.rompe { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .rompe { grid-template-columns: 1fr 1.15fr; } }
+.bandeja, .tablero { background: #fff; border: 2px solid var(--borde); border-radius: var(--radio); padding: 12px; }
+.tablero { border-style: dashed; background: #F7FAFE; }
+.bandeja h4, .tablero h4 { margin: 4px 0 8px; color: var(--tinta); font-size: .95rem; }
+.piezas { display: flex; flex-wrap: wrap; gap: 10px 18px; min-height: 52px; }
+.pieza { position: relative; border: 0; border-radius: 10px; padding: 10px 14px; min-height: 48px; font: 700 .95rem 'Atkinson Hyperlegible', sans-serif; color: #fff; cursor: grab; text-align: left; touch-action: manipulation; box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.pieza::after { content: ''; position: absolute; right: -9px; top: 50%; width: 18px; height: 18px; margin-top: -9px; border-radius: 50%; background: inherit; }   /* la «pestaña» que encaja */
+.pieza small { display: block; font-weight: 400; font-size: .78rem; opacity: .95; }
+.pieza.p1 { background: #1E88E5; } .pieza.p2 { background: #7E57C2; } .pieza.p3 { background: #2E8B57; }
+.pieza:focus-visible { outline: 3px solid var(--tinta); outline-offset: 3px; }
+.pieza.arrastrando { opacity: .5; }
+.pieza.no { background: #9E9E9E; cursor: not-allowed; }
+.encaje { border: 2px dashed #9DB6D3; border-radius: 12px; padding: 12px; min-height: 64px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; color: var(--suave); font-size: .9rem; transition: background .15s; }
+.encaje.sobre { background: #E3F2FD; border-color: var(--azul); }
+.encaje.base { border-color: #1E88E5; }
+.encaje.p3 { border-color: #2E8B57; margin-top: 10px; }
+.encaje.p3.sobre { background: #E8F5E9; }
+.encastre { display: flex; align-items: stretch; }
+.encastre .pieza:first-child { border-radius: 10px 0 0 10px; } .encastre .pieza + .pieza { border-radius: 0 10px 10px 0; padding-left: 20px; }
+.encastre .pieza:first-child::after { z-index: 1; }
+/* v5: tarjetas envolventes */
+.planes5 { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 1000px) { .planes5 { grid-template-columns: 1fr 1.2fr 1.45fr; align-items: stretch; width: min(1180px, calc(100vw - 40px)); margin-left: calc((100% - min(1180px, calc(100vw - 40px))) / 2); } }   /* sale de la columna para que las tres tarjetas respiren */
+@media (min-width: 640px) and (max-width: 999px) { .planes5 .iconos { gap: 6px; } }
+.p5 { position: relative; border-radius: 20px; padding: 16px; background: #fff; display: flex; flex-direction: column; gap: 10px; cursor: pointer; border: 3px solid transparent; transition: transform .15s, box-shadow .15s; }
+.p5:hover { transform: translateY(-2px); }
+.p5.BASICO { border-color: #1E88E5; } .p5.PRO { border-color: #7E57C2; }
+.p5.PLUS { border: 3px solid transparent; background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #8A5A00, #D4A017 45%, #F3D27A 70%, #8A5A00) border-box; box-shadow: 0 8px 26px rgba(176,125,18,.25); }
+.p5.elegido { box-shadow: 0 0 0 4px #CFE3FA, 0 8px 22px rgba(13,71,161,.18); } .p5.PLUS.elegido { box-shadow: 0 0 0 4px #F6E3B0, 0 8px 26px rgba(176,125,18,.35); }
+.p5-cab { display: flex; align-items: center; gap: 10px; }
+.p5-sello { font-weight: 900; color: #fff; border-radius: 10px; padding: 6px 10px; font-size: .95rem; }
+.BASICO .p5-sello, .env.e1 > .env-tit { background: #1E88E5; } .PRO .p5-sello, .env.e2 > .env-tit { background: #7E57C2; } .PLUS .p5-sello { background: linear-gradient(135deg, #8A5A00, #D4A017); color: #241800; }
+.p5 h3 { margin: 0; font-size: 1.25rem; color: var(--tinta); }
+.p5-precio { white-space: nowrap; font-size: 1.7rem; font-weight: 800; color: var(--tinta); font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+.p5-precio small { font-size: .85rem; font-weight: 400; color: var(--suave); }
+.env { border-radius: 14px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.env-tit { align-self: flex-start; color: #fff; font-weight: 800; font-size: .74rem; border-radius: 6px; padding: 2px 7px; }
+.env.e1 { background: #E3F2FD; border: 2px solid #1E88E5; }
+.env.e2 { background: #F5F0FC; border: 2px solid #7E57C2; }   /* la línea violeta abraza a P1 */
+.env.e3 { background: #FFFBEF; border: 2px solid #D4A017; }
+.env.e3 > .env-tit { background: linear-gradient(135deg, #8A5A00, #D4A017); color: #241800; }
+.iconos { display: flex; flex-wrap: wrap; gap: 5px; }
+.ic5 { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,.85); border-radius: 999px; padding: 3px 8px; font-size: .8rem; font-weight: 700; color: #1C2533; }
+.p5 .elegir { margin-top: auto; display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--tinta); background: #F4F7FB; border-radius: 12px; padding: 10px; }
+.p5 .elegir input { width: 22px; height: 22px; margin: 0; }
+.p5.PRO { box-shadow: 0 10px 30px rgba(126,87,194,.28); }
+@media (min-width: 1000px) { .p5.PRO { transform: translateY(-10px); } .p5.PRO:hover { transform: translateY(-12px); } }
+.p5 .tag.reco { background: #7E57C2; color: #fff; }
+.p5 .tag { position: absolute; top: -12px; right: 14px; background: linear-gradient(135deg, #8A5A00, #D4A017); color: #241800; font-weight: 900; font-size: .75rem; border-radius: 999px; padding: 3px 10px; }
+.siempre { font-size: .9rem; color: var(--suave); margin: 0 0 12px; }
+.pieza.p3pro { background: linear-gradient(135deg, #8A5A00, #D4A017); color: #241800; }
+.pieza.p3 { background: #2E8B57; }
+.resumen { background: #fff; border: 2px solid var(--tinta); border-radius: var(--radio); padding: 16px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: .95rem; }
+.resumen .linea { display: flex; justify-content: space-between; gap: 10px; }
+.resumen .total { border-top: 2px dashed #888; margin-top: 8px; padding-top: 8px; font-weight: 600; font-size: 1.05rem; }
+.resumen .cond { font-family: 'Atkinson Hyperlegible', sans-serif; font-size: .9rem; color: var(--suave); margin-top: 10px; }
 
 /* ── registro ───────────────────────────────────────── */
 #empezar { background: #fff; }
@@ -146,7 +220,7 @@ footer { padding: 26px 0 40px; font-size: .88rem; color: var(--suave); }
     <div class="ranura" aria-hidden="true"></div>
     <div class="ticket" role="img" aria-label="Prueba gratis de 7 días, más 3 días de gracia, total 0 pesos, sin tarjeta de crédito">
       <div class="t-tit">PROBALO GRATIS 7 DÍAS</div>
-      <div class="t-sub">Todas las funciones disponibles</div>
+      <div class="t-sub" id="tSub">Todas las funciones disponibles</div>
       <div class="linea"><span>Prueba completa</span><span></span><span><span id="tDias">7</span> días</span></div>
       <div class="linea"><span>Días de gracia</span><span></span><span>+ <span id="tGracia">3</span></span></div>
       <div class="linea"><span>Tarjeta de crédito</span><span></span><span>no</span></div>
@@ -178,8 +252,29 @@ footer { padding: 26px 0 40px; font-size: .88rem; color: var(--suave); }
 <section style="padding-top:8px;">
   <div class="col">
     <h2>Planes</h2>
+    <p class="siempre oculto" id="siempre">En todos los planes: ventas con efectivo, transferencia, débito, crédito o QR, y 🏪 Mis datos (tus registros son tuyos).</p>
     <div id="planes" class="planes"><div class="estado-carga">Cargando los planes…</div></div>
     <p class="chico" id="notaPlanes" style="margin-top:12px;">Los precios son mensuales, en pesos argentinos. Para pasar a un plan pago, VAO Sistemas te envía el contrato y sus condiciones antes de cobrarte.</p>
+  </div>
+</section>
+
+<!-- v3: P3 · Armá tu plan (complementos que se suman a P1 o P2) + resumen de la elección -->
+<section id="armaTuPlan" class="oculto" style="padding-top:8px;">
+  <div class="col">
+    <h2>Armá tu plan</h2>
+    <p>Arrastrá las piezas al tablero (o tocalas). Primero tu plan: <b>P1</b>, <b>P2</b> o <b style="color:#8A5A00">P3 PRO</b>. Después, si querés, sumá <b style="color:#2E8B57">complementos</b>.</p>
+    <div class="rompe">
+      <div class="bandeja" id="bandeja" aria-label="Piezas disponibles"><h4>Piezas</h4><div class="piezas" id="piezasBase"></div><h4 style="margin-top:12px;">Complementos opcionales</h4><div class="piezas" id="piezasP3"></div></div>
+      <div class="tablero" aria-label="Tu plan"><h4>Tu plan</h4>
+        <div class="encaje base" id="ranuraBase" data-zona="base" aria-label="Lugar del plan base"></div>
+        <div class="encaje p3" id="ranuraP3" data-zona="p3" aria-label="Lugar de los complementos"></div>
+      </div>
+    </div>
+    <div id="complementos" class="oculto"></div>
+    <h3 style="margin:18px 0 8px;">Tu elección</h3>
+    <div class="resumen" id="resumen" aria-live="polite"></div>
+    <div id="msgEleccion" class="msg oculto" role="status" aria-live="polite" style="margin-top:12px;"></div>
+    <a class="btn btn-principal" href="#empezar" style="margin-top:14px;">Empezar con la prueba gratis</a>
   </div>
 </section>
 
@@ -247,7 +342,9 @@ footer { padding: 26px 0 40px; font-size: .88rem; color: var(--suave); }
     <details><summary>¿Los datos son míos?</summary><p>Sí. Podés descargar tus registros hoja por hoja desde el primer día. Nadie más ve los datos de tu comercio.</p></details>
     <details><summary>¿Tengo que instalar algo?</summary><p>No. Se usa desde el navegador del celular o de la computadora.</p></details>
     <details><summary>¿Puedo probarlo más de una vez?</summary><p>No. La prueba gratis es una sola vez por comercio, teléfono o correo.</p></details>
-    <details><summary>¿Cómo paso a un plan pago?</summary><p>Elegís el plan, VAO Sistemas te envía el contrato y las condiciones, y recién después pagás por transferencia o Mercado Pago.</p></details>
+    <details><summary>¿Cómo paso a un plan pago?</summary><p>Elegís el plan (y los complementos, si querés) acá arriba y empezás con la prueba gratis. Tu elección queda anotada. Al terminar la prueba, VAO Sistemas te envía el contrato y las condiciones; el plan se activa cuando VAO Sistemas confirma tu pago (transferencia o Mercado Pago).</p></details>
+    <details><summary>¿Qué diferencia hay entre P1 y P2?</summary><p>P1 Esencial tiene lo del día a día: ventas, caja del día, ingreso de mercadería y fiado sencillo (se fía la compra completa y se cobra completa). P2 Gestión suma ajuste de stock, revisión de inventario, reportes y la gestión completa de fiados: pagos parciales, ficha de cada cliente, cobros recientes y anulaciones.</p></details>
+    <details><summary>¿Puedo cambiar de plan después?</summary><p>Sí. El cambio se hace al renovar, cuando VAO Sistemas registra el pago del plan nuevo. Tus ventas, fiados y pagos nunca se borran al cambiar de plan.</p></details>
   </div>
 </section>
 
@@ -267,15 +364,20 @@ footer { padding: 26px 0 40px; font-size: .88rem; color: var(--suave); }
   </div>
 </section>
 
-<footer><div class="col">VAO POS es un servicio de VAO Sistemas.</div></footer>
+<footer><div class="col">VAO POS es un servicio de VAO Sistemas · <a href="terminos.html" style="color:inherit">Términos de uso</a>.</div></footer>
 
 <script>
-// planes.html v1 — STAGING. Todo lo comercial (precios, oferta, condiciones, cupos) lo decide el servidor.
+// planes.html v5 (v044.1) — STAGING. v4 (v044) / v3 (v043): Todo lo comercial (precios, oferta, condiciones, cupos) lo decide el servidor.
 const API_URL = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
 const URL_PUBLICA = location.origin + location.pathname;
 const LS_SOL = 'vao_registro_solicitud';
 const T0 = Date.now();
 let CONDICIONES = null, solicitudId = null, reenviarTimer = null;
+// v3: catálogo P1/P2/P3 y elección (se guarda en este teléfono y se anota en el servidor junto a la solicitud de prueba)
+const LS_ELEC = 'vao_eleccion_plan';
+let CATALOGO = null, PLANES = [], PROMO = null, ELECCION = { plan: '', complementos: [] };
+try { const e = JSON.parse(localStorage.getItem(LS_ELEC) || 'null'); if (e && typeof e.plan === 'string' && Array.isArray(e.complementos)) ELECCION = e; } catch (e) {}
+function guardarEleccion() { try { localStorage.setItem(LS_ELEC, JSON.stringify(ELECCION)); } catch (e) {} }
 
 const $ = id => document.getElementById(id);
 const pesos = n => '$' + Number(n).toLocaleString('es-AR');
@@ -326,13 +428,162 @@ function htmlPlan(p, promo) {
   return '<div class="plan"><div class="plan-cab"><h3>' + esc(p.nombre) + '</h3></div>' + precio + mods + '</div>';
 }
 
+// ── v3: P1 / P2 elegibles y P3 complementos ─────────────────────────
+const BASE_SIEMPRE = ['Ventas con efectivo, transferencia, débito, crédito o Mercado Pago (un medio por venta)', 'Mis datos: descargar tus registros e historial de cambios'];
+function precioTxt(reg, lanz, conPromo) {
+  if (reg === null || reg === undefined) return 'Precio a confirmar';
+  return (conPromo && PROMO && lanz !== null && lanz !== undefined) ? pesos(lanz) + '/mes (lanzamiento; luego ' + pesos(reg) + ')' : pesos(reg) + '/mes';
+}
+function precioNum(reg, lanz, conPromo) { if (reg === null || reg === undefined) return null; return (conPromo && PROMO && lanz !== null && lanz !== undefined) ? Number(lanz) : Number(reg); }
+function htmlPlanV3(p) {
+  const pres = (p.prestaciones || []).filter(x => x.grupo !== 'P3');
+  const items = BASE_SIEMPRE.map(t => '<li class="base">' + esc(t) + '</li>').join('') +
+    pres.map(x => '<li class="' + (x.grupo === 'P2' ? 'g2' : '') + '"><span class="grupo">' + esc(x.grupo) + '</span>' + esc(x.nombre) + '</li>').join('');
+  const grupo = p.codigo === 'PRO' ? 'P2' : 'P1';
+  const el = ELECCION.plan === p.codigo;
+  let precio;
+  if (p.precioRegular === null || p.precioRegular === undefined) precio = '<div class="lineas-precio chico">Precio a confirmar.</div>';
+  else if (p.conPromo && PROMO) precio = '<span class="oferta">🚀 OFERTA DE LANZAMIENTO</span><div class="lineas-precio"><div><span>Precio regular</span><span>' + pesos(p.precioRegular) + '/mes</span></div><div><b>Precio de lanzamiento</b><b>' + pesos(p.precioLanzamiento) + '/mes</b></div><div class="chico">Durante los primeros ' + PROMO.meses + ' meses de la contratación paga.</div></div>';
+  else precio = '<div class="lineas-precio"><div><span>Precio</span><b>' + pesos(p.precioRegular) + '/mes</b></div></div>';
+  return '<div class="plan elegible' + (el ? ' elegido' : '') + '" data-plan="' + esc(p.codigo) + '"><div class="plan-cab"><h3><span class="grupo">' + grupo + '</span>' + esc(p.nombre) + '</h3></div>' + precio +
+    (p.codigo === 'PRO' ? '<div class="chico" style="margin-top:6px;">Todo lo de P1 Esencial, más:</div>' : '') +
+    '<ul class="mods">' + items + '</ul>' +
+    '<label class="elegir"><input type="radio" name="planElegido" value="' + esc(p.codigo) + '"' + (el ? ' checked' : '') + '> Elegir ' + esc(p.nombre) + '</label></div>';
+}
+const NOM5 = { BASICO: 'P1', PRO: 'P2', PLUS: 'P3' }, BASES5 = ['BASICO', 'PRO', 'PLUS'];
+function iconos5(g) { const apps = (CATALOGO && CATALOGO.apps) || []; return '<div class="iconos">' + apps.filter(a => a.grupo === g).map(a => '<span class="ic5" title="' + esc(a.descripcion) + '">' + esc(a.icono) + ' ' + esc(a.nombre) + '</span>').join('') + '</div>'; }
+function env5(n, tit, g) { return '<div class="env e' + n + '"><span class="env-tit">' + esc(tit) + '</span>' + iconos5(g) + '</div>'; }
+function htmlPlanV5(p) {
+  const el = ELECCION.plan === p.codigo, n = { BASICO: 1, PRO: 2, PLUS: 3 }[p.codigo];
+  const precio = p.precioRegular === null || p.precioRegular === undefined ? '<div class="p5-precio"><small>Precio a confirmar</small></div>'
+    : '<div class="p5-precio">' + pesos(p.conPromo && PROMO && p.precioLanzamiento ? p.precioLanzamiento : p.precioRegular) + '<small> /mes' + (p.conPromo && PROMO && p.precioLanzamiento ? ' · lanzamiento (luego ' + pesos(p.precioRegular) + ')' : '') + '</small></div>';
+  // composición envolvente: cada plan contiene al anterior dentro de su propia línea
+  let cuerpo = env5(1, 'P1 Esencial', 'P1');
+  if (n >= 2) cuerpo = '<div class="env e2"><span class="env-tit">P2 Gestión</span>' + cuerpo + iconos5('P2') + '</div>';
+  if (n >= 3) cuerpo = '<div class="env e3"><span class="env-tit">P3 PRO</span>' + cuerpo + iconos5('P3') + '</div>';
+  return '<div class="p5 plan elegible ' + p.codigo + (el ? ' elegido' : '') + '" data-plan="' + esc(p.codigo) + '">' + (n === 3 ? '<span class="tag">COMPLETO</span>' : n === 2 ? '<span class="tag reco">⭐ RECOMENDADO</span>' : '') +
+    '<div class="p5-cab"><span class="p5-sello">' + NOM5[p.codigo] + '</span><h3>' + esc(p.nombre) + '</h3></div>' + precio + cuerpo +
+    '<label class="elegir"><input type="radio" name="planElegido" value="' + esc(p.codigo) + '"' + (el ? ' checked' : '') + '> Elegir ' + esc(p.nombre) + '</label></div>';
+}
+function pintarPlanesV3() {
+  if (CATALOGO && CATALOGO.apps) {   // v5: tarjetas envolventes desde la matriz central
+    const prueba = PLANES.find(p => p.codigo === 'PRUEBA'), pagos = BASES5.map(c => PLANES.find(p => p.codigo === c)).filter(Boolean);
+    $('siempre').classList.remove('oculto');
+    $('planes').innerHTML = (prueba ? '<div class="plan gratis"><div class="plan-cab"><h3>' + esc(prueba.nombre) + '</h3><div class="precio">Gratis</div></div><div class="lineas-precio">' + esc($('tDias').textContent) + ' días + ' + esc($('tGracia').textContent) + ' de gracia, con P1 y P2 completos. Sin tarjeta.</div></div>' : '') +
+      '<div class="planes5">' + pagos.map(htmlPlanV5).join('') + '</div>' + (PROMO ? '<p class="chico">' + esc(PROMO.condiciones) + '</p>' : '');
+    $('planes').querySelectorAll('.plan.elegible').forEach(card => card.addEventListener('click', ev => {
+      const cod = card.dataset.plan; if (ELECCION.plan === cod && ev.target.tagName !== 'INPUT') return;
+      ELECCION.plan = cod; guardarEleccion(); pintarPlanesV3(); pintarComplementos(); if (solicitudId) anotarEleccion(false);
+    }));
+    return;
+  }
+  pintarPlanesV4viejo();
+}
+function pintarPlanesV4viejo() {
+  const prueba = PLANES.find(p => p.codigo === 'PRUEBA');
+  const pagos = PLANES.filter(p => p.codigo === 'BASICO' || p.codigo === 'PRO');
+  const otros = PLANES.filter(p => ['PRUEBA', 'BASICO', 'PRO'].indexOf(p.codigo) === -1);
+  let h = '';
+  if (prueba) {
+    const g = [...new Set((prueba.prestaciones || []).map(x => x.grupo))].sort().join(' + ');
+    h += '<div class="plan gratis"><div class="plan-cab"><h3>' + esc(prueba.nombre) + '</h3><div class="precio">Gratis</div></div><div class="lineas-precio">' + esc($('tDias').textContent) + ' días + ' + esc($('tGracia').textContent) + ' de gracia. Incluye ' + esc(g || 'todo') + '.</div></div>';
+  }
+  h += pagos.map(htmlPlanV3).join('') + otros.map(p => htmlPlan(p, PROMO)).join('') + (PROMO ? '<p class="chico">' + esc(PROMO.condiciones) + '</p>' : '');
+  $('planes').innerHTML = h;
+  $('planes').querySelectorAll('.plan.elegible').forEach(card => card.addEventListener('click', ev => {
+    const cod = card.dataset.plan; if (ELECCION.plan === cod && ev.target.tagName !== 'INPUT') return;
+    ELECCION.plan = cod; guardarEleccion(); pintarPlanesV3(); pintarComplementos(); if (solicitudId) anotarEleccion(false);
+  }));
+}
+// v4: rompecabezas — arrastrar y encajar (computadora) o tocar (celular, teclado). Misma elección que las tarjetas de arriba.
+function piezaHTML(cls, clave, titulo, sub, extra) { return '<button type="button" class="pieza ' + cls + '" draggable="true" data-pieza="' + esc(clave) + '"' + (extra || '') + '>' + esc(titulo) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</button>'; }
+function aplicarPieza(clave, accion) {
+  const lista = (CATALOGO && CATALOGO.complementos) || [];
+  if (BASES5.indexOf(clave) !== -1) { ELECCION.plan = accion === 'quitar' ? '' : clave; }
+  else {
+    const c = lista.find(x => x.clave === clave); if (!c) return;
+    ELECCION.complementos = ELECCION.complementos.filter(k => k !== clave);
+    if (accion !== 'quitar') { if (ELECCION.plan && c.planesBase.indexOf(ELECCION.plan) === -1) { const m = $('msgEleccion'); m.className = 'msg info'; m.textContent = c.nombre + ' no se puede sumar al plan elegido.'; return; } ELECCION.complementos.push(clave); }
+  }
+  guardarEleccion(); pintarPlanesV3(); pintarComplementos(); if (solicitudId) anotarEleccion(false);
+}
+function pintarComplementos() {
+  const lista = (CATALOGO && CATALOGO.complementos) || [];
+  ELECCION.complementos = ELECCION.complementos.filter(k => lista.some(c => c.clave === k && (!ELECCION.plan || c.planesBase.indexOf(ELECCION.plan) !== -1)));
+  guardarEleccion();
+  const p1 = PLANES.find(p => p.codigo === 'BASICO'), p2 = PLANES.find(p => p.codigo === 'PRO'), p3 = PLANES.find(p => p.codigo === 'PLUS');
+  const nom = (p, d) => p ? p.nombre : d, pre = p => p ? precioTxt(p.precioRegular, p.precioLanzamiento, p.conPromo) : '';
+  // bandeja: lo que no está en el tablero
+  $('piezasBase').innerHTML = (ELECCION.plan !== 'BASICO' && p1 ? piezaHTML('p1', 'BASICO', nom(p1, 'P1 Esencial'), 'Lo de todos los días · ' + pre(p1), ' aria-label="Agregar ' + esc(nom(p1, 'P1')) + ' a tu plan"') : '') +
+    (ELECCION.plan !== 'PRO' && p2 ? piezaHTML('p2', 'PRO', nom(p2, 'P2 Gestión'), 'Incluye P1 + gestión · ' + pre(p2), ' aria-label="Agregar ' + esc(nom(p2, 'P2')) + ' a tu plan"') : '') +
+    (ELECCION.plan !== 'PLUS' && p3 ? piezaHTML('p3pro', 'PLUS', nom(p3, 'P3 PRO'), 'P1 + P2 + paquete PRO · ' + pre(p3), ' aria-label="Agregar ' + esc(nom(p3, 'P3')) + ' a tu plan"') : '') || '<span class="chico">El plan ya está en el tablero.</span>';
+  $('piezasP3').innerHTML = lista.filter(c => ELECCION.complementos.indexOf(c.clave) === -1).map(c => {
+    const ok = !ELECCION.plan || c.planesBase.indexOf(ELECCION.plan) !== -1;
+    return piezaHTML('p3' + (ok ? '' : ' no'), c.clave, c.nombre, precioTxt(c.precioRegular, c.precioLanzamiento, !!PROMO), ' title="' + esc(c.descripcion) + '" aria-label="Sumar ' + esc(c.nombre) + '"' + (ok ? '' : ' disabled'));
+  }).join('') || (lista.length ? '<span class="chico">Sumaste todos los complementos.</span>' : '<span class="chico">Por ahora no hay complementos para sumar.</span>');
+  // tablero
+  $('ranuraBase').innerHTML = !ELECCION.plan ? 'Arrastrá acá tu plan: P1, P2 o P3 PRO (o tocá la pieza)'
+    : ELECCION.plan === 'PLUS' ? '<span class="encastre">' + piezaHTML('p1', 'PLUS', 'P1', 'incluido', ' tabindex="-1" aria-hidden="true"') + piezaHTML('p2', 'PLUS', '+ P2', 'incluido', ' tabindex="-1" aria-hidden="true"') + piezaHTML('p3pro', 'PLUS', '+ PRO', nom(p3, 'P3 PRO') + ' · tocá para quitar', ' aria-label="Quitar ' + esc(nom(p3, 'P3')) + '"') + '</span>'
+    : ELECCION.plan === 'BASICO' ? piezaHTML('p1', 'BASICO', nom(p1, 'P1 Esencial'), 'tocá para quitar', ' aria-label="Quitar ' + esc(nom(p1, 'P1')) + '"')
+    : '<span class="encastre">' + piezaHTML('p1', 'PRO', 'P1 Esencial', 'incluido en P2', ' aria-label="Quitar ' + esc(nom(p2, 'P2')) + '" tabindex="-1"') + piezaHTML('p2', 'PRO', '+ Gestión', nom(p2, 'P2 Gestión') + ' · tocá para quitar', ' aria-label="Quitar ' + esc(nom(p2, 'P2')) + '"') + '</span>';
+  $('ranuraP3').innerHTML = ELECCION.complementos.length ? lista.filter(c => ELECCION.complementos.indexOf(c.clave) !== -1).map(c => piezaHTML('p3', c.clave, c.nombre, 'tocá para quitar', ' aria-label="Quitar ' + esc(c.nombre) + '"')).join('') : 'Sumá acá los complementos que quieras (opcional)';
+  // tocar = poner / sacar
+  $('bandeja').querySelectorAll('.pieza:not([disabled])').forEach(b => b.onclick = () => aplicarPieza(b.dataset.pieza, 'poner'));
+  document.querySelectorAll('#ranuraBase .pieza, #ranuraP3 .pieza').forEach(b => b.onclick = () => aplicarPieza(b.dataset.pieza, 'quitar'));
+  // arrastrar y encajar
+  document.querySelectorAll('.rompe .pieza').forEach(b => {
+    b.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', b.dataset.pieza + '|' + (b.closest('.encaje') ? 'tablero' : 'bandeja')); e.dataTransfer.effectAllowed = 'move'; b.classList.add('arrastrando'); });
+    b.addEventListener('dragend', () => b.classList.remove('arrastrando'));
+  });
+  pintarResumen();
+}
+function prepararZonas() {
+  const zona = (el, alSoltar) => {
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('sobre'); });
+    el.addEventListener('dragleave', () => el.classList.remove('sobre'));
+    el.addEventListener('drop', e => { e.preventDefault(); el.classList.remove('sobre'); const [clave, desde] = String(e.dataTransfer.getData('text/plain')).split('|'); if (clave) alSoltar(clave, desde); });
+  };
+  zona($('ranuraBase'), (k, desde) => { if (BASES5.indexOf(k) !== -1) aplicarPieza(k, 'poner'); });
+  zona($('ranuraP3'), (k, desde) => { if (BASES5.indexOf(k) === -1) aplicarPieza(k, 'poner'); });
+  zona($('bandeja'), (k, desde) => { if (desde === 'tablero') aplicarPieza(k, 'quitar'); });
+}
+function pintarResumen() {
+  const r = $('resumen');
+  const p = PLANES.find(x => x.codigo === ELECCION.plan);
+  if (!p) { r.innerHTML = '<div>Todavía no elegiste un plan. Tocá P1, P2 o P3 PRO.</div><div class="cond">Igual podés empezar la prueba gratis: el plan se elige antes de pagar.</div>'; return; }
+  const comps = ((CATALOGO && CATALOGO.complementos) || []).filter(c => ELECCION.complementos.indexOf(c.clave) !== -1);
+  let total = precioNum(p.precioRegular, p.precioLanzamiento, p.conPromo);
+  comps.forEach(c => { const n = precioNum(c.precioRegular, c.precioLanzamiento, !!PROMO); total = (total === null || n === null) ? null : total + n; });
+  const lin = (a, b) => '<div class="linea"><span>' + esc(a) + '</span><span>' + esc(b) + '</span></div>';
+  r.innerHTML = lin(p.nombre, precioTxt(p.precioRegular, p.precioLanzamiento, p.conPromo)) + comps.map(c => lin('+ ' + c.nombre, precioTxt(c.precioRegular, c.precioLanzamiento, !!PROMO))).join('') +
+    '<div class="linea total"><span>TOTAL MENSUAL</span><span>' + (total === null ? 'a confirmar' : pesos(total)) + '</span></div>' +
+    '<div class="cond">Empezás con la prueba gratis (sin tarjeta). Tu elección queda anotada con tu solicitud. Al terminar la prueba, VAO Sistemas te envía el contrato con estas condiciones y el plan se activa cuando confirma tu pago. ' +
+    (total === null ? 'Algún precio todavía no está publicado: te lo confirmamos antes de cobrar. ' : '') + 'Podés cambiar la elección cuando quieras antes de pagar.</div>';
+}
+async function anotarEleccion(silencioso) {
+  if (!solicitudId || !ELECCION.plan || !CATALOGO) return;
+  try {
+    const r = await api('registrarInteresPlan', { solicitudId, plan: ELECCION.plan, complementos: ELECCION.complementos });
+    if (!silencioso) { const m = $('msgEleccion'); m.className = 'msg ' + (r.success ? 'ok' : 'info'); m.textContent = r.success ? r.mensaje : (r.error || 'No se pudo anotar la elección.'); }
+  } catch (e) { /* no frena la prueba */ }
+}
+
 async function cargarPlanes() {
   try {
     const r = await api('getPlanesPublicos', {});
     if (!r.success) throw new Error(r.error || 'sin datos');
     $('tDias').textContent = r.prueba.dias; $('tGracia').textContent = r.prueba.gracia;
-    $('planes').innerHTML = r.planes.map(p => htmlPlan(p, r.promo)).join('') +
-      (r.promo ? '<p class="chico">' + esc(r.promo.condiciones) + '</p>' : '');
+    PLANES = r.planes; PROMO = r.promo;
+    CATALOGO = (r.catalogoV043 && r.catalogoV043.migrado) ? r.catalogoV043 : null;   // servidor anterior o planes sin migrar: como antes
+    if (CATALOGO) {
+      if (ELECCION.plan && !PLANES.some(p => p.codigo === ELECCION.plan)) ELECCION.plan = '';
+      if (!ELECCION.plan && !ELECCION._vista && PLANES.some(p => p.codigo === 'PRO')) { ELECCION.plan = 'PRO'; ELECCION._vista = true; guardarEleccion(); }   // v5: P2 elegido de entrada; si la persona lo cambia o lo quita, se respeta
+      const pr = PLANES.find(p => p.codigo === 'PRUEBA'); if (pr && pr.prestaciones) $('tSub').textContent = 'Incluye ' + [...new Set(pr.prestaciones.map(x => CATALOGO.grupos[x.grupo] || x.grupo))].join(' + ');
+      pintarPlanesV3(); $('armaTuPlan').classList.remove('oculto'); if (!window._zonasListas) { prepararZonas(); window._zonasListas = true; } pintarComplementos();
+    } else {
+      $('planes').innerHTML = r.planes.map(p => htmlPlan(p, r.promo)).join('') +
+        (r.promo ? '<p class="chico">' + esc(r.promo.condiciones) + '</p>' : '');
+    }
     CONDICIONES = r.condicionesPrueba;
     $('condiciones').textContent = CONDICIONES.texto;
     if (r.inscripcion === 'LISTA_ESPERA') {
@@ -380,6 +631,7 @@ $('formDatos').addEventListener('submit', async ev => {
     if (r.success && r.solicitudId && !r.listaEspera && !r.yaCreado) {
       solicitudId = r.solicitudId; guardarSol(solicitudId);
       $('textoCodigo').textContent = r.mensaje; paso(2); iniciarReenvio(); $('codigo').focus();
+      anotarEleccion(false);
     } else if (r.success) { guardarSol(r.solicitudId); mostrarResultado(r); }
     else { mensaje(r.error || 'No pudimos enviar el código.', 'error'); marcar(r.campo || null); }
   } catch (e) { mensaje('Sin conexión. Revisá internet y volvé a intentar.', 'error'); }
@@ -393,7 +645,7 @@ $('formCodigo').addEventListener('submit', async ev => {
   const btn = $('btnConfirmar'); btn.disabled = true; btn.textContent = 'Creando tu prueba…'; mensaje('');
   try {
     const r = await api('registroConfirmar', { solicitudId, codigo: cod });
-    if (r.success) mostrarResultado(r);
+    if (r.success) { mostrarResultado(r); anotarEleccion(true); }
     else {
       mensaje(r.error || 'No pudimos verificar el código.', 'error');
       if (r.codigoVencido) { $('btnReenviar').disabled = false; $('btnReenviar').textContent = 'Pedir un código nuevo'; }
@@ -427,6 +679,7 @@ async function retomar() {
     const r = await api('registroEstado', { solicitudId: id });
     if (r.error && !r.enRevision) { if (!q) guardarSol(null); else mensaje(r.error, 'error'); return; }
     solicitudId = id;
+    anotarEleccion(true);
     if (r.enRevision) { mensaje(r.error, 'info'); return; }
     if (r.esperaCodigo) {
       paso(2); $('textoCodigo').textContent = r.mensaje;

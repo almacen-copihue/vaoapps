@@ -135,7 +135,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--blanco); color:var(--t
 </div>
 
 <script>
-const APP_VERSION = 7;
+const APP_VERSION = 8; // V8: con un día elegido, 🏦 Caja del día por medio según el servidor (separa el cobro mixto en cada medio e incluye cobros de fiados)
 const API_URL = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
 // Paso 11: reportes.html no tenía prefijo ni token propios — por eso
 // getVentas se llamaba sin prefijo y siempre traía las ventas de "NE"
@@ -344,9 +344,28 @@ function renderApp() {
             '</div>' +
             '<div class="resumen-seleccion"><div class="res-label">Total seleccionado</div><div class="res-total">'+fmt(totSel.total)+'</div><div class="res-dias">'+diasLabel+' · '+_contarOperaciones(ventasSel)+' transacciones</div></div>' +
             (Object.keys(totSel.metodos).length ? '<div class="tarjeta"><div class="tarjeta-titulo">💳 Por método de pago</div>'+metodosRows+'</div>' : '') +
+            (nDias === 1 ? '<div class="tarjeta" id="cajaDiaV8"><div class="tarjeta-titulo">🏦 Caja del día (servidor)</div><div class="empty" style="padding:8px;">Consultando…</div></div>' : '') +
             '<div class="tarjeta"><div class="tarjeta-titulo">🏆 Top productos</div>'+topsHTML+'</div>' +
             (diasOrdenados.length ? '<div class="seccion-titulo" style="margin-top:4px;">📋 Detalle por día</div>'+detalleHTML : '') +
         '</div><div class="pb"></div>';
+    if (nDias === 1) cargarCajaDiaV8(Array.from(diasSeleccionados)[0]); // V8
+}
+
+// V8: caja del día según el servidor. Las ventas MIXTO aparecen separadas en cada medio real; incluye cobros de fiados.
+let _cajaV8Seq = 0;
+async function cargarCajaDiaV8(dia) {
+    const seq = ++_cajaV8Seq;
+    let r = null;
+    try {
+        const url = API_URL + '?action=getCaja&prefijo=' + PREFIJO + '&data=' + encodeURIComponent(JSON.stringify({ token: _tokenActual(), dia: dia }));
+        r = await (await fetch(url, { redirect: 'follow' })).json();
+    } catch (e) { r = null; }
+    const box = document.getElementById('cajaDiaV8'); if (!box || seq !== _cajaV8Seq) return;
+    if (!r || !r.success) { box.innerHTML = '<div class="tarjeta-titulo">🏦 Caja del día (servidor)</div><div class="empty" style="padding:8px;">' + _esc(r && r.error ? (/Acción no reconocida/i.test(r.error) ? 'El servidor todavía no tiene la caja del día (falta actualizarlo).' : r.error) : 'Sin conexión: no se pudo consultar.') + '</div>'; return; }
+    const filas = Object.keys(r.cajaPorMedio || {}).map(m => '<div class="metodo-row"><span class="metodo-nombre">' + _esc(m) + '</span><span><strong class="metodo-monto">' + fmt(r.cajaPorMedio[m]) + '</strong></span></div>').join('') || '<div class="empty" style="padding:8px;">Sin cobros ese día</div>';
+    box.innerHTML = '<div class="tarjeta-titulo">🏦 Caja del día (servidor): ' + fmt(r.totalCaja || 0) + '</div>' + filas +
+        (r.fiadoDelDia ? '<div class="metodo-row"><span class="metodo-nombre">🧾 Quedó fiado</span><span><strong class="metodo-monto">' + fmt(r.fiadoDelDia) + '</strong></span></div>' : '') +
+        '<div style="font-size:0.72rem;color:#999;padding-top:6px;">Ventas + cobros de fiados − vueltos − devoluciones, de todos los equipos.</div>';
 }
 
 function toggleDia(ds) {

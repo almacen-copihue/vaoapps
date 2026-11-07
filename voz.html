@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Asistente de voz · VAO POS</title>
+<style>
+/* voz.html v1 (v044) — paquete P3 PRO. Solo Android con Chrome (reconocimiento de voz del celular).
+   Consulta stock y caja leyendo la planilla en el momento; no cambia ningún dato. Los errores quedan anotados para VAO. */
+.mic { width: 140px; height: 140px; border-radius: 50%; border: 0; background: var(--grupo); color: #fff; font-size: 3.4rem; cursor: pointer; box-shadow: 0 6px 22px rgba(46,139,87,.45); display: block; margin: 16px auto; }
+.mic.escuchando { animation: latido 1s ease-in-out infinite; background: #C62828; }
+@keyframes latido { 50% { transform: scale(1.07); } }
+@media (prefers-reduced-motion: reduce) { .mic.escuchando { animation: none; } }
+.dijiste { text-align: center; color: var(--suave); min-height: 22px; }
+.respuesta { font-size: 1.15rem; text-align: center; min-height: 54px; }
+.leido { text-align: center; font-size: .76rem; color: var(--suave); }
+</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <div class="vao-tarjeta oculto" id="noAndroid"><h2>📱 Solo en Android</h2><p>El asistente de voz funciona en celulares <b>Android con Chrome</b>. Abrí VAO POS desde ese celular para usarlo.</p></div>
+  <div id="siAndroid" class="oculto">
+    <div class="vao-tarjeta vao-centro" style="max-width:none">
+      <p>Tocá el micrófono y preguntá, por ejemplo:<br><b>«¿Cuánto stock hay de yerba?»</b> · <b>«¿Cómo va la caja?»</b></p>
+      <button class="mic" id="mic" aria-label="Hablar">🎙️</button>
+      <div class="dijiste" id="dijiste"></div>
+      <div class="respuesta" id="respuesta" aria-live="polite"></div>
+      <div class="leido" id="leido"></div>
+      <div class="vao-fila" style="justify-content:center;margin-top:10px;"><button class="vao-btn" id="btnCaja">📋 Caja de hoy</button></div>
+    </div>
+    <div class="vao-tarjeta"><h2>¿Hay mucho ruido? Escribilo</h2><div class="vao-fila"><div class="vao-campo"><label for="texto">Producto o pregunta</label><input id="texto" placeholder="Ej.: stock de arroz"></div><button class="vao-btn primario" id="btnTexto">Preguntar</button></div></div>
+  </div>
+</main>
+<script src="vao-comun.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const Reco = window.SpeechRecognition || window.webkitSpeechRecognition;
+function decir(t) { $('respuesta').textContent = t; try { if ('speechSynthesis' in window) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'es-AR'; speechSynthesis.speak(u); } } catch (e) {} }
+function anotarError(consulta, error) { VAO.api('vozError', { consulta, error, tipo: 'cliente', contexto: (navigator.userAgent || '').slice(0, 200) + ' · ' + new Date().toISOString() }).catch(() => {}); }
+function interpretar(t) {
+  const x = t.toLowerCase();
+  if (/\bcaja\b|vend[ií]|ventas|recaud|cu[aá]nto (hice|entr)/.test(x)) return { tipo: 'caja' };
+  return { tipo: 'stock', producto: x };   // el servidor saca las palabras de relleno («cuánto», «hay», «de»…) y la puntuación
+}
+async function preguntar(texto) {
+  $('dijiste').textContent = 'Dijiste: «' + texto + '»'; $('respuesta').textContent = 'Buscando…'; $('leido').textContent = '';
+  const q = interpretar(texto);
+  try {
+    const r = await VAO.api('vozConsultar', q);
+    if (!r.success) { decir(r.error || 'No pude responder.'); anotarError(texto, r.error || 'sin respuesta'); return; }
+    $('leido').textContent = 'Dato leído recién de la planilla (' + new Date(r.leidoEn).toLocaleTimeString('es-AR') + ').';
+    if (r.tipo === 'caja') { decir('Hoy entraron ' + Math.round(r.total).toLocaleString('es-AR') + ' pesos' + (r.fiado ? ', y se fiaron ' + Math.round(r.fiado).toLocaleString('es-AR') : '') + '.'); return; }
+    if (r.encontrado === true) decir('De ' + r.producto.nombre.toLowerCase() + ' hay ' + r.producto.stock + '.');
+    else if (r.encontrado === 'ambiguo') decir('Encontré varios: ' + r.opciones.map(o => o.nombre.toLowerCase() + ', ' + o.stock).join('; ') + '.');
+    else decir('No encontré «' + (r.buscado || texto).toLowerCase() + '» en el inventario.');
+  } catch (e) { decir('No hay conexión. Probá de nuevo.'); anotarError(texto, 'sin conexión'); }
+}
+function escuchar() {
+  if (!Reco) { decir('Este navegador no tiene reconocimiento de voz. Usá Chrome en Android.'); anotarError('', 'SpeechRecognition no disponible'); return; }
+  const r = new Reco(); r.lang = 'es-AR'; r.interimResults = false; r.maxAlternatives = 1;
+  $('mic').classList.add('escuchando'); $('dijiste').textContent = 'Te escucho…';
+  r.onresult = e => preguntar(e.results[0][0].transcript);
+  r.onerror = e => { const m = { 'no-speech': 'No escuché nada. Tocá y hablá de nuevo.', 'not-allowed': 'Falta el permiso del micrófono: habilitalo en Chrome.', network: 'Sin conexión para reconocer la voz.' }[e.error] || 'No entendí. Probá de nuevo.';
+    decir(m); anotarError('', 'reconocimiento: ' + e.error); };
+  r.onend = () => $('mic').classList.remove('escuchando');
+  try { r.start(); } catch (e) { $('mic').classList.remove('escuchando'); }
+}
+VAO.iniciar({ modulo: 'extra_voz', titulo: 'Asistente de voz', icono: '🎙️', grupo: 'P3' }).then(ok => {
+  if (!ok) return;
+  if (!VAO.esAndroid()) { $('noAndroid').classList.remove('oculto'); return; }
+  $('siAndroid').classList.remove('oculto');
+  $('mic').onclick = escuchar; $('btnCaja').onclick = () => preguntar('¿cómo va la caja?');
+  $('btnTexto').onclick = () => { const t = $('texto').value.trim(); if (t) preguntar(t); };
+  $('texto').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnTexto').click(); });
+});
+</script>
+</body>
+</html>

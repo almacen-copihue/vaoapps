@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Mis deudas · VAO POS</title>
+<style>
+/* deudas.html v1 (v044) — paquete P3 PRO. Deudas DEL COMERCIO (préstamos, compromisos con acreedores). No son los fiados de clientes. */
+.prog { height: 8px; border-radius: 6px; background: var(--borde); overflow: hidden; margin: 6px 0; }
+.prog > div { height: 100%; background: var(--verde); }
+</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <p class="vao-msg info">Acá anotás lo que <b>debe tu comercio</b> (préstamos, cuotas, compromisos con acreedores). Lo que te deben tus clientes está en 🧾 Fiados.</p>
+  <div class="vao-kpis" id="kpis"></div>
+  <nav class="vao-pestanas" id="tabs" role="tablist">
+    <button data-tab="activas" class="activo">🏦 Deudas activas</button>
+    <button data-tab="nueva" class="vao-escribe">➕ Nueva deuda</button>
+    <button data-tab="saldadas">✅ Saldadas</button>
+  </nav>
+  <section data-panel="activas"><div id="msg" class="oculto"></div><div id="activas"></div></section>
+  <section data-panel="saldadas" class="oculto"><div id="saldadas"></div></section>
+  <section data-panel="nueva" class="oculto">
+    <div class="vao-tarjeta vao-escribe">
+      <h2>Nueva deuda del comercio</h2>
+      <div class="vao-fila">
+        <div class="vao-campo"><label for="acreedor">A quién se le debe</label><input id="acreedor" maxlength="60" placeholder="Ej.: Banco Sur, Juan (proveedor)"></div>
+        <div class="vao-campo"><label for="monto">Monto total ($)</label><input id="monto" inputmode="decimal"></div>
+      </div>
+      <div class="vao-fila">
+        <div class="vao-campo" style="flex:0 1 120px;"><label for="cuotas">Cuotas</label><input id="cuotas" type="number" min="1" max="120" value="1"></div>
+        <div class="vao-campo" style="flex:0 1 180px;"><label for="vence">Primer vencimiento</label><input id="vence" type="date"></div>
+        <div class="vao-campo"><label for="motivo">Para qué</label><input id="motivo" maxlength="80"></div>
+      </div>
+      <div class="vao-campo"><label for="obs">Observaciones</label><input id="obs" maxlength="150"></div>
+      <div id="msgNueva" class="oculto"></div>
+      <button class="vao-btn primario" id="btnNueva">Guardar deuda</button>
+    </div>
+  </section>
+</main>
+<script src="vao-comun.js"></script>
+<script>
+const $ = id => document.getElementById(id); let DATOS = null;
+function tarjeta(p) {
+  const chip = p.vencido ? '<span class="vao-chip rojo">VENCIDA</span>' : (p.urgente ? '<span class="vao-chip naranja">vence en ' + p.diasVencimiento + ' días</span>' : '');
+  return '<div class="vao-tarjeta"><div class="vao-fila" style="justify-content:space-between;"><h2 style="margin:0">' + VAO.esc(p.acreedor) + '</h2>' + chip + '</div>' +
+    '<small style="color:var(--suave)">' + VAO.esc(p.motivo || '') + ' · desde ' + VAO.esc(p.fecha) + (p.vencimiento ? ' · próximo vencimiento ' + VAO.esc(p.vencimiento) : '') + '</small>' +
+    '<div class="prog" aria-label="' + p.porcentaje + '% pagado"><div style="width:' + p.porcentaje + '%"></div></div>' +
+    '<div class="vao-fila" style="justify-content:space-between;"><span>Pagado <b>' + VAO.pesos(p.pagado) + '</b> de ' + VAO.pesos(p.monto) + ' · cuota ' + p.cuotasPagadas + '/' + p.cuotas + ' de ' + VAO.pesos(p.montoCuota) + '</span><b>Saldo ' + VAO.pesos(p.saldo) + '</b></div>' +
+    (p.activo ? '<div class="vao-fila vao-escribe" style="margin-top:8px;"><button class="vao-btn primario" data-pagar="' + VAO.esc(p.id) + '">Pagar cuota de ' + VAO.pesos(p.montoCuota) + '</button><button class="vao-btn peligro chico" data-cancelar="' + VAO.esc(p.id) + '">Marcar cancelada</button></div>' : '') + '</div>';
+}
+async function cargar() {
+  try {
+    const r = await VAO.api('getPrestamos', {});
+    if (r.error) { VAO.msg('msg', r.error, 'error'); return; }
+    DATOS = r; const act = r.prestamos.filter(p => p.activo), sal = r.prestamos.filter(p => !p.activo);
+    $('kpis').innerHTML = '<div class="vao-kpi"><small>Total que debe el comercio</small><b>' + VAO.pesos(r.totalDeuda) + '</b></div><div class="vao-kpi"><small>Deudas activas</small><b>' + act.length + '</b></div>' +
+      '<div class="vao-kpi"><small>Vencidas</small><b style="color:' + (act.some(p => p.vencido) ? 'var(--rojo)' : 'inherit') + '">' + act.filter(p => p.vencido).length + '</b></div>';
+    $('activas').innerHTML = act.length ? act.sort((a, b) => (a.diasVencimiento ?? 999) - (b.diasVencimiento ?? 999)).map(tarjeta).join('') : '<div class="vao-tarjeta">✅ El comercio no tiene deudas activas.</div>';
+    $('saldadas').innerHTML = sal.length ? sal.map(tarjeta).join('') : '<div class="vao-tarjeta">Todavía no hay deudas saldadas.</div>';
+    document.querySelectorAll('[data-pagar]').forEach(b => b.addEventListener('click', () => pagar(b.dataset.pagar)));
+    document.querySelectorAll('[data-cancelar]').forEach(b => b.addEventListener('click', () => cancelar(b.dataset.cancelar)));
+  } catch (e) { VAO.msg('msg', VAO.sinConexion, 'error'); }
+}
+function pagar(id) {
+  const p = DATOS.prestamos.find(x => x.id === id), op = VAO.opId('CUO'), m = document.createElement('div'); m.className = 'vao-modal';
+  m.innerHTML = '<div><h2 style="margin:0 0 8px">Pagar cuota ' + (p.cuotasPagadas + 1) + ' de ' + p.cuotas + '</h2><p><b>' + VAO.esc(p.acreedor) + '</b> · ' + VAO.pesos(p.montoCuota) + '</p>' +
+    '<div class="vao-campo"><label>Pagado con</label><select id="pMedio"><option value="EFECTIVO">💵 Efectivo</option><option value="TRANSFERENCIA">🏦 Transferencia</option><option value="DEBITO">💳 Débito</option></select></div>' +
+    '<label style="display:flex;gap:8px;align-items:center;margin:8px 0;"><input type="checkbox" id="pEgreso" checked style="width:22px;height:22px"> Anotarlo también como egreso de caja (categoría Deudas)</label>' +
+    '<div class="vao-campo"><label>Quién lo registra</label><input id="pOper" value="' + VAO.esc(VAO.operador()) + '"></div><div id="pMsg" class="oculto"></div>' +
+    '<div class="vao-fila"><button class="vao-btn primario" id="pOk">Confirmar pago</button><button class="vao-btn" id="pNo">Cancelar</button></div></div>';
+  document.body.appendChild(m);
+  m.querySelector('#pNo').onclick = () => m.remove();
+  m.querySelector('#pOk').onclick = async () => {
+    const b = m.querySelector('#pOk'); b.disabled = true; VAO.operador(m.querySelector('#pOper').value.trim());
+    try {
+      const r = await VAO.api('pagarCuotaPrestamo', { id, opId: op, medio: m.querySelector('#pMedio').value, registrarEgreso: m.querySelector('#pEgreso').checked, operador: m.querySelector('#pOper').value.trim() || 'Comercio' });
+      if (!r.success) { VAO.msg(m.querySelector('#pMsg'), r.error, 'error'); b.disabled = false; return; }
+      m.remove(); VAO.toast(r.mensaje, 'ok'); cargar();
+    } catch (e) { VAO.msg(m.querySelector('#pMsg'), VAO.sinConexion, 'error'); b.disabled = false; }
+  };
+}
+async function cancelar(id) {
+  const p = DATOS.prestamos.find(x => x.id === id);
+  if (!confirm('¿Marcar como cancelada la deuda con ' + p.acreedor + '? Usalo si se saldó por otro medio o se cargó por error. No registra ningún pago.')) return;
+  const r = await VAO.api('cancelarPrestamo', { id }); VAO.toast(r.success ? 'Deuda marcada como cancelada.' : r.error, r.success ? 'ok' : 'error'); cargar();
+}
+async function nueva() {
+  const monto = VAO.num($('monto').value);
+  if (!$('acreedor').value.trim()) return VAO.msg('msgNueva', 'Escribí a quién se le debe.', 'error');
+  if (!(monto > 0)) return VAO.msg('msgNueva', 'Escribí el monto.', 'error');
+  const b = $('btnNueva'); b.disabled = true;
+  try {
+    const r = await VAO.api('registrarPrestamo', { acreedor: $('acreedor').value, monto, cuotas: +$('cuotas').value || 1, vencimiento: $('vence').value, motivo: $('motivo').value, obs: $('obs').value });
+    if (r.error) VAO.msg('msgNueva', r.error, 'error'); else { VAO.toast('Deuda guardada: cuota de ' + VAO.pesos(r.montoCuota), 'ok'); ['acreedor', 'monto', 'motivo', 'obs', 'vence'].forEach(i => $(i).value = ''); $('cuotas').value = 1; VAO.irA($('tabs'), 'activas'); cargar(); }
+  } catch (e) { VAO.msg('msgNueva', VAO.sinConexion, 'error'); }
+  b.disabled = false;
+}
+VAO.iniciar({ modulo: 'extra_prestamos', titulo: 'Mis deudas', icono: '🏦', grupo: 'P3' }).then(ok => {
+  if (!ok) return;
+  VAO.pestanas('tabs'); $('btnNueva').addEventListener('click', nueva); cargar();
+});
+</script>
+</body>
+</html>

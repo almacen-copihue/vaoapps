@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Mis datos · VAO POS</title>
+<style>
+/* misdatos.html v1.1 (v044.2: pestaña ⚙️ Ajustes — botones que usás en P2/P3 y tu cotización de monedas con fecha) · v1 (v044.1) — base, en todos los planes. Datos del comercio, su plan, descargas e historial de cambios.
+   Antes era una ventana del POS que además mezclaba la revisión de inventario (ahora en inventario.html, P2). */
+.plan-ficha { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.plan-sello { font-weight: 900; color: #fff; border-radius: 12px; padding: 8px 12px; background: #1E88E5; }
+.plan-sello.PRO { background: #7E57C2; } .plan-sello.PLUS { background: linear-gradient(135deg, #8A5A00, #D4A017); } .plan-sello.PRUEBA { background: #2E8B57; }
+.hc { border-bottom: 1px solid var(--borde); padding: 8px 2px; }
+.hc small { color: var(--suave); }
+/* v1.1 (v044.2): ⚙️ Ajustes — botones que usás (P2/P3) y monedas (con Cobro avanzado) */
+.aj-apps { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.aj-app { display: flex; align-items: center; gap: 8px; border: 2px solid var(--borde); border-radius: 12px; padding: 8px 10px; min-height: 48px; cursor: pointer; background: var(--papel); }
+.aj-app input { width: 20px; height: 20px; flex: 0 0 auto; accent-color: #2E8B57; }
+.aj-app .ic { font-size: 1.2rem; } .aj-app .nm { font-weight: 700; font-size: .86rem; flex: 1; min-width: 0; }
+.aj-app.off { opacity: .55; border-style: dashed; } .aj-app.fija { cursor: default; }
+.aj-app small { display: block; font-weight: 400; color: var(--suave); font-size: .7rem; }
+.aj-grupo { grid-column: 1 / -1; font-size: .74rem; font-weight: 800; color: var(--suave); text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+.aj-mon { border: 2px solid var(--borde); border-radius: 12px; padding: 10px; margin-bottom: 10px; }
+.aj-mon h3 { margin: 0 0 6px; font-size: .95rem; } .aj-fecha { font-size: .8rem; color: var(--suave); margin: 2px 0 6px; }
+.aj-revisar { background: #FFF4D6; color: #6B4A00; border-radius: 10px; padding: 8px 10px; font-size: .84rem; margin: 6px 0; }
+</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <nav class="vao-pestanas" id="tabs" role="tablist">
+    <button data-tab="comercio" class="activo">🏪 Mi comercio</button>
+    <button data-tab="ajustes">⚙️ Ajustes</button>
+    <button data-tab="descargas">📥 Descargas</button>
+    <button data-tab="cambios">🕵️ Historial de cambios</button>
+  </nav>
+  <section data-panel="comercio">
+    <div class="vao-tarjeta"><h2>Mi plan</h2><div id="plan">Cargando…</div></div>
+    <div class="vao-tarjeta">
+      <h2>Datos del comercio</h2>
+      <p style="margin:0 0 8px;color:var(--suave);font-size:.86rem">Aparecen en tus tickets y en lo que compartís con clientes. El plan y los pagos los maneja VAO Sistemas.</p>
+      <div id="campos" class="vao-fila"></div>
+      <div id="msgDatos" class="oculto"></div>
+      <button class="vao-btn primario vao-escribe" id="btnGuardar">Guardar cambios</button>
+    </div>
+  </section>
+  <section data-panel="ajustes" class="oculto">
+    <div class="vao-tarjeta"><h2>🧩 Botones que usás</h2>
+      <p style="margin:0 0 8px;color:var(--suave);font-size:.86rem">Destildá lo que no usás y desaparece de tu POS. No cambia tu plan ni tu precio, y no se borra nada: lo volvés a mostrar desde acá cuando quieras.</p>
+      <div id="ajApps">Cargando…</div><div id="msgAj" class="oculto"></div>
+      <button class="vao-btn primario vao-escribe oculto" id="btnAjGuardar">Guardar botones</button></div>
+    <div class="vao-tarjeta" id="ajMonedas"><h2>💱 Monedas que aceptás</h2><div id="ajMon">Cargando…</div><div id="msgMon" class="oculto"></div></div>
+  </section>
+  <section data-panel="descargas" class="oculto">
+    <div class="vao-tarjeta"><h2>Tus registros son tuyos</h2>
+      <p style="margin:0 0 8px;color:var(--suave);font-size:.86rem">Descargá cada hoja en un archivo que abre Excel o Google Sheets (CSV). Solo tus datos.</p>
+      <ul class="vao-lista" id="hojas"></ul><div id="msgDesc" class="oculto"></div></div>
+  </section>
+  <section data-panel="cambios" class="oculto">
+    <div class="vao-tarjeta"><h2>Qué se cambió y cuándo</h2>
+      <div class="vao-campo"><label for="filtro">Buscar producto</label><input id="filtro" placeholder="Ej.: yerba"></div>
+      <div id="cambios"></div></div>
+  </section>
+</main>
+<script src="vao-comun.js"></script>
+<script>
+const $ = id => document.getElementById(id); let DATOS = {}, CAMBIOS = [];
+const NOMPLAN = { BASICO: 'P1 Esencial', PRO: 'P2 Gestión', PLUS: 'P3 PRO', PRUEBA: 'Prueba' };
+async function plan() {
+  const r = await VAO.api('getMiPlan', {});
+  if (!r.success) { $('plan').textContent = r.error || 'No se pudo cargar.'; return; }
+  const grupos = { P1: 'P1 Esencial', P2: 'P2 Gestión', P3: 'P3 PRO', C: 'Complementos' };
+  const porG = {}; r.prestaciones.forEach(p => (porG[p.grupo || 'P1'] = porG[p.grupo || 'P1'] || []).push(p.nombre.split(' (')[0]));
+  $('plan').innerHTML = '<div class="plan-ficha"><span class="plan-sello ' + VAO.esc(r.plan) + '">' + VAO.esc(r.planNombre || NOMPLAN[r.plan] || r.plan) + '</span><div><b>' + VAO.esc(r.estado.replace('_', ' ')) + '</b>' +
+    (r.vence ? '<br><small>Vence el ' + VAO.esc(r.vence) + '</small>' : '') + '</div></div>' +
+    Object.keys(grupos).filter(g => porG[g]).map(g => '<p style="margin:8px 0 0"><b>' + grupos[g] + ':</b> ' + porG[g].map(VAO.esc).join(' · ') + '</p>').join('') +
+    (r.suspendidas.length ? '<p class="vao-msg aviso" style="margin-top:8px">Suspendido por VAO Sistemas: ' + r.suspendidas.map(VAO.esc).join(', ') + '</p>' : '') +
+    '<p style="margin:10px 0 0"><a class="vao-btn" href="' + VAO.urlPos() + '#miplan">💳 Ver precios o pedir un cambio de plan</a></p>';
+}
+async function datos() {
+  const r = await VAO.api('getDatosComercio', {});
+  if (!r.success) { VAO.msg('msgDatos', r.error, 'error'); return; }
+  DATOS = r.datos;
+  $('campos').innerHTML = Object.keys(r.etiquetas).map(k => '<div class="vao-campo"><label for="d_' + k + '">' + VAO.esc(r.etiquetas[k]) + '</label><input id="d_' + k + '" maxlength="80" value="' + VAO.esc(r.datos[k]) + '"' +
+    (k === 'email' ? ' type="email" inputmode="email"' : k === 'telefono' ? ' inputmode="tel"' : '') + (VAO.soloLectura ? ' disabled' : '') + '></div>').join('');
+}
+async function guardar() {
+  const d = {}; Object.keys(DATOS).forEach(k => { const v = $('d_' + k).value.trim(); if (v !== DATOS[k]) d[k] = v; });
+  if (!Object.keys(d).length) return VAO.msg('msgDatos', 'No cambiaste nada.', 'info');
+  const b = $('btnGuardar'); b.disabled = true;
+  try { const r = await VAO.api('guardarDatosComercio', { datos: d }); VAO.msg('msgDatos', r.success ? r.mensaje : r.error, r.success ? 'ok' : 'error'); if (r.success) datos(); }
+  catch (e) { VAO.msg('msgDatos', VAO.sinConexion, 'error'); }
+  b.disabled = false;
+}
+async function hojas() {
+  $('hojas').innerHTML = '<li class="vao-item">Cargando…</li>';
+  try {
+    const r = await VAO.api('listarHojasDescargables', {});
+    if (!r.success) { $('hojas').innerHTML = ''; return VAO.msg('msgDesc', r.error, 'error'); }
+    $('hojas').innerHTML = r.hojas.map(h => '<li class="vao-item"><div class="izq"><b>' + VAO.esc(h.nombre) + '</b><small>' + (h.filas ? h.filas.toLocaleString('es-AR') + (h.filas === 1 ? ' registro' : ' registros') : 'sin registros') + '</small></div>' +
+      '<button class="vao-btn chico" data-hoja="' + VAO.esc(h.clave) + '"' + (h.filas ? '' : ' disabled') + '>Descargar</button></li>').join('');
+    $('hojas').querySelectorAll('[data-hoja]').forEach(b => b.onclick = () => descargar(b));
+  } catch (e) { VAO.msg('msgDesc', VAO.sinConexion, 'error'); }
+}
+// Celda CSV segura (igual que el POS): entre comillas; si empieza con = + - @ se antepone ' (salvo números negativos).
+function celda(v) { if (typeof v === 'number' && isFinite(v)) v = String(Math.round(v * 1e6) / 1e6).replace('.', ','); let t = String(v == null ? '' : v);
+  if (/^[=+\-@\t\r]/.test(t) && !/^-\$?\s?\d+([.,]\d+)*%?$/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; }
+async function descargar(btn) {
+  const clave = btn.dataset.hoja; let filas = [], enc = null, nombre = clave, desde = 0, total = 0;
+  $('hojas').querySelectorAll('button').forEach(b => b.disabled = true);
+  try {
+    while (true) {
+      const r = await VAO.api('descargarHoja', { hoja: clave, desde });
+      if (!r.success) throw new Error(r.error || 'No se pudo descargar');
+      if (enc === null) { enc = r.encabezados || []; nombre = r.nombre || clave; }
+      total = r.total || 0; filas = filas.concat(r.filas || []); desde += (r.filas || []).length;
+      VAO.msg('msgDesc', '⏳ ' + nombre + ': ' + desde + ' de ' + total, 'info');
+      if (!(r.filas || []).length || desde >= total) break;
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['﻿' + [enc].concat(filas).filter(f => f && f.length).map(f => f.map(celda).join(';')).join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'VAO_' + VAO.prefijo + '_' + clave + '_' + VAO.hoy() + '.csv'; document.body.appendChild(a); a.click(); a.remove();
+    VAO.msg('msgDesc', '✅ ' + nombre + ' descargada (' + filas.length + (filas.length === 1 ? ' registro)' : ' registros)'), 'ok');
+  } catch (e) { VAO.msg('msgDesc', e && e.message && e.message !== 'Failed to fetch' ? e.message : VAO.sinConexion, 'error'); }
+  hojas();
+}
+function pesos(v) { return v === '' || v == null ? '—' : VAO.pesos(v); }
+function lineas(c) {
+  const L = [];
+  if (c.tipo === 'AJUSTE') {
+    if (c.nombreDespues) L.push('Nombre: ' + c.nombreAntes + ' → ' + c.nombreDespues);
+    if (c.stockAntes !== '' && c.stockDespues !== '' && c.stockAntes !== c.stockDespues) L.push('Stock: ' + c.stockAntes + ' → ' + c.stockDespues);
+    if (c.precioDespues !== '' && c.precioDespues !== c.precioAntes) L.push('Precio: ' + pesos(c.precioAntes) + ' → ' + pesos(c.precioDespues));
+    if (c.categoriaDespues) L.push('Categoría: ' + (c.categoriaAntes || '—') + ' → ' + c.categoriaDespues);
+  } else L.push('Ingresó +' + c.cantidad + (c.costo !== '' ? ' · costo ' + pesos(c.costo) : '') + (c.proveedor ? ' · ' + c.proveedor : ''));
+  return L;
+}
+function pintarCambios() {
+  const q = $('filtro').value.trim().toUpperCase(), vis = CAMBIOS.filter(c => !q || String(c.producto).toUpperCase().includes(q));
+  $('cambios').innerHTML = vis.length ? vis.slice(0, 200).map(c => '<div class="hc"><small>' + VAO.esc(new Date(c.fecha).toLocaleString('es-AR')) + ' · ' + (c.tipo === 'AJUSTE' ? '✏️ Ajuste' : '📦 Ingreso') + '</small><br><b>' + VAO.esc(c.producto) + '</b><br>' + lineas(c).map(VAO.esc).join('<br>') + '</div>').join('')
+    : VAO.vacio('🕵️', CAMBIOS.length ? 'Ningún cambio de ese producto.' : 'Todavía no hay cambios registrados.');
+}
+async function cambios() {
+  $('cambios').innerHTML = 'Cargando…';
+  try { const r = await VAO.api('getCambios', { limite: 300 }); if (!r.success) { $('cambios').innerHTML = VAO.vacio('⚠️', r.error || 'No se pudo cargar.'); return; } CAMBIOS = r.cambios || []; pintarCambios(); }
+  catch (e) { $('cambios').innerHTML = VAO.vacio('📡', VAO.sinConexion); }
+}
+// ── v1.1 (v044.2): ⚙️ Ajustes ──
+const GRUPO_AJ = { P1: 'P1 · Esencial', P2: 'P2 · Gestión', P3: 'P3 · PRO', C: '➕ Complementos' };
+const MON_AJ = { USD: { nombre: 'Dólar', ej: '1200' }, CLP: { nombre: 'Peso chileno', ej: '1,3' } };
+let AJ = null;
+async function ajustes() {
+  $('ajApps').textContent = 'Cargando…';
+  try { AJ = await VAO.api('getAjustes', {}); } catch (e) { $('ajApps').innerHTML = VAO.vacio('📡', VAO.sinConexion); return; }
+  if (!AJ.success) { $('ajApps').innerHTML = VAO.vacio('⚠️', AJ.error || 'No se pudo cargar.'); return; }
+  const andr = /Android/i.test(navigator.userAgent || '');
+  if (!AJ.puedeOcultar) {
+    $('ajApps').innerHTML = VAO.vacio('🧩', AJ.motivoNoOcultar + ' Con tu plan ves solo lo que usás todos los días.');
+    $('btnAjGuardar').classList.add('oculto');
+  } else {
+    let h = '<div class="aj-apps">', g0 = '';
+    AJ.apps.filter(a => !a.soloAndroid || andr).forEach(a => {
+      if (a.grupo !== g0) { g0 = a.grupo; h += '<div class="aj-grupo">' + VAO.esc(GRUPO_AJ[a.grupo] || a.grupo) + '</div>'; }
+      h += '<label class="aj-app' + (a.oculta ? ' off' : '') + (a.fija ? ' fija' : '') + '"><input type="checkbox" data-app="' + VAO.esc(a.id) + '"' + (a.oculta ? '' : ' checked') + (a.fija ? ' disabled' : '') + '>' +
+           '<span class="ic">' + VAO.esc(a.icono) + '</span><span class="nm">' + VAO.esc(a.nombre) + (a.fija ? '<small>siempre visible</small>' : '') + '</span></label>';
+    });
+    $('ajApps').innerHTML = h + '</div>';
+    $('ajApps').querySelectorAll('input[data-app]').forEach(i => i.onchange = () => i.closest('.aj-app').classList.toggle('off', !i.checked));
+    $('btnAjGuardar').classList.remove('oculto');
+  }
+  monedas();
+}
+async function guardarOcultos() {
+  const ocultos = [...$('ajApps').querySelectorAll('input[data-app]')].filter(i => !i.checked && !i.disabled).map(i => i.dataset.app);
+  $('btnAjGuardar').disabled = true;
+  try { const r = await VAO.api('guardarOcultos', { ocultos }); VAO.msg('msgAj', r.success ? r.mensaje : r.error, r.success ? 'ok' : 'error'); }
+  catch (e) { VAO.msg('msgAj', VAO.sinConexion, 'error'); }
+  finally { $('btnAjGuardar').disabled = false; }
+}
+function monedas() {
+  const m = AJ.monedas || {};
+  if (!m.habilitado) { $('ajMonedas').classList.add('oculto'); return; }
+  $('ajMonedas').classList.remove('oculto');
+  let h = '<p style="margin:0 0 8px;color:var(--suave);font-size:.86rem">Es <b>tu</b> cotización: cuántos pesos aceptás por cada moneda. No es la oficial. Se usa en el 🔀 Cobro mixto. Dejala vacía si no aceptás esa moneda.</p>';
+  ['USD', 'CLP'].forEach(k => {
+    const v = m.cot[k], f = (m.fechas || {})[k];
+    h += '<div class="aj-mon"><h3>' + (k === 'USD' ? '💵' : '🇨🇱') + ' ' + MON_AJ[k].nombre + ' (' + k + ')</h3>' +
+         (v ? '<div class="aj-fecha">' + (f && f.fecha ? 'Último cambio: ' + VAO.esc(f.fecha) + (f.dias === 0 ? ' (hoy)' : ' (hace ' + f.dias + ' día' + (f.dias === 1 ? '' : 's') + ')') : 'Sin fecha de último cambio') + '</div>' : '<div class="aj-fecha">No aceptás esta moneda.</div>') +
+         (v && f && f.revisar ? '<div class="aj-revisar">⚠️ ' + (f.dias === null ? 'No sabemos desde cuándo está esta cotización.' : 'Pasaron ' + f.dias + ' días desde tu último cambio.') + ' Revisá la cotización oficial del día antes de seguir cobrando en esta moneda.</div>' : '') +
+         '<div class="vao-fila"><div class="vao-campo"><label for="cot_' + k + '">1 ' + k + ' = $</label><input id="cot_' + k + '" inputmode="decimal" placeholder="Ej.: ' + MON_AJ[k].ej + '" value="' + (v ? String(v).replace('.', ',') : '') + '"></div></div>' +
+         '<button class="vao-btn primario vao-escribe" data-mon="' + k + '">Guardar ' + MON_AJ[k].nombre.toLowerCase() + '</button></div>';
+  });
+  $('ajMon').innerHTML = h;
+  $('ajMon').querySelectorAll('[data-mon]').forEach(b => b.onclick = async () => {
+    const k = b.dataset.mon; b.disabled = true;
+    try { const r = await VAO.api('setMiCotizacion', { moneda: k, valor: $('cot_' + k).value.trim() }); VAO.msg('msgMon', r.success ? r.mensaje : r.error, r.success ? 'ok' : 'error'); if (r.success) { AJ = await VAO.api('getAjustes', {}); monedas(); } }
+    catch (e) { VAO.msg('msgMon', VAO.sinConexion, 'error'); }
+    finally { b.disabled = false; }
+  });
+}
+VAO.iniciar({ modulo: null, titulo: 'Mis datos', icono: '🏪', grupo: 'P1' }).then(ok => {
+  if (!ok) return;
+  VAO.pestanas('tabs', t => { if (t === 'descargas') hojas(); if (t === 'cambios') cambios(); if (t === 'ajustes') ajustes(); });
+  $('btnAjGuardar').onclick = guardarOcultos;
+  if (location.hash === '#ajustes') { VAO.irA($('tabs'), 'ajustes'); ajustes(); }
+  $('btnGuardar').onclick = guardar; $('filtro').oninput = pintarCambios; plan(); datos();
+});
+</script>
+</body>
+</html>

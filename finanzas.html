@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Finanzas · VAO POS</title>
+<style>
+/* finanzas.html v1 (v044) — paquete P3 PRO. Solo consulta: todo sale de los registros reales (ventas, cobros, egresos). */
+.rapidos { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.barras { display: grid; gap: 6px; }
+.barra { display: grid; grid-template-columns: 74px 1fr 92px; gap: 8px; align-items: center; font-size: .8rem; }
+.barra .pistas { display: grid; gap: 2px; }
+.barra .p { height: 10px; border-radius: 6px; min-width: 2px; }
+.barra .ing { background: var(--verde); } .barra .egr { background: #E57373; }
+.barra .res { text-align: right; font-weight: 800; }
+.kpi-res.neg b { color: var(--rojo); } .kpi-res b { color: var(--verde); }
+</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <div class="vao-tarjeta">
+    <div class="rapidos" id="rapidos">
+      <button class="vao-btn chico" data-r="hoy">Hoy</button><button class="vao-btn chico" data-r="7">7 días</button><button class="vao-btn chico" data-r="mes">Este mes</button>
+      <button class="vao-btn chico" data-r="mesant">Mes anterior</button><button class="vao-btn chico" data-r="anio">Este año</button>
+    </div>
+    <div class="vao-fila">
+      <div class="vao-campo" style="flex:0 1 170px;"><label for="desde">Desde</label><input id="desde" type="date"></div>
+      <div class="vao-campo" style="flex:0 1 170px;"><label for="hasta">Hasta</label><input id="hasta" type="date"></div>
+      <div class="vao-campo" style="flex:0 1 150px;"><label for="agrupar">Ver por</label><select id="agrupar"><option value="dia">Día</option><option value="mes">Mes</option></select></div>
+      <button class="vao-btn primario" id="btnVer">Ver</button>
+    </div>
+  </div>
+  <div id="msg" class="oculto"></div>
+  <div class="vao-kpis" id="kpis"></div>
+  <div class="vao-tarjeta"><h2>Evolución</h2><div class="barras" id="barras"></div><p style="font-size:.76rem;color:var(--suave);margin:8px 0 0">🟩 ingresos · 🟥 egresos · a la derecha, el resultado</p></div>
+  <div class="vao-fila" style="align-items:stretch;">
+    <div class="vao-tarjeta" style="flex:1 1 280px;"><h2>Ingresos por medio</h2><table class="vao-tabla" id="tMedios"></table></div>
+    <div class="vao-tarjeta" style="flex:1 1 280px;"><h2>Egresos por categoría</h2><table class="vao-tabla" id="tCat"></table></div>
+  </div>
+  <div class="vao-tarjeta"><h2>Cómo se calcula</h2><ul id="notas" style="margin:0;padding-left:18px;font-size:.86rem;color:var(--suave)"></ul></div>
+</main>
+<script src="vao-comun.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const f2 = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+const MEDIOS = { EFECTIVO: '💵 Efectivo', TRANSFERENCIA: '🏦 Transferencia', DEBITO: '💳 Débito', QR_POSNET: '💳 QR / Posnet', QR: '📱 QR', CREDITO: '💳 Crédito' };
+function rango(r) {
+  const h = new Date(); let d = new Date(h), a = new Date(h);
+  if (r === '7') d.setDate(h.getDate() - 6);
+  else if (r === 'mes') d = new Date(h.getFullYear(), h.getMonth(), 1);
+  else if (r === 'mesant') { d = new Date(h.getFullYear(), h.getMonth() - 1, 1); a = new Date(h.getFullYear(), h.getMonth(), 0); }
+  else if (r === 'anio') d = new Date(h.getFullYear(), 0, 1);
+  $('desde').value = f2(d); $('hasta').value = f2(a); $('agrupar').value = (r === 'anio') ? 'mes' : 'dia'; ver();
+}
+async function ver() {
+  VAO.msg('msg', 'Calculando…', 'info');
+  try {
+    const r = await VAO.api('getFinanzas', { desde: $('desde').value, hasta: $('hasta').value, agrupar: $('agrupar').value });
+    if (!r.success) { VAO.msg('msg', r.error, 'error'); return; }
+    VAO.msg('msg', '');
+    const t = r.totales;
+    $('kpis').innerHTML = '<div class="vao-kpi"><small>Ingresos (cobrado)</small><b>' + VAO.pesos(t.ingresos) + '</b></div>' + (t.otrosIngresos ? '<div class="vao-kpi"><small>Otros ingresos</small><b>' + VAO.pesos(t.otrosIngresos) + '</b></div>' : '') +
+      '<div class="vao-kpi"><small>Egresos</small><b>' + VAO.pesos(t.egresos) + '</b></div><div class="vao-kpi kpi-res ' + (t.resultado < 0 ? 'neg' : '') + '"><small>Resultado</small><b>' + VAO.pesos(t.resultado) + '</b></div>' +
+      '<div class="vao-kpi"><small>Fiado otorgado (no es ingreso)</small><b>' + VAO.pesos(t.fiadoOtorgado) + '</b></div>';
+    const max = Math.max(1, ...r.serie.map(s => Math.max(s.ingresos + s.otrosIngresos, s.egresos)));
+    $('barras').innerHTML = r.serie.length ? r.serie.map(s => '<div class="barra"><span>' + VAO.esc(s.periodo.length === 7 ? s.periodo : s.periodo.slice(5).split('-').reverse().join('/')) + '</span><div class="pistas"><div class="p ing" style="width:' + ((s.ingresos + s.otrosIngresos) / max * 100) + '%" title="Ingresos ' + VAO.pesos(s.ingresos + s.otrosIngresos) + '"></div><div class="p egr" style="width:' + (Math.max(0, s.egresos) / max * 100) + '%" title="Egresos ' + VAO.pesos(s.egresos) + '"></div></div><span class="res" style="color:' + (s.resultado < 0 ? 'var(--rojo)' : 'var(--verde)') + '">' + VAO.pesos(s.resultado) + '</span></div>').join('') : '<p>No hay movimientos en el período.</p>';
+    const filas = (o, nom) => Object.keys(o).length ? Object.keys(o).sort((a, b) => o[b] - o[a]).map(k => '<tr><td>' + VAO.esc(nom[k] || (nom[k.split(' ')[0]] ? nom[k.split(' ')[0]] + ' (' + k.split(' ').slice(1).join(' ') + ')' : k)) + '</td><td class="num">' + VAO.pesos(o[k]) + '</td></tr>').join('') : '<tr><td>Sin datos</td><td></td></tr>';
+    $('tMedios').innerHTML = filas(r.porMedio, MEDIOS) + (Object.keys(r.monedasExtranjeras).length ? '<tr><td colspan="2" style="font-size:.78rem;color:var(--suave)">Recibido en su moneda: ' + Object.keys(r.monedasExtranjeras).map(m => m + ' ' + r.monedasExtranjeras[m]).join(' · ') + '</td></tr>' : '');
+    $('tCat').innerHTML = filas(r.egresosPorCategoria, {});
+    $('notas').innerHTML = r.notas.map(n => '<li>' + VAO.esc(n) + '</li>').join('');
+  } catch (e) { VAO.msg('msg', VAO.sinConexion, 'error'); }
+}
+VAO.iniciar({ modulo: 'pack3_finanzas', titulo: 'Finanzas', icono: '💹', grupo: 'P3' }).then(ok => {
+  if (!ok) return;
+  $('rapidos').querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', () => rango(b.dataset.r)));
+  $('btnVer').addEventListener('click', ver);
+  rango('mes');
+});
+</script>
+</body>
+</html>

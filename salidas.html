@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>Salida del local · VAO POS</title>
+<style>
+/* salidas.html v1 (v044) — paquete P3 PRO. Mercadería que sale SIN venderse. No es una venta: no suma a la caja. */
+.motivos { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 6px; }
+.motivos button { min-height: 48px; border: 2px solid var(--borde); background: var(--papel); color: var(--texto); border-radius: 12px; font: 700 .86rem inherit; cursor: pointer; }
+.motivos button.activo { border-color: var(--grupo); background: var(--grupo-fondo); color: var(--grupo-tinta); }
+.elegido { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--grupo-fondo); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
+  <nav class="vao-pestanas" id="tabs" role="tablist">
+    <button data-tab="registrar" class="activo">📤 Registrar salida</button>
+    <button data-tab="historial">📜 Historial</button>
+  </nav>
+  <section data-panel="registrar">
+    <div class="vao-tarjeta vao-escribe">
+      <h2>¿Qué sale del local?</h2>
+      <p class="vao-msg info">Para mercadería que sale sin venderse. No es una venta: baja el stock y queda registrada con su motivo.</p>
+      <div class="vao-campo vao-buscar"><label for="buscar">Producto</label><input id="buscar" autocomplete="off" placeholder="Escribí parte del nombre"><div class="vao-resultados oculto" id="resultados"></div></div>
+      <div id="elegido" class="oculto"></div>
+      <div class="vao-fila">
+        <div class="vao-campo" style="flex:0 1 140px;"><label for="cantidad">Cantidad</label><input id="cantidad" inputmode="decimal" value="1"></div>
+        <div class="vao-campo"><label for="operador">Quién la registra</label><input id="operador" maxlength="60"></div>
+      </div>
+      <label class="vao-campo" style="margin-bottom:4px;"><span style="font-size:.78rem;font-weight:700;color:var(--suave)">Motivo</span></label>
+      <div class="motivos" id="motivos"></div>
+      <div class="vao-campo" style="margin-top:8px;"><label for="obs">Observación (opcional)</label><input id="obs" maxlength="150"></div>
+      <div id="msg" class="oculto"></div>
+      <button class="vao-btn primario" id="btnRegistrar">📤 Registrar salida</button>
+    </div>
+  </section>
+  <section data-panel="historial" class="oculto">
+    <div class="vao-tarjeta">
+      <div class="vao-fila" style="justify-content:space-between;"><h2>Salidas registradas</h2><span class="vao-chip" id="costoTotal"></span></div>
+      <div class="vao-campo" style="max-width:220px;"><label for="filtro">Motivo</label><select id="filtro"><option value="">Todos</option></select></div>
+      <div id="msgHist" class="oculto"></div><ul class="vao-lista" id="historial"></ul>
+    </div>
+  </section>
+</main>
+<script src="vao-comun.js"></script>
+<script>
+const MOTIVOS = { CONSUMO: '🍽️ Consumo', MERMA: '📉 Merma', VENCIDO: '⏳ Vencido', REGALO: '🎁 Regalo', ROTURA: '💥 Rotura', USO_INTERNO: '🧹 Uso interno' };
+let PROD = null, MOTIVO = '', OP = null, HIST = [];
+const $ = id => document.getElementById(id);
+function pintarElegido() {
+  const e = $('elegido'); if (!PROD) { e.classList.add('oculto'); return; }
+  e.className = 'elegido'; e.innerHTML = '<span><b>' + VAO.esc(PROD.name) + '</b><br><small>Stock actual: ' + PROD.stock + '</small></span><button class="vao-btn chico" id="quitar">Cambiar</button>';
+  $('quitar').addEventListener('click', () => { PROD = null; OP = null; pintarElegido(); $('buscar').focus(); });
+}
+async function registrar() {
+  const cant = VAO.num($('cantidad').value), oper = $('operador').value.trim();
+  if (!PROD) return VAO.msg('msg', 'Elegí el producto.', 'error');
+  if (!(cant > 0)) return VAO.msg('msg', 'Escribí la cantidad.', 'error');
+  if (cant > PROD.stock) return VAO.msg('msg', 'Hay ' + PROD.stock + ' en stock: no puede salir más de eso.', 'error');
+  if (!MOTIVO) return VAO.msg('msg', 'Elegí el motivo.', 'error');
+  if (!confirm('¿Registrar la salida de ' + cant + ' × ' + PROD.name + ' (' + MOTIVOS[MOTIVO].slice(2).trim() + ')? Baja el stock a ' + (PROD.stock - cant) + '.')) return;
+  VAO.operador(oper); OP = OP || VAO.opId('SAL');
+  const b = $('btnRegistrar'); b.disabled = true;
+  try {
+    const r = await VAO.api('registrarSalida', { opId: OP, id: PROD.id, cantidad: cant, motivo: MOTIVO, obs: $('obs').value, operador: oper || 'Comercio' });
+    if (!r.success) VAO.msg('msg', r.error, 'error');
+    else { VAO.msg('msg', r.yaExistia ? r.mensaje : r.mensaje, 'ok'); PROD.stock = r.nuevoStock !== undefined ? r.nuevoStock : PROD.stock - cant; PROD = null; OP = null; MOTIVO = ''; $('cantidad').value = '1'; $('obs').value = ''; pintarElegido(); pintarMotivos(); }
+  } catch (e) { VAO.msg('msg', VAO.sinConexion, 'error'); }
+  b.disabled = false;
+}
+function pintarMotivos() {
+  $('motivos').innerHTML = Object.keys(MOTIVOS).map(k => '<button type="button" data-m="' + k + '" class="' + (k === MOTIVO ? 'activo' : '') + '" aria-pressed="' + (k === MOTIVO) + '">' + MOTIVOS[k] + '</button>').join('');
+  $('motivos').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { MOTIVO = b.dataset.m; pintarMotivos(); }));
+}
+async function cargarHistorial() {
+  $('historial').innerHTML = '<li class="vao-item">Cargando…</li>';
+  try {
+    const r = await VAO.api('getSalidas', { v44: true });
+    if (!r.success) { VAO.msg('msgHist', r.error, 'error'); $('historial').innerHTML = ''; return; }
+    HIST = r.salidas; $('costoTotal').textContent = 'Costo total: ' + VAO.pesos(r.costoTotal); pintarHistorial();
+  } catch (e) { VAO.msg('msgHist', VAO.sinConexion, 'error'); }
+}
+function pintarHistorial() {
+  const f = $('filtro').value, l = HIST.filter(x => !f || x.motivo === f);
+  $('historial').innerHTML = l.length ? l.map(x => '<li class="vao-item"><div class="izq"><b>' + VAO.esc(x.producto) + ' × ' + x.cantidad + '</b><small>' + x.fecha + ' ' + VAO.esc(x.hora) + ' · ' + (MOTIVOS[x.motivo] || x.motivo) + ' · ' + VAO.esc(x.operador || '') + (x.observacion ? ' · ' + VAO.esc(x.observacion) : '') + ' · costo ' + VAO.pesos(x.cantidad * x.costoUnit) + '</small>' +
+    (x.anulada ? ' <span class="vao-chip rojo">ANULADA ' + x.anulada.fecha + ': ' + VAO.esc(x.anulada.motivo) + '</span>' : '') + '</div>' +
+    (x.anulada ? '' : '<button class="vao-btn chico peligro vao-escribe" data-f="' + x.fila + '">Anular</button>') + '</li>').join('') : '<li class="vao-item">No hay salidas.</li>';
+  $('historial').querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => VAO.anular({ titulo: 'Anular salida', accion: 'anularSalida', datos: { fila: +b.dataset.f },
+    describir: p => '<p>Vuelven <b>' + p.cantidad + '</b> de <b>' + VAO.esc(p.producto) + '</b> al stock: ' + p.stockActual + ' → <b>' + p.stockDespues + '</b>.</p>', alTerminar: cargarHistorial })));
+}
+VAO.iniciar({ modulo: 'extra_retiro_local', titulo: 'Salida del local', icono: '📤', grupo: 'P3' }).then(async ok => {
+  if (!ok) return;
+  VAO.pestanas('tabs', t => { if (t === 'historial') cargarHistorial(); });
+  $('operador').value = VAO.operador();
+  $('filtro').innerHTML += Object.keys(MOTIVOS).map(k => '<option value="' + k + '">' + MOTIVOS[k] + '</option>').join('');
+  $('filtro').addEventListener('change', pintarHistorial);
+  pintarMotivos();
+  try { await VAO.productos(); } catch (e) { VAO.msg('msg', VAO.sinConexion, 'error'); }
+  VAO.buscador('buscar', 'resultados', p => { PROD = p; OP = null; pintarElegido(); $('cantidad').focus(); });
+  $('btnRegistrar').addEventListener('click', registrar);
+});
+</script>
+</body>
+</html>
