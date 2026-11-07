@@ -19,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-/* planes.html v5.4 (07/11): sin «lista de espera» — «Reservar mi prueba gratis», aviso amable con WhatsApp y sin «no hay fecha asegurada» · v5.3 (07/11): el rompecabezas une P1 + P2 + P3 PRO en una sola pieza (antes P3 quedaba separada) · v5.2: enlace Términos · v5 (STAGING · v044.1) — tres planes como composición envolvente: P1 es la base, P2 abraza a P1, P3 PRO abraza a P1 y P2 y suma el paquete PRO.
+/* planes.html v5.5 (07/11): cada tarjeta muestra solo sus herramientas con su etiqueta encima; «Incluye ✔ Todo P1 · ✔ Todo P2» en una línea · v5.4 (07/11): sin «lista de espera» — «Reservar mi prueba gratis», aviso amable con WhatsApp y sin «no hay fecha asegurada» · v5.3 (07/11): el rompecabezas une P1 + P2 + P3 PRO en una sola pieza (antes P3 quedaba separada) · v5.2: enlace Términos · v5 (STAGING · v044.1) — tres planes como composición envolvente: P1 es la base, P2 abraza a P1, P3 PRO abraza a P1 y P2 y suma el paquete PRO.
    Complementos opcionales aparte (verdes). Íconos y nombres salen de la matriz central del servidor (catalogoV043.apps).
    planes.html v4 (STAGING · v044) — «Armá tu plan» como rompecabezas: arrastrar y encajar, o tocar las piezas.
    planes.html v3 (STAGING · v043) — página pública. Planes P1/P2, complementos P3 «Armá tu plan». Nombres, prestaciones y precios vienen del servidor (PLANES_VAO y COMPLEMENTOS_VAO). */
@@ -158,6 +158,12 @@ ul.hace b { color: var(--tinta); }
 .env.e2 { background: #F5F0FC; border: 2px solid #7E57C2; }   /* la línea violeta abraza a P1 */
 .env.e3 { background: #FFFBEF; border: 2px solid #D4A017; }
 .env.e3 > .env-tit { background: linear-gradient(135deg, #8A5A00, #D4A017); color: #241800; }
+/* v5.5: «Incluye ✔ Todo P1 · ✔ Todo P2» en una línea (no se repiten los botones de los planes anteriores) */
+.inc5 { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.inc5-t { font-size: .78rem; font-weight: 800; color: var(--suave); }
+.inc5-p { font-size: .8rem; font-weight: 800; color: #fff; border-radius: 999px; padding: 4px 10px; }
+.inc5-p small { font-weight: 400; opacity: .9; }
+.inc5-p.e1 { background: #1E88E5; } .inc5-p.e2 { background: #7E57C2; }
 .iconos { display: flex; flex-wrap: wrap; gap: 5px; }
 .ic5 { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,.85); border-radius: 999px; padding: 3px 8px; font-size: .8rem; font-weight: 700; color: #1C2533; }
 .p5 .elegir { margin-top: auto; display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--tinta); background: #F4F7FB; border-radius: 12px; padding: 10px; }
@@ -462,9 +468,10 @@ function htmlPlanV5(p) {
   const precio = p.precioRegular === null || p.precioRegular === undefined ? '<div class="p5-precio"><small>Precio a confirmar</small></div>'
     : '<div class="p5-precio">' + pesos(p.conPromo && PROMO && p.precioLanzamiento ? p.precioLanzamiento : p.precioRegular) + '<small> /mes' + (p.conPromo && PROMO && p.precioLanzamiento ? ' · lanzamiento (luego ' + pesos(p.precioRegular) + ')' : '') + '</small></div>';
   // composición envolvente: cada plan contiene al anterior dentro de su propia línea
-  let cuerpo = env5(1, 'P1 Esencial', 'P1');
-  if (n >= 2) cuerpo = '<div class="env e2"><span class="env-tit">P2 Gestión</span>' + cuerpo + iconos5('P2') + '</div>';
-  if (n >= 3) cuerpo = '<div class="env e3"><span class="env-tit">P3 PRO</span>' + cuerpo + iconos5('P3') + '</div>';
+  // v5.5: cada tarjeta muestra SOLO sus herramientas, con su etiqueta encima; lo que trae de los planes anteriores va en una línea de pastillas
+  const cant = g => ((CATALOGO && CATALOGO.apps) || []).filter(a => a.grupo === g).length;
+  const inc = n >= 2 ? '<div class="inc5"><span class="inc5-t">Incluye</span>' + ['P1 Esencial', 'P2 Gestión'].slice(0, n - 1).map((t, i) => '<span class="inc5-p e' + (i + 1) + '">✔ Todo ' + esc(t) + ' <small>· ' + cant('P' + (i + 1)) + '</small></span>').join('') + '</div>' : '';
+  const cuerpo = inc + env5(n, (n === 1 ? '' : '+ ') + ['', 'P1 Esencial', 'P2 Gestión', 'P3 PRO'][n], 'P' + n);
   return '<div class="p5 plan elegible ' + p.codigo + (el ? ' elegido' : '') + '" data-plan="' + esc(p.codigo) + '">' + (n === 3 ? '<span class="tag">COMPLETO</span>' : n === 2 ? '<span class="tag reco">⭐ RECOMENDADO</span>' : '') +
     '<div class="p5-cab"><span class="p5-sello">' + NOM5[p.codigo] + '</span><h3>' + esc(p.nombre) + '</h3></div>' + precio + cuerpo +
     '<label class="elegir"><input type="radio" name="planElegido" value="' + esc(p.codigo) + '"' + (el ? ' checked' : '') + '> Elegir ' + esc(p.nombre) + '</label></div>';
