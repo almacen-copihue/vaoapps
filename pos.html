@@ -38,6 +38,7 @@ body {
     font-family: 'DM Sans', sans-serif;
     background: var(--blanco);
     color: var(--texto);
+    height: 100vh;    /* V43.15: respaldo para celulares que no entienden «dvh» (sin esto, la barra de Cobrar quedaba fuera de la pantalla) */
     height: 100dvh;
     display: flex;
     flex-direction: column;
@@ -255,6 +256,23 @@ body {
 .btn-carrito, .fab-v438, .carrito-fondo-v438, .btn-cerrar-carrito { display: none; }
 .btn-corregir-v438 { display: block; box-sizing: border-box; width: 100%; margin: 6px 0 10px; border: 2px dashed #90A4AE; background: #fff; color: #37474F; border-radius: 12px; padding: 9px; font-weight: 700; font-family: inherit; cursor: pointer; }
 .total-txt { display: block; }
+.btn-vaciar { display: none; }
+/* V43.15: pantallas bajas (celular acostado): la página se desplaza y la barra de Cobrar queda siempre pegada abajo */
+@media (max-height: 500px) {
+    body { height: auto !important; min-height: 100vh; overflow-y: auto; }
+    body .total-bar { position: sticky; bottom: 0; z-index: 55; }
+}
+@media (max-width: 599px) {
+    .btn-vaciar { align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(255,255,255,.18); color: #fff; font-size: 1.05rem; margin-right: 6px; cursor: pointer; flex-shrink: 0; }
+    body.hay-venta .btn-vaciar { display: inline-flex !important; }
+    #btnInstalarApp { right: auto !important; left: 12px !important; bottom: calc(var(--tb, 56px) + 14px) !important; }   /* V43.15: no tapa los botones flotantes */
+    body.carrito-on #btnInstalarApp { display: none !important; }
+}
+/* V43.14 — Cotizador flotante (P2 y P3) */
+.fab-cot { position: fixed; right: 16px; bottom: calc(var(--tb, 64px) + 16px); z-index: 60; display: inline-flex; align-items: center; gap: 6px; border: 0; border-radius: 999px; padding: 11px 16px; background: #5E35B1; color: #fff; font-weight: 800; font-family: inherit; font-size: .95rem; box-shadow: 0 4px 14px rgba(0,0,0,.28); cursor: pointer; }
+.fab-cot span { font-size: .9rem; }
+body.carrito-on .fab-cot { display: none !important; }
+@media (max-width: 599px) { .fab-cot { right: 12px; width: 50px; height: 50px; padding: 0; justify-content: center; font-size: 1.25rem; bottom: calc(var(--tb, 56px) + 14px + 120px); } .fab-cot span { display: none; } }
 .pasos-v439, .confirm-resumen-v439 { display: none; }
 /* V43.9 — lista con globito (como Almacén Copihue) */
 .ini-v439 { position: relative; flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; background: var(--lavanda-pale, #EDE7F6); color: var(--lavanda, #5E35B1); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.05rem; }
@@ -265,6 +283,62 @@ body {
 .swipe-v4310 { position: relative; overflow: hidden; background: #E53935; }
 .swipe-fondo { position: absolute; right: 0; top: 0; bottom: 0; width: 120px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 1.05rem; opacity: .55; }
 .swipe-v4310.listo .swipe-fondo { opacity: 1; }
+/* V45.1 — deslizar a la DERECHA: ficha del producto (fondo azul a la izquierda) */
+.swipe-fondo-der { position: absolute; left: 0; top: 0; bottom: 0; width: 130px; display: none; align-items: center; justify-content: center; color: #fff; font-weight: 900; font-size: 1rem; opacity: .6; }
+.swipe-v4310.der { background: #1565C0; }
+.swipe-v4310.der .swipe-fondo { display: none; }
+.swipe-v4310.der .swipe-fondo-der { display: flex; }
+.swipe-v4310.der.listo .swipe-fondo-der { opacity: 1; }
+.ficha-cab { display: flex; align-items: center; gap: 12px; padding: 4px 18px 10px; }
+.ficha-cab .ini-v439 { width: 54px; height: 54px; font-size: 1.4rem; border-radius: 14px; }
+.ficha-nom { font-weight: 800; font-size: 1.02rem; color: var(--texto); line-height: 1.2; }
+.ficha-sub { font-size: .8rem; color: var(--gris); margin-top: 2px; }
+.ficha-chips { display: flex; gap: 8px; padding: 0 18px 10px; flex-wrap: wrap; }
+.ficha-chip { flex: 1; min-width: 92px; background: #F4F6FB; border-radius: 12px; padding: 8px 10px; text-align: center; }
+.ficha-chip b { display: block; font-size: 1.15rem; color: var(--texto); }
+.ficha-chip span { font-size: .68rem; color: var(--gris); text-transform: uppercase; letter-spacing: .5px; }
+.ficha-chip.rojo b { color: #C62828; } .ficha-chip.naranja b { color: #EF6C00; } .ficha-chip.verde b { color: #2E7D32; }
+.ficha-card { margin: 0 14px 10px; border: 1px solid #E6EAF2; border-radius: 14px; padding: 10px 12px; background: #fff; }
+.ficha-card h4 { margin: 0 0 6px; font-size: .74rem; color: var(--gris); text-transform: uppercase; letter-spacing: .6px; display: flex; justify-content: space-between; }
+.ficha-fila { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #F1F3F8; font-size: .86rem; }
+.ficha-fila:last-child { border-bottom: 0; }
+.ficha-fila .f1 { width: 86px; flex-shrink: 0; color: #455A64; }
+.ficha-fila .barra { flex: 1; height: 10px; border-radius: 6px; background: #E3F2FD; overflow: hidden; }
+.ficha-fila .barra i { display: block; height: 100%; background: #42A5F5; border-radius: 6px; }
+.ficha-fila .f3 { width: 50px; text-align: right; font-weight: 800; }
+.ficha-fila .f4 { width: 72px; text-align: right; color: var(--gris); font-size: .78rem; }
+.ficha-vacio { text-align: center; color: #90A4AE; font-size: .85rem; padding: 8px 0; }
+.medio-tag { font-size: .68rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: #ECEFF1; color: #455A64; }
+.ini-v439 img, .mini-venta, .ficha-cab .ini-v439 img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; background: #fff; }
+.ini-v439.con-foto { background: #fff; padding: 0; box-shadow: 0 0 0 1px #E6EAF2 inset; }
+.ini-v439 { overflow: visible; }
+.ini-v439 img { border-radius: 12px; }
+.mini-venta { width: 30px; height: 30px; border-radius: 8px; display: inline-block; vertical-align: middle; margin-right: 8px; box-shadow: 0 0 0 1px #E6EAF2; }
+/* V43.13 — ventana de foto y Mis fotos */
+.foto-cab { display: flex; gap: 12px; align-items: center; padding: 4px 18px 10px; }
+.foto-actual { width: 96px; height: 96px; border-radius: 14px; background: #F4F6FB; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #B0BEC5; overflow: hidden; flex-shrink: 0; box-shadow: 0 0 0 1px #E6EAF2 inset; }
+.foto-actual img { width: 100%; height: 100%; object-fit: cover; }
+.foto-cuenta { margin: 0 18px 10px; padding: 8px 12px; border-radius: 12px; background: #F4F6FB; font-size: .8rem; color: #455A64; line-height: 1.5; }
+.foto-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 18px 10px; }
+.foto-btn { border: 0; border-radius: 14px; padding: 13px 10px; font-weight: 800; font-family: inherit; font-size: .92rem; cursor: pointer; background: #E3F2FD; color: #0D47A1; }
+.foto-btn.prim { background: #F07D3A; color: #fff; } .foto-btn.verde { background: #2E7D32; color: #fff; } .foto-btn.rojo { background: #FFEBEE; color: #C62828; } .foto-btn.gris { background: #ECEFF1; color: #37474F; }
+.foto-btn:disabled { opacity: .45; cursor: default; }
+.foto-btn.ancho { grid-column: 1 / -1; }
+.foto-aviso { margin: 0 18px 10px; padding: 10px 12px; border-radius: 12px; background: #FFF8E1; color: #6D4C00; font-size: .84rem; line-height: 1.4; }
+.foto-editor { padding: 0 18px 6px; text-align: center; }
+.foto-editor canvas { width: min(300px, 78vw); height: min(300px, 78vw); border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.15); touch-action: none; background: #fff; }
+.foto-zoom { display: flex; align-items: center; gap: 8px; margin: 8px auto 4px; max-width: 300px; font-size: .8rem; color: #607D8B; }
+.foto-zoom input { flex: 1; }
+.foto-estado { text-align: center; font-size: .85rem; color: #455A64; min-height: 1.2em; padding: 2px 18px 8px; }
+.misfotos-lista { padding: 0 14px 6px; }
+.misfoto { display: flex; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid #F1F3F8; }
+.misfoto .mf-img { width: 52px; height: 52px; border-radius: 12px; overflow: hidden; background: #F4F6FB; flex-shrink: 0; }
+.misfoto .mf-img img { width: 100%; height: 100%; object-fit: cover; }
+.misfoto .mf-txt { flex: 1; min-width: 0; font-size: .85rem; }
+.misfoto .mf-txt b { display: block; font-size: .9rem; color: var(--texto); }
+.misfoto button { border: 0; border-radius: 10px; padding: 8px 10px; font-weight: 700; font-family: inherit; cursor: pointer; background: #E3F2FD; color: #0D47A1; margin-left: 4px; }
+.misfoto button.q { background: #FFEBEE; color: #C62828; }
+.medio-tag.FIADO { background: #FFF3E0; color: #E65100; } .medio-tag.EFECTIVO { background: #E8F5E9; color: #2E7D32; } .medio-tag.TRANSFERENCIA { background: #E3F2FD; color: #1565C0; }
 .prod-v439 { position: relative; padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0ecf7; cursor: pointer; background: #fff; border-left: 4px solid transparent; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: pan-y; }
 .prod-v439.en-venta { background: #DCEDC8; border-left-color: #43A047; }
 .prod-v439.sin-stock { background: #fafafa; opacity: .45; }
@@ -288,7 +362,7 @@ body {
     .fab-v438 { display: flex; flex-direction: column; gap: 10px; position: fixed; right: 12px; bottom: calc(var(--tb, 56px) + 14px); z-index: 60; }
     .fab-v438 button { width: 50px; height: 50px; border-radius: 50%; border: 0; background: #fff; box-shadow: 0 4px 14px rgba(0,0,0,.28); font-size: 1.25rem; cursor: pointer; }
     body.carrito-on .fab-v438 { display: none; }
-    body #listaTodosWrap { padding-bottom: 130px; }   /* que los botones flotantes no tapen el último producto */
+    body #listaTodosWrap { padding-bottom: 190px; }   /* V43.14: también el 📝 Cotizar flotante */   /* que los botones flotantes no tapen el último producto */
     body.carrito-on #vaoStagingBadge { display: none; }
     /* en la venta: nombre arriba (toda la fila) y debajo cantidad · precio · subtotal → se lee sin cortar palabras */
     body .venta-wrap .item-venta { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "n n n" "q p s"; row-gap: 6px; padding: 10px 14px; }
@@ -1012,6 +1086,8 @@ body {
 </div>
 
 <!-- V43.8 (celular): botones flotantes — buscar y actualizar productos (el catálogo ocupa la pantalla) -->
+<!-- V43.14: Cotizador flotante (P2 Gestión y P3 PRO). No ocupa lugar en la botonera; el servidor igual valida cada presupuesto. -->
+<button type="button" class="fab-cot" id="fabCotizarV4314" style="display:none" onclick="window.location.href='cotizador.html?p='+PREFIJO" aria-label="Cotizar (presupuestos)" title="Cotizar: presupuestos para clientes">📝<span>Cotizar</span></button>
 <div class="fab-v438" id="fabV438">
     <button type="button" onclick="toggleBuscarV438()" aria-label="Buscar producto" title="Buscar producto">🔍</button>
     <button type="button" onclick="cargarProductos()" aria-label="Actualizar productos" title="Actualizar productos">🔄</button>
@@ -1030,6 +1106,7 @@ body {
 
 <!-- TOTAL BAR -->
 <div class="total-bar">
+    <button type="button" class="btn-vaciar" id="btnVaciarV4315" style="display:none" onclick="limpiarVenta()" aria-label="Vaciar el carrito" title="Vaciar el carrito">🗑</button>   <!-- V43.15: vaciar, función base (todos los planes) -->
     <button type="button" class="btn-carrito" id="btnCarrito" onclick="toggleCarritoV438()" aria-label="Ver la venta actual">🛒<b id="carritoN">0</b></button>   <!-- V43.8 (celular) -->
     <div class="total-txt">
         <div class="total-label">Total</div>
@@ -1247,6 +1324,70 @@ body {
 </div>
 
 <!-- ===== MODAL RESUMEN DÍA ===== -->
+<!-- V43.13: foto del producto (mantener apretado en el catálogo) -->
+<div class="modal-bg" id="modalFoto" onclick="if(event.target===this && Date.now() - _fotoAbiertaEnV0451 > 900)cerrarFotoV0451()">
+    <div class="modal-sheet" style="padding-bottom:16px;">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <span class="modal-titulo">📷 Foto del producto</span>
+            <button class="modal-cerrar" onclick="cerrarFotoV0451()">✕</button>
+        </div>
+        <div style="overflow-y:auto;max-height:78vh;">
+            <div class="foto-cab"><div class="foto-actual" id="fotoActualV0451">📷</div><div style="min-width:0;"><div class="ficha-nom" id="fotoNombreV0451"></div><div class="ficha-sub" id="fotoCodigoV0451"></div></div></div>
+            <div class="foto-cuenta" id="fotoCuentaV0451"></div>
+            <div id="fotoSinCodigoV0451" class="foto-aviso" style="display:none;"></div>
+            <div class="foto-btns" id="fotoBotonesV0451">
+                <button type="button" class="foto-btn prim" onclick="document.getElementById('fotoCamaraV0451').click()">📷 Sacar foto</button>
+                <button type="button" class="foto-btn" onclick="document.getElementById('fotoGaleriaV0451').click()">🖼 Galería / archivo</button>
+                <button type="button" class="foto-btn rojo" id="fotoQuitarBtnV0451" onclick="quitarFotoV0451()">🗑 Quitar foto</button>
+                <button type="button" class="foto-btn gris" onclick="abrirMisFotosV0451()">🗂 Mis fotos</button>
+            </div>
+            <input type="file" id="fotoCamaraV0451" accept="image/*" capture="environment" style="display:none" onchange="fotoElegidaV0451(this)">
+            <input type="file" id="fotoGaleriaV0451" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*" style="display:none" onchange="fotoElegidaV0451(this)">
+            <div id="fotoEditorV0451" style="display:none;">
+                <div class="foto-editor"><canvas id="fotoCanvasV0451" width="800" height="800"></canvas>
+                    <div class="foto-zoom">➖<input type="range" id="fotoZoomV0451" min="40" max="250" value="100" oninput="_fotoDibujarV0451_()">➕</div>
+                    <div class="ficha-sub">Arrastrá la foto para acomodarla · el sello va abajo</div></div>
+                <div class="foto-btns">
+                    <button type="button" class="foto-btn" id="fotoFondoBtnV0451" onclick="quitarFondoV0451()">✨ Quitar fondo</button>
+                    <button type="button" class="foto-btn gris" id="fotoOriginalBtnV0451" onclick="fotoUsarOriginalV0451()">↩️ Usar original</button>
+                    <button type="button" class="foto-btn verde ancho" id="fotoGuardarBtnV0451" onclick="guardarFotoV0451()">✅ Guardar foto</button>
+                    <button type="button" class="foto-btn gris ancho" onclick="fotoCancelarEdicionV0451()">Cancelar</button>
+                </div>
+            </div>
+            <div class="foto-estado" id="fotoEstadoV0451"></div>
+        </div>
+    </div>
+</div>
+<div class="modal-bg" id="modalMisFotos" onclick="if(event.target===this)cerrarMisFotosV0451()">
+    <div class="modal-sheet" style="padding-bottom:16px;">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <span class="modal-titulo">🗂 Mis fotos</span>
+            <button class="modal-cerrar" onclick="cerrarMisFotosV0451()">✕</button>
+        </div>
+        <div style="overflow-y:auto;max-height:76vh;">
+            <div class="foto-cuenta" id="misFotosCuentaV0451"></div>
+            <div class="ficha-sub" style="padding:0 18px 8px;">Para cargar una foto nueva: en el catálogo, mantené apretado el producto.</div>
+            <div class="misfotos-lista" id="misFotosListaV0451"></div>
+        </div>
+    </div>
+</div>
+<!-- V45.1: ficha del producto (deslizar a la derecha en el catálogo) -->
+<div class="modal-bg" id="modalFicha" onclick="if(event.target===this)cerrarFichaV451()">
+    <div class="modal-sheet" style="padding-bottom:16px;">
+        <div class="modal-handle"></div>
+        <div class="modal-header">
+            <span class="modal-titulo">📊 Ventas del producto</span>
+            <button class="modal-cerrar" onclick="cerrarFichaV451()">✕</button>
+        </div>
+        <div style="overflow-y:auto;max-height:72vh;">
+            <div class="ficha-cab" id="fichaCabV451"></div>
+            <div class="ficha-chips" id="fichaChipsV451"></div>
+            <div id="fichaCuerpoV451"></div>
+        </div>
+    </div>
+</div>
 <div class="modal-bg" id="modalResumen" onclick="if(event.target===this)cerrarResumen()">
     <div class="modal-sheet" style="padding-bottom:20px;">
         <div class="modal-handle"></div>
@@ -1275,7 +1416,7 @@ if (!/^[A-Z0-9]{2,10}$/.test(PREFIJO)) {
 
 // ========== CONFIG ==========
 const API_URL  = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
-const APP_VERSION_TXT = '43.11';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
+const APP_VERSION_TXT = '43.15';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
 const APP_VERSION = 43; // V43.8: celular «carrito al tocar» — el catálogo ocupa la pantalla; 🛒 (con cantidad) en la barra de Cobrar abre la venta para corregir; 🔍 y 🔄 flotantes; «✏️ Corregir la venta» en Confirmar · V43.7: «Venta actual · Limpiar» solo aparece con productos en el carrito; 📣 comparte el afiche nuevo (og-vao-pos-2.jpg) · V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
 const HOY_KEY    = 'vao_ventas_' + PREFIJO + '_' + new Date().toISOString().slice(0, 10);
 const CARRITO_KEY= 'vao_carrito_' + PREFIJO;
@@ -1384,8 +1525,8 @@ async function verP3V432() {
     const m = document.getElementById('modalP3'); m.classList.add('open');
     const andr = /Android/i.test(navigator.userAgent || ''), apps = (_appsV43_() || []).filter(a => a.grupo === 'P3');
     document.getElementById('p3Herramientas').innerHTML = apps.map(a => '<div class="p3h"><span class="p3h-ic">' + _escHTML(a.icono) + '</span><div><b>' + _escHTML(a.nombre) + (a.soloAndroid ? ' <small>(celular Android)</small>' : '') + '</b><span>' + _escHTML(a.descripcion || '') + '</span></div></div>').join('') ||
-        '<div style="color:#777">Cotizar, Compras, Salidas, Egresos, Finanzas, Mis deudas y Voz.</div>';
-    document.getElementById('p3Cuantas').textContent = apps.length || 7;   // se listan todas (Voz con la aclaración «celular Android»)
+        '<div style="color:#777">Compras, Salidas, Egresos, Finanzas, Mis deudas y Voz.</div>';
+    document.getElementById('p3Cuantas').textContent = apps.length || 6;   // V43.14: el Cotizador pasó a P2   // se listan todas (Voz con la aclaración «celular Android»)
     const pr = document.getElementById('p3Precio'); pr.textContent = '…';
     try { const r = await _llamarAPI('getPlanesPublicos', {}); const p3 = ((r && r.planes) || []).find(p => p.codigo === 'PLUS');
           pr.textContent = p3 && p3.precioRegular > 0 ? '$' + Number(p3.precioRegular).toLocaleString('es-AR') + ' por mes' : 'precio a confirmar';
@@ -1419,6 +1560,9 @@ function _aplicarAppsV43_(botones) {
                    (id !== 'btnCobroAvanzado' || _cobroAvanzadoV41_({})) && (id !== 'btnCotizaciones' || (_cobroAvanzadoV41_({}) && _hayCotizacionV41_()));
         b.style.display = ok ? '' : 'none';
     });
+    // V43.14: Cotizador = P2 Gestión (también P3). Botón flotante solo si el servidor lo habilita para este comercio; ocultarlo no reemplaza el permiso.
+    const fc = document.getElementById('fabCotizarV4314');
+    if (fc) fc.style.display = (hab.cotizador === true && !(CONFIG_ACTUAL && CONFIG_ACTUAL.modoConsulta)) ? '' : 'none';
 }
 // V42: tarjeta P3 — un botón por cada complemento contratado y habilitado (el catálogo y los nombres vienen del servidor).
 // El servidor vuelve a validar cada acción: ocultar un botón no reemplaza el permiso.
@@ -1760,6 +1904,7 @@ async function cargarProductos() {
         if (btnR) { btnR.textContent = '🔄'; btnR.disabled = false; }
         renderVenta();
         if (listaTodosAbierta) renderListaTodos();
+        _fotosCargarV0451_();   // V43.13: miniaturas (una consulta, con caché)
     } catch(e) {
         ind.classList.remove('cargando');
         ind.title = 'Error de conexión';
@@ -1892,9 +2037,9 @@ function renderListaTodos(conservarVista) {
 function _filaProdV4310_(p, arriba) {
     const sinStock = p.stock === 0;
     const it = ventaActual.find(i => String(i.id) === String(p.id)), q = it ? it.qty : 0;
-    return '<div class="swipe-v4310' + (arriba ? ' arriba' : '') + '" data-prod-id="' + p.id + '" data-q="' + q + '"><div class="swipe-fondo">−1 ✋</div>' +
+    return '<div class="swipe-v4310' + (arriba ? ' arriba' : '') + '" data-prod-id="' + p.id + '" data-q="' + q + '"><div class="swipe-fondo">−1 ✋</div><div class="swipe-fondo-der">📊 Ventas</div>' +
         '<div class="prod-v439' + (q > 0 ? ' en-venta' : '') + (sinStock ? ' sin-stock' : '') + '" data-prod-id="' + p.id + '" onclick="agregarDesdeLista(' + p.id + ')">' +
-        '<div class="ini-v439">' + _escHTML((p.name || '?').trim().charAt(0).toUpperCase()) +
+        _tileV0451_(p) +
             (q > 0 ? '<b class="globo-v439">' + (Number.isInteger(q) ? q : q.toFixed(1)) + '</b>' : '') + '</div>' +
         '<div style="flex:1;min-width:0;">' +
             '<div style="font-size:0.88rem;font-weight:600;color:var(--texto);">' + (sinStock ? '❌ ' : '') + p.name + '</div>' +
@@ -1938,30 +2083,325 @@ function _swipeInitV4310_() {
     c.addEventListener('touchstart', e => {
         const f = e.target.closest('.prod-v439'); if (!f || e.touches.length !== 1) return;
         fila = f; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0; modo = ''; _tocandoV4310 = true; f.style.transition = 'none';
+        _ultimoToqueV0451 = Date.now(); _apretoV0451 = false;
+        clearTimeout(_apretarTimerV0451);   // V43.13: mantener apretado ~0,6 s → foto del producto
+        _apretarTimerV0451 = setTimeout(() => { if (fila === f && !modo) { _swipeHastaV4310 = Date.now() + 900; _apretoV0451 = true; try { navigator.vibrate && navigator.vibrate(25); } catch (er) {} const p = productos.find(x => String(x.id) === f.dataset.prodId); if (p) abrirFotoV0451(p.id); } }, 600);
     }, { passive: true });
     c.addEventListener('touchmove', e => {
         if (!fila) return;
         const mx = e.touches[0].clientX - x0, my = e.touches[0].clientY - y0;
         if (!modo) { if (Math.abs(mx) > 12 && Math.abs(mx) > Math.abs(my) * 1.3) modo = 'h'; else if (Math.abs(my) > 10) modo = 'v'; }
+        if (modo || Math.abs(mx) > 8 || Math.abs(my) > 8) clearTimeout(_apretarTimerV0451);
         if (modo === 'h') {
-            e.preventDefault(); dx = Math.min(0, mx);
-            fila.style.transform = 'translateX(' + Math.max(dx, -120) + 'px)';
-            fila.parentNode.classList.toggle('listo', dx < -60 && fila.classList.contains('en-venta'));
+            e.preventDefault(); dx = mx;   // V45.1: también a la derecha (ficha del producto)
+            fila.style.transform = 'translateX(' + Math.max(Math.min(dx, 130), -120) + 'px)';
+            fila.parentNode.classList.toggle('der', dx > 0);
+            fila.parentNode.classList.toggle('listo', dx > 60 || (dx < -60 && fila.classList.contains('en-venta')));
         }
     }, { passive: false });
-    const fin = () => {
+    const fin = (ev) => {
+        if (_apretoV0451) { _apretoV0451 = false; try { if (ev && ev.cancelable) ev.preventDefault(); } catch (er) {} }   // V43.13: que al soltar no salga un toque fantasma
         if (!fila) return;
         const f = fila, id = f.dataset.prodId, horizontal = modo === 'h', cuanto = dx;
-        fila = null; modo = ''; _tocandoV4310 = false;
+        fila = null; modo = ''; _tocandoV4310 = false; clearTimeout(_apretarTimerV0451);
         f.style.transition = 'transform .18s ease-out'; f.style.transform = ''; f.parentNode.classList.remove('listo');
+        setTimeout(() => { if (f.parentNode) f.parentNode.classList.remove('der'); }, 200);
         if (horizontal) {
             _swipeHastaV4310 = Date.now() + 400;   // que el deslizamiento no cuente también como toque (+1)
-            if (cuanto < -60) { const p = productos.find(x => String(x.id) === id); if (p) restarDesdeListaV4310(p.id); }
+            const p = productos.find(x => String(x.id) === id);
+            if (p && cuanto < -60) restarDesdeListaV4310(p.id);
+            else if (p && cuanto > 60) abrirFichaV451(p.id);   // V45.1
         }
         _programarOrdenV4310_();
     };
     c.addEventListener('touchend', fin); c.addEventListener('touchcancel', fin);
+    // V45.1: con mouse (computadora), clic derecho sobre el producto abre su ficha
+    c.addEventListener('contextmenu', e => { const f = e.target.closest('.prod-v439'); if (!f) return; e.preventDefault(); if (Date.now() - _ultimoToqueV0451 < 1500) return; /* V43.13: en el celular, mantener apretado es la foto */ const p = productos.find(x => String(x.id) === f.dataset.prodId); if (p) abrirFichaV451(p.id); });
 }
+
+// ===== V45.1 — FICHA DEL PRODUCTO (deslizar a la derecha) · como en Almacén Copihue · todos los planes =====
+// Pide al servidor (ventasProducto, solo lee) las ventas de hoy y el resumen de los últimos 60 días, sin las anuladas.
+let _fichaSeqV451 = 0;
+const _medioTxtV451 = m => ({ EFECTIVO: '💵 Efectivo', TRANSFERENCIA: '🏦 Transf.', DEBITO: '💳 Débito', QR_POSNET: '💳 QR/Posnet', QR: '📱 QR', FIADO: '🧾 Fiado', MIXTO: '🔀 Mixto' })[m] || (m ? m.charAt(0) + m.slice(1).toLowerCase() : '—');
+const _fechaCortaV451 = ymd => { const d = new Date(ymd + 'T12:00:00'); return ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][d.getDay()] + ' ' + d.getDate() + ' ' + ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]; };
+const _uTxtV451 = n => (Number.isInteger(n) ? n : Number(n).toFixed(1)) + ' u';
+function abrirFichaV451(id) {
+    const p = productos.find(x => String(x.id) === String(id)); if (!p) return;
+    const seq = ++_fichaSeqV451;
+    const stockCls = p.stock <= 0 ? 'rojo' : (p.stock <= 3 ? 'naranja' : 'verde');
+    document.getElementById('fichaCabV451').innerHTML =
+        _tileV0451_(p) + '</div>' +
+        '<div style="min-width:0;"><div class="ficha-nom">' + _escHTML(p.name) + '</div>' +
+        '<div class="ficha-sub">' + _escHTML(p.category || 'GENERAL') + (p.codigo ? ' · Cód. ' + _escHTML(p.codigo) : '') + '</div>' +
+        (FOTOS_V0451.estado && FOTOS_V0451.estado.permitido ? '<button type="button" class="foto-btn" style="margin-top:6px;padding:7px 12px;" onclick="cerrarFichaV451();abrirFotoV0451(' + p.id + ')">📷 Foto</button>' : '') + '</div>';
+    document.getElementById('fichaChipsV451').innerHTML =
+        '<div class="ficha-chip"><b>$' + p.price.toLocaleString('es-AR') + '</b><span>Precio</span></div>' +
+        (p.costo > 0 ? '<div class="ficha-chip"><b>$' + p.costo.toLocaleString('es-AR') + '</b><span>Costo</span></div>' : '') +
+        '<div class="ficha-chip ' + stockCls + '"><b>' + (p.stock <= 0 ? 'Sin stock' : p.stock) + '</b><span>Stock</span></div>';
+    const cuerpo = document.getElementById('fichaCuerpoV451');
+    cuerpo.innerHTML = '<div class="ficha-card"><div class="ficha-vacio">⏳ Buscando las ventas…</div></div>';
+    document.getElementById('modalFicha').classList.add('open');
+    _llamarAPI('ventasProducto', { token: _tokenActual(), nombre: p.name, dias: 60 }).then(r => {
+        if (seq !== _fichaSeqV451) return;   // se abrió otra ficha mientras tanto
+        if (!r || !r.success) { cuerpo.innerHTML = '<div class="ficha-card"><div class="ficha-vacio">⚠️ ' + _escHTML((r && r.error) || 'No se pudieron leer las ventas') + '</div></div>'; return; }
+        const hoyU = r.hoyVentas.reduce((s, v) => s + v.cantidad, 0), hoyP = r.hoyVentas.reduce((s, v) => s + v.total, 0);
+        let html = '<div class="ficha-card"><h4><span>Hoy</span><span>' + (r.hoyVentas.length ? _uTxtV451(hoyU) + ' · $' + hoyP.toLocaleString('es-AR') : '') + '</span></h4>' +
+            (r.hoyVentas.length
+              ? r.hoyVentas.map(v => '<div class="ficha-fila"><span class="f1">🕐 ' + _escHTML(v.hora) + '</span><span style="flex:1;"><span class="medio-tag ' + _escHTML(v.medio) + '">' + _medioTxtV451(v.medio) + '</span></span>' +
+                    '<span class="f3">' + _uTxtV451(v.cantidad) + '</span><span class="f4">$' + v.total.toLocaleString('es-AR') + '</span></div>').join('')
+              : '<div class="ficha-vacio">Todavía no se vendió hoy</div>') + '</div>';
+        const max = Math.max(1, ...r.porDia.map(d => d.unidades));
+        html += '<div class="ficha-card"><h4><span>Últimos ' + r.dias + ' días</span><span>' + (r.porDia.length ? _uTxtV451(r.total.unidades) + ' · $' + r.total.pesos.toLocaleString('es-AR') : '') + '</span></h4>' +
+            (r.porDia.length
+              ? '<div class="ficha-sub" style="margin:-2px 0 6px;">Vendido ' + r.total.diasConVenta + (r.total.diasConVenta === 1 ? ' día' : ' días') + ' · promedio ' + _uTxtV451(Math.round(r.total.unidades / (r.dias / 7) * 10) / 10) + ' por semana</div>' +
+                r.porDia.map(d => '<div class="ficha-fila"><span class="f1">' + _fechaCortaV451(d.fecha) + '</span><span class="barra"><i style="width:' + Math.max(6, Math.round(d.unidades / max * 100)) + '%"></i></span>' +
+                    '<span class="f3">' + _uTxtV451(d.unidades) + '</span><span class="f4">$' + d.pesos.toLocaleString('es-AR') + '</span></div>').join('')
+              : '<div class="ficha-vacio">Sin ventas en los últimos ' + r.dias + ' días</div>') +
+            (r.anuladas ? '<div class="ficha-sub" style="margin-top:6px;">No se cuentan ' + r.anuladas + (r.anuladas === 1 ? ' venta anulada' : ' ventas anuladas') + '.</div>' : '') + '</div>';
+        cuerpo.innerHTML = html;
+    }).catch(() => { if (seq === _fichaSeqV451) cuerpo.innerHTML = '<div class="ficha-card"><div class="ficha-vacio">📡 Sin conexión: no se pudieron leer las ventas</div></div>'; });
+}
+function cerrarFichaV451() { _fichaSeqV451++; document.getElementById('modalFicha').classList.remove('open'); }
+
+// ===== V43.13 — FOTOS DE PRODUCTOS (P2, P3 y prueba) · se guardan en Google Drive PRIVADO a través del servidor =====
+// · Mantener apretado un producto del catálogo → ventana «📷 Foto del producto».
+// · Miniaturas: una sola consulta (fotosMinis) y caché en este navegador por versión; si falla, el POS sigue igual (letra).
+// · Quitar fondo: lo hace el servidor con Photoroom (la llave nunca llega acá). Fondo blanco, ajuste y sello se dibujan acá;
+//   el texto del sello lo manda el servidor (nombre del comercio de la sesión).
+const FOTOS_V0451 = { estado: null, minis: {}, cargando: false };
+let _apretarTimerV0451 = null, _ultimoToqueV0451 = 0, _apretoV0451 = false, _fotoAbiertaEnV0451 = 0;
+const _cacheFotosKeyV0451 = () => 'vao_fotos_' + PREFIJO;
+function _tileV0451_(p) {
+    const m = _miniDeV0451_(p);
+    return m ? '<div class="ini-v439 con-foto"><img src="data:image/jpeg;base64,' + m + '" alt="" loading="lazy" onerror="this.remove()">'
+             : '<div class="ini-v439">' + _escHTML((p.name || '?').trim().charAt(0).toUpperCase());
+}
+function _miniDeV0451_(p) {
+    if (!p || !p.foto || !FOTOS_V0451.estado || !FOTOS_V0451.estado.permitido) return '';
+    const c = String(p.codigo || '').trim().toUpperCase(), x = FOTOS_V0451.minis[c];
+    return x && x.mini ? x.mini : '';
+}
+function _miniVentaV0451_(id) {
+    const p = productos.find(x => String(x.id) === String(id)), m = _miniDeV0451_(p);
+    return m ? '<img class="mini-venta" src="data:image/jpeg;base64,' + m + '" alt="">' : '';
+}
+function _guardarCacheFotosV0451_() {
+    try { localStorage.setItem(_cacheFotosKeyV0451(), JSON.stringify(FOTOS_V0451.minis)); }
+    catch (e) { try { localStorage.removeItem(_cacheFotosKeyV0451()); } catch (e2) {} }   // sin lugar: quedan solo en memoria
+}
+async function _fotosCargarV0451_() {
+    if (FOTOS_V0451.cargando) return; FOTOS_V0451.cargando = true;
+    try {
+        const est = await _llamarAPI('fotosEstado', { token: _tokenActual() });
+        if (!est || !est.success) return;
+        FOTOS_V0451.estado = est;
+        if (!est.permitido) { FOTOS_V0451.minis = {}; return; }
+        if (!Object.keys(FOTOS_V0451.minis).length) { try { FOTOS_V0451.minis = JSON.parse(localStorage.getItem(_cacheFotosKeyV0451()) || '{}') || {}; } catch (e) { FOTOS_V0451.minis = {}; } }
+        const conFoto = {}; productos.forEach(p => { if (p.foto && p.codigo) conFoto[String(p.codigo).trim().toUpperCase()] = p.foto; });
+        Object.keys(FOTOS_V0451.minis).forEach(c => { if (!conFoto[c]) delete FOTOS_V0451.minis[c]; });   // fotos quitadas
+        const faltan = Object.keys(conFoto).filter(c => !FOTOS_V0451.minis[c] || FOTOS_V0451.minis[c].v !== conFoto[c]);
+        for (let i = 0; i < faltan.length; i += 500) {
+            const r = await _llamarAPI('fotosMinis', { token: _tokenActual(), codigos: faltan.slice(i, i + 500) });
+            if (r && r.success && r.minis) Object.assign(FOTOS_V0451.minis, r.minis);
+        }
+        _guardarCacheFotosV0451_();
+    } catch (e) { /* sin conexión: el catálogo sigue con la letra */ }
+    finally {
+        FOTOS_V0451.cargando = false;
+        if (listaTodosAbierta) renderListaTodos(true);
+        renderVenta();
+    }
+}
+// ── ventana de la foto ──
+let _fotoProdV0451 = null, _fotoSrcV0451 = null, _fotoOrigV0451 = null, _fotoOrigB64V0451 = '', _fotoRecortadaV0451 = false, _fotoPosV0451 = { x: 0, y: 0 }, _fotoQuitarArmadoV0451 = 0;
+const _opFotoV0451_ = () => 'FOT-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+function _fotoEstadoTxtV0451_(t, tipo) { const e = document.getElementById('fotoEstadoV0451'); e.textContent = t || ''; e.style.color = tipo === 'rojo' ? '#C62828' : (tipo === 'verde' ? '#2E7D32' : '#455A64'); }
+function _fotoCuentaTxtV0451_() {
+    const e = FOTOS_V0451.estado; if (!e) return '';
+    return '🖼 Fotos: <b>' + e.usadas + '</b> de ' + e.limites.fotos.toLocaleString('es-AR') + ' (' + _escHTML(e.planNombre) + ')' +
+        '<br>✨ Quitar fondo este mes: <b>' + e.recortesMes + '</b> de ' + e.limites.recortes.toLocaleString('es-AR') +
+        (e.quitarFondo ? '' : ' · <span style="color:#8D6E63">todavía no activado en VAO (las fotos se guardan con su fondo)</span>');
+}
+async function abrirFotoV0451(id) {
+    const p = productos.find(x => String(x.id) === String(id)); if (!p) return;
+    if (!FOTOS_V0451.estado) { mostrarToast('⏳ Cargando…', ''); await _fotosCargarV0451_(); }
+    const e = FOTOS_V0451.estado;
+    if (!e) { mostrarToast('📡 Sin conexión: no se pueden cargar fotos ahora', 'rojo'); return; }
+    if (!e.permitido) { mostrarToast('📷 Las fotos de productos son desde P2 Gestión', 'naranja'); return; }
+    if (MODO_CONSULTA) { mostrarToast('🔒 En modo consulta no se pueden cargar fotos', 'rojo'); return; }
+    _fotoProdV0451 = p; _fotoQuitarArmadoV0451 = 0;
+    document.getElementById('fotoNombreV0451').textContent = p.name;
+    document.getElementById('fotoCodigoV0451').textContent = p.codigo ? 'Código ' + p.codigo : 'Sin código';
+    document.getElementById('fotoCuentaV0451').innerHTML = _fotoCuentaTxtV0451_();
+    const act = document.getElementById('fotoActualV0451'), mini = _miniDeV0451_(p);
+    act.innerHTML = mini ? '<img src="data:image/jpeg;base64,' + mini + '" alt="">' : '📷';
+    const sinCod = !String(p.codigo || '').trim(), av = document.getElementById('fotoSinCodigoV0451');
+    av.style.display = sinCod ? 'block' : 'none';
+    av.innerHTML = sinCod ? 'Este producto no tiene <b>código</b>. La foto se guarda con el código, así no se pierde si le cambiás el nombre.<br><button type="button" class="foto-btn prim" style="margin-top:8px;width:100%;" onclick="asignarCodigoV0451()">Asignarle un código automático</button>' : '';
+    document.getElementById('fotoBotonesV0451').style.display = sinCod ? 'none' : 'grid';
+    document.getElementById('fotoQuitarBtnV0451').style.display = p.foto ? '' : 'none';
+    document.getElementById('fotoQuitarBtnV0451').textContent = '🗑 Quitar foto';
+    document.getElementById('fotoEditorV0451').style.display = 'none';
+    _fotoEstadoTxtV0451_(!p.foto && !sinCod && e.disponibles <= 0 ? '⚠️ Llegaste al máximo de fotos de tu plan: quitá alguna para cargar otra.' : '');
+    document.getElementById('modalFoto').classList.add('open'); _fotoAbiertaEnV0451 = Date.now();
+    if (p.foto && p.codigo) _llamarAPI('fotoGrande', { token: _tokenActual(), codigo: p.codigo }).then(r => {   // la grande, para verla bien
+        if (r && r.success && _fotoProdV0451 === p && document.getElementById('fotoEditorV0451').style.display === 'none') act.innerHTML = '<img src="data:image/jpeg;base64,' + r.imagen + '" alt="">';
+    }).catch(() => {});
+}
+function cerrarFotoV0451() {
+    document.getElementById('modalFoto').classList.remove('open');
+    _fotoSrcV0451 = null; _fotoOrigV0451 = null; _fotoOrigB64V0451 = '';
+    ['fotoCamaraV0451', 'fotoGaleriaV0451'].forEach(i => { const x = document.getElementById(i); if (x) x.value = ''; });
+}
+async function asignarCodigoV0451() {
+    const p = _fotoProdV0451; if (!p) return;
+    _fotoEstadoTxtV0451_('⏳ Asignando código…');
+    try {
+        const r = await _llamarAPI('fotoAsignarCodigo', { token: _tokenActual(), id: p.id, nombre: p.name, opId: _opFotoV0451_() });
+        if (!r || !r.success) { _fotoEstadoTxtV0451_('❌ ' + ((r && r.error) || 'No se pudo asignar el código'), 'rojo'); return; }
+        p.codigo = r.codigo; mostrarToast('✅ Código ' + r.codigo + ' asignado', 'verde'); abrirFotoV0451(p.id);
+    } catch (e) { _fotoEstadoTxtV0451_('📡 Sin conexión. No se cambió nada.', 'rojo'); }
+}
+function _cargarImagenV0451_(src) { return new Promise((ok, mal) => { const im = new Image(); im.onload = () => ok(im); im.onerror = mal; im.src = src; }); }
+async function fotoElegidaV0451(input) {
+    const file = input.files && input.files[0]; input.value = '';
+    if (!file) return;
+    if (!/^image\//.test(file.type || 'image/')) { _fotoEstadoTxtV0451_('❌ Ese archivo no es una foto.', 'rojo'); return; }
+    if (file.size > 25 * 1024 * 1024) { _fotoEstadoTxtV0451_('❌ La foto es demasiado pesada (más de 25 MB).', 'rojo'); return; }
+    _fotoEstadoTxtV0451_('⏳ Preparando la foto…');
+    try {
+        const url = URL.createObjectURL(file), im = await _cargarImagenV0451_(url); URL.revokeObjectURL(url);
+        const k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight)), cv = document.createElement('canvas');   // se achica en el celular: sube rápido
+        cv.width = Math.round(im.naturalWidth * k); cv.height = Math.round(im.naturalHeight * k);
+        cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+        _fotoOrigB64V0451 = cv.toDataURL('image/jpeg', 0.9).split(',')[1];
+        _fotoOrigV0451 = await _cargarImagenV0451_('data:image/jpeg;base64,' + _fotoOrigB64V0451);
+        _fotoUsarV0451_(_fotoOrigV0451, false);
+        _fotoEstadoTxtV0451_(FOTOS_V0451.estado.quitarFondo ? 'Podés quitarle el fondo o guardarla así.' : 'Acomodala y guardala.');
+    } catch (e) { _fotoEstadoTxtV0451_('❌ No se pudo abrir esa foto. Probá con otra (JPG o PNG).', 'rojo'); }
+}
+function _fotoUsarV0451_(img, recortada) {
+    _fotoSrcV0451 = img; _fotoRecortadaV0451 = recortada; _fotoPosV0451 = { x: 0, y: 0 };
+    document.getElementById('fotoZoomV0451').value = 100;
+    document.getElementById('fotoEditorV0451').style.display = 'block';
+    document.getElementById('fotoBotonesV0451').style.display = 'none';
+    const e = FOTOS_V0451.estado, fb = document.getElementById('fotoFondoBtnV0451');
+    fb.style.display = e.quitarFondo && !recortada ? '' : 'none';
+    fb.disabled = e.recortesDisponibles <= 0;
+    fb.textContent = e.recortesDisponibles > 0 ? '✨ Quitar fondo (quedan ' + e.recortesDisponibles + ')' : '✨ Sin recortes este mes';
+    document.getElementById('fotoOriginalBtnV0451').style.display = recortada ? '' : 'none';
+    _fotoDibujarV0451_(); _fotoArrastreInitV0451_();
+}
+function fotoUsarOriginalV0451() { if (_fotoOrigV0451) { _fotoUsarV0451_(_fotoOrigV0451, false); _fotoEstadoTxtV0451_('Foto original (con su fondo).'); } }
+function fotoCancelarEdicionV0451() { if (_fotoProdV0451) abrirFotoV0451(_fotoProdV0451.id); }
+// Dibuja la foto final: fondo blanco, producto centrado (ajustable) y el sello abajo.
+function _fotoDibujarV0451_(cv) {
+    cv = cv || document.getElementById('fotoCanvasV0451'); const g = cv.getContext('2d'), L = cv.width, img = _fotoSrcV0451; if (!img) return;
+    g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, L, L);
+    const zoom = Number(document.getElementById('fotoZoomV0451').value) / 100, util = L * 0.84;
+    const k = Math.min(util / img.naturalWidth, (util - L * 0.06) / img.naturalHeight) * zoom, w = img.naturalWidth * k, h = img.naturalHeight * k;
+    g.drawImage(img, (L - w) / 2 + _fotoPosV0451.x * L, (L - h) / 2 - L * 0.03 + _fotoPosV0451.y * L, w, h);
+    const sello = (FOTOS_V0451.estado && FOTOS_V0451.estado.sello) || 'VAO POS';
+    g.font = '600 ' + Math.round(L * 0.032) + 'px system-ui, -apple-system, Segoe UI, Roboto, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    const tw = g.measureText(sello).width + L * 0.05, th = L * 0.055, bx = (L - tw) / 2, by = L - th - L * 0.025;
+    g.fillStyle = 'rgba(255,255,255,0.85)'; if (g.roundRect) { g.beginPath(); g.roundRect(bx, by, tw, th, th / 2); g.fill(); } else g.fillRect(bx, by, tw, th);
+    g.fillStyle = 'rgba(38,50,56,0.72)'; g.fillText(sello, L / 2, by + th * 0.7);
+}
+function _fotoArrastreInitV0451_() {
+    const cv = document.getElementById('fotoCanvasV0451'); if (cv._arrV0451) return; cv._arrV0451 = true;
+    let a = null;
+    cv.addEventListener('pointerdown', e => { a = { x: e.clientX, y: e.clientY, p: Object.assign({}, _fotoPosV0451), r: cv.getBoundingClientRect().width }; try { cv.setPointerCapture(e.pointerId); } catch (er) {} });
+    cv.addEventListener('pointermove', e => { if (!a) return; _fotoPosV0451 = { x: Math.max(-0.5, Math.min(0.5, a.p.x + (e.clientX - a.x) / a.r)), y: Math.max(-0.5, Math.min(0.5, a.p.y + (e.clientY - a.y) / a.r)) }; _fotoDibujarV0451_(); });
+    ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => { a = null; }));
+}
+async function quitarFondoV0451() {
+    const p = _fotoProdV0451, btn = document.getElementById('fotoFondoBtnV0451'); if (!p || !_fotoOrigB64V0451) return;
+    btn.disabled = true; _fotoEstadoTxtV0451_('⏳ Quitando el fondo… (unos segundos)');
+    try {
+        const r = await _llamarAPI('fotoRecortar', { token: _tokenActual(), codigo: p.codigo, imagen: _fotoOrigB64V0451, opId: _opFotoV0451_() });
+        if (!r || !r.success) { btn.disabled = false; _fotoEstadoTxtV0451_('❌ ' + ((r && r.error) || 'No se pudo quitar el fondo. No se descontó nada.'), 'rojo'); return; }
+        FOTOS_V0451.estado.recortesMes = r.recortesMes; FOTOS_V0451.estado.recortesDisponibles = r.recortesDisponibles;
+        const im = await _cargarImagenV0451_('data:' + (r.tipo || 'image/png') + ';base64,' + r.imagen);
+        _fotoUsarV0451_(await _recortarTransparenteV0451_(im), true);
+        document.getElementById('fotoCuentaV0451').innerHTML = _fotoCuentaTxtV0451_();
+        _fotoEstadoTxtV0451_('✨ Fondo quitado. Acomodala y guardala.', 'verde');
+    } catch (e) { btn.disabled = false; _fotoEstadoTxtV0451_('📡 Sin conexión. No se descontó nada.', 'rojo'); }
+}
+// Recorta los bordes transparentes que devuelve el servicio (así el producto queda centrado y del tamaño justo).
+async function _recortarTransparenteV0451_(im) {
+    const cv = document.createElement('canvas'); cv.width = im.naturalWidth; cv.height = im.naturalHeight;
+    const g = cv.getContext('2d'); g.drawImage(im, 0, 0);
+    let d; try { d = g.getImageData(0, 0, cv.width, cv.height).data; } catch (e) { return im; }
+    let x0 = cv.width, y0 = cv.height, x1 = -1, y1 = -1;
+    for (let y = 0; y < cv.height; y++) for (let x = 0; x < cv.width; x++) if (d[(y * cv.width + x) * 4 + 3] > 12) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 < 0) return im;
+    const c2 = document.createElement('canvas'); c2.width = x1 - x0 + 1; c2.height = y1 - y0 + 1;
+    c2.getContext('2d').drawImage(cv, x0, y0, c2.width, c2.height, 0, 0, c2.width, c2.height);
+    return _cargarImagenV0451_(c2.toDataURL('image/png'));
+}
+async function guardarFotoV0451() {
+    const p = _fotoProdV0451, btn = document.getElementById('fotoGuardarBtnV0451'); if (!p || !_fotoSrcV0451) return;
+    btn.disabled = true; _fotoEstadoTxtV0451_('⏳ Guardando en tu Google Drive privado…');
+    try {
+        const cv = document.createElement('canvas'); cv.width = cv.height = 800; _fotoDibujarV0451_(cv);
+        let q = 0.86, b64 = cv.toDataURL('image/jpeg', q).split(',')[1];
+        while (b64.length > 640 * 1024 * 1.33 && q > 0.5) { q -= 0.1; b64 = cv.toDataURL('image/jpeg', q).split(',')[1]; }
+        const cm = document.createElement('canvas'); cm.width = cm.height = 96; cm.getContext('2d').drawImage(cv, 0, 0, 96, 96);
+        const mini = cm.toDataURL('image/jpeg', 0.72).split(',')[1];
+        const r = await _llamarAPI('fotoGuardar', { token: _tokenActual(), codigo: p.codigo, imagen: b64, mini: mini, recortada: _fotoRecortadaV0451, opId: _opFotoV0451_() });
+        btn.disabled = false;
+        if (!r || !r.success) { _fotoEstadoTxtV0451_('❌ ' + ((r && r.error) || 'No se pudo guardar. No se guardó nada.'), 'rojo'); return; }
+        const c = String(p.codigo).trim().toUpperCase();
+        p.foto = r.version; FOTOS_V0451.minis[c] = { v: r.version, mini: mini }; _guardarCacheFotosV0451_();
+        if (typeof r.usadas === 'number') { FOTOS_V0451.estado.usadas = r.usadas; FOTOS_V0451.estado.disponibles = r.disponibles; }
+        mostrarToast(r.mensaje || '✅ Foto guardada', 'verde');
+        cerrarFotoV0451(); if (listaTodosAbierta) renderListaTodos(true); renderVenta();
+        _llamarAPI('fotosEstado', { token: _tokenActual() }).then(x => { if (x && x.success) FOTOS_V0451.estado = x; }).catch(() => {});
+    } catch (e) { btn.disabled = false; _fotoEstadoTxtV0451_('📡 Sin conexión. No se guardó nada: volvé a intentar.', 'rojo'); }
+}
+async function quitarFotoV0451(codigo) {
+    const p = codigo ? productos.find(x => String(x.codigo || '').trim().toUpperCase() === codigo) : _fotoProdV0451;
+    const c = String(codigo || (p && p.codigo) || '').trim().toUpperCase(); if (!c) return;
+    if (!codigo) {   // en la ventana: segundo toque para confirmar (sin cuadros del navegador)
+        const b = document.getElementById('fotoQuitarBtnV0451');
+        if (Date.now() - _fotoQuitarArmadoV0451 > 4000) { _fotoQuitarArmadoV0451 = Date.now(); b.textContent = '¿Seguro? Tocá otra vez'; return; }
+    }
+    _fotoEstadoTxtV0451_('⏳ Quitando la foto…');
+    try {
+        const r = await _llamarAPI('fotoQuitar', { token: _tokenActual(), codigo: c, opId: _opFotoV0451_() });
+        if (!r || !r.success) { mostrarToast('❌ ' + ((r && r.error) || 'No se pudo quitar'), 'rojo'); _fotoEstadoTxtV0451_(''); return; }
+        if (p) p.foto = 0; delete FOTOS_V0451.minis[c]; _guardarCacheFotosV0451_();
+        if (FOTOS_V0451.estado) { FOTOS_V0451.estado.usadas = Math.max(0, FOTOS_V0451.estado.usadas - 1); FOTOS_V0451.estado.disponibles++; FOTOS_V0451.estado.lista = (FOTOS_V0451.estado.lista || []).filter(l => l.codigo !== c); }
+        mostrarToast(r.mensaje || '🗑 Foto quitada', 'naranja');
+        if (!codigo) cerrarFotoV0451(); else abrirMisFotosV0451();
+        if (listaTodosAbierta) renderListaTodos(true); renderVenta();
+    } catch (e) { mostrarToast('📡 Sin conexión. No se cambió nada.', 'rojo'); }
+}
+// ── Mis fotos ──
+let _misFotosQuitarV0451 = { c: '', t: 0 };
+async function abrirMisFotosV0451() {
+    document.getElementById('modalFoto').classList.remove('open');
+    const lista = document.getElementById('misFotosListaV0451');
+    lista.innerHTML = '<div class="ficha-vacio">⏳ Cargando…</div>';
+    document.getElementById('modalMisFotos').classList.add('open');
+    try { const x = await _llamarAPI('fotosEstado', { token: _tokenActual() }); if (x && x.success) FOTOS_V0451.estado = x; } catch (e) {}
+    const e = FOTOS_V0451.estado;
+    if (!e || !e.permitido) { lista.innerHTML = '<div class="ficha-vacio">' + _escHTML((e && e.motivo) || 'Sin conexión') + '</div>'; return; }
+    document.getElementById('misFotosCuentaV0451').innerHTML = _fotoCuentaTxtV0451_() + '<br>Te quedan <b>' + e.disponibles + '</b> fotos y <b>' + e.recortesDisponibles + '</b> recortes este mes.';
+    lista.innerHTML = e.lista.length ? e.lista.map(l => {
+        const m = FOTOS_V0451.minis[l.codigo], p = productos.find(x => String(x.codigo || '').trim().toUpperCase() === l.codigo);
+        return '<div class="misfoto"><div class="mf-img">' + (m ? '<img src="data:image/jpeg;base64,' + m.mini + '" alt="">' : '') + '</div>' +
+            '<div class="mf-txt"><b>' + _escHTML(p ? p.name : l.producto) + '</b>Cód. ' + _escHTML(l.codigo) + ' · ' + _escHTML(l.fecha) + (l.recortada ? ' · ✨ sin fondo' : '') + (p ? '' : ' · <span style="color:#C62828">producto ya no está en el inventario</span>') + '</div>' +
+            (p ? '<button type="button" onclick="cerrarMisFotosV0451();abrirFotoV0451(' + p.id + ')">Cambiar</button>' : '') +
+            '<button type="button" class="q" data-c="' + _escHTML(l.codigo) + '" onclick="misFotosQuitarV0451(this)">' + (_misFotosQuitarV0451.c === l.codigo && Date.now() - _misFotosQuitarV0451.t < 4000 ? '¿Seguro?' : 'Quitar') + '</button></div>';
+    }).join('') : '<div class="ficha-vacio">Todavía no cargaste fotos.</div>';
+}
+function misFotosQuitarV0451(b) {
+    const c = b.dataset.c;
+    if (_misFotosQuitarV0451.c !== c || Date.now() - _misFotosQuitarV0451.t > 4000) { _misFotosQuitarV0451 = { c: c, t: Date.now() }; b.textContent = '¿Seguro?'; return; }
+    _misFotosQuitarV0451 = { c: '', t: 0 }; quitarFotoV0451(c);
+}
+function cerrarMisFotosV0451() { document.getElementById('modalMisFotos').classList.remove('open'); }
 
 // ===== V43.8 (celular): «carrito al tocar» =====
 const _celuV438_ = () => !!(window.matchMedia && window.matchMedia('(max-width: 599px)').matches);
@@ -1972,6 +2412,7 @@ function _carritoContadorV438_() {
     if (b && n > _carritoNAntV438) { b.classList.remove('salta'); void b.offsetWidth; b.classList.add('salta'); }
     _carritoNAntV438 = n;
     if (!ventaActual.length && document.body.classList.contains('carrito-on')) toggleCarritoV438(false);
+    document.body.classList.toggle('hay-venta', ventaActual.length > 0);   // V43.15: muestra 🗑 vaciar en la barra (celular)
     _refrescarListaV4310_();   // V43.10: globitos al día sin mover la lista (después de 1,5 s sin tocar, los elegidos suben arriba)
 }
 function toggleCarritoV438(abrir) {
@@ -2203,7 +2644,7 @@ function renderVenta() {
     lista.innerHTML = ventaActual.map(item => {
         const modClass = item.precioModificado ? ' modificado' : '';
         return '<div class="item-venta">' +
-            '<div class="item-nombre">' + item.name + '</div>' +
+            '<div class="item-nombre">' + _miniVentaV0451_(item.id) + item.name + '</div>' +
             '<div class="item-qty-wrap">' +
                 '<button class="btn-qty" onclick="cambiarQty('+item.id+',-1)">−</button>' +
                 '<span class="item-qty">'+item.qty+'</span>' +
@@ -3600,6 +4041,13 @@ document.querySelectorAll('.modal-sheet input:not([type=number]):not([type=tel])
     el.setAttribute('autocorrect', 'off');
     el.setAttribute('autocomplete', 'off');
 });
+// V43.15: alto real de la pantalla. En celulares donde «100dvh» no existe, el cuerpo crecía y la barra de Cobrar quedaba
+// fuera de la vista. Se mide window.innerHeight (lo que de verdad se ve) y se fija como alto del cuerpo.
+(function () {
+    const fijar = function () { const h = window.innerHeight; if (h > 200) { document.body.style.height = h + 'px'; try { _medirTotalV438_(); } catch (e) {} } };
+    window.addEventListener('resize', fijar); window.addEventListener('orientationchange', function () { setTimeout(fijar, 300); });
+    if (document.body) fijar(); else document.addEventListener('DOMContentLoaded', fijar);
+})();
 // Ventanas a la altura de la parte visible (el teclado no las tapa).
 (function () {
     const vv = window.visualViewport;
@@ -3625,7 +4073,10 @@ const CIERRES_MODAL = {
     modalAjuste:  function () { cerrarAjuste(); },
     modalResumen: function () { cerrarResumen(); },
     modalStats:   function () { cerrarEstadisticas(); },
-    modalMisDatos: function () { cerrarMisDatos(); }
+    modalMisDatos: function () { cerrarMisDatos(); },
+    modalFicha:   function () { cerrarFichaV451(); },   // V45.1
+    modalFoto:    function () { cerrarFotoV0451(); },   // V43.13
+    modalMisFotos: function () { cerrarMisFotosV0451(); }
 };
 // V43.11 — REGLA DE ORO «no salir sin confirmación». Atrás cierra, de arriba hacia abajo: la ventana abierta, el carrito
 // (V43.8) o la lupa. Con todo cerrado, el primer Atrás avisa «Tocá Atrás otra vez para salir» y recién el segundo sale.
@@ -4132,7 +4583,7 @@ async function descargarDatos(que) {
         </div>
         <div style="overflow-y:auto;max-height:78vh;padding:0 16px 18px;">
             <div class="p3-cab"><span class="p3-sello">P3</span><div><b>El plan completo</b><span id="p3Precio">…</span></div></div>
-            <p class="p3-intro">Todo lo que ya usás de <b>P1</b> y <b>P2</b>, y además <b><span id="p3Cuantas">7</span> herramientas</b> para manejar el comercio entero:</p>
+            <p class="p3-intro">Todo lo que ya usás de <b>P1</b> y <b>P2</b>, y además <b><span id="p3Cuantas">6</span> herramientas</b> para manejar el comercio entero:</p>
             <div id="p3Herramientas"></div>
             <button class="p3-pedir" onclick="pedirP3V433()">Pedir P3 PRO por WhatsApp</button>
             <p class="p3-nota">Se activa cuando VAO Sistemas confirma tu pago. Tus ventas, productos y fiados no cambian.</p>

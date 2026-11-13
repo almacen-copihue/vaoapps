@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="vao-comun.css">
 <title>Cotización de productos · VAO POS</title>
 <style>
-/* cotizador.html v1 (v044) — paquete P3 PRO. Presupuestos: NO descuentan stock, NO tocan la caja, NO crean fiados. */
+/* cotizador.html v1.1 (v045.2) — P2 Gestión (también en P3 PRO; P1 no: el servidor lo rechaza). Presupuestos: NO descuentan stock, NO tocan la caja, NO crean fiados. */
 .lin { display: grid; grid-template-columns: 1fr 86px 92px 34px; gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--borde); }
 .lin input { width: 100%; min-height: 40px; border: 2px solid var(--borde); border-radius: 8px; padding: 6px; font: inherit; background: var(--papel); color: var(--texto); text-align: center; }
 .lin .imp { text-align: right; font-weight: 700; }
@@ -157,7 +157,7 @@ async function cargarHistorial() {
     }));
   } catch (e) { VAO.msg('msgHist', VAO.sinConexion, 'error'); }
 }
-VAO.iniciar({ modulo: 'extra_cotizador', titulo: 'Cotización de productos', icono: '📝', grupo: 'P3' }).then(async ok => {
+VAO.iniciar({ modulo: 'extra_cotizador', titulo: 'Cotización de productos', icono: '📝', grupo: 'P2' }).then(async ok => {
   if (!ok) return;
   VAO.pestanas('tabs', t => { if (t === 'historial') cargarHistorial(); });
   try { const r = await VAO.api('getProductos', {}); PRODUCTOS = (r.productos || []); } catch (e) { VAO.msg('msgNuevo', VAO.sinConexion, 'error'); }
