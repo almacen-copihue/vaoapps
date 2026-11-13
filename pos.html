@@ -1416,7 +1416,7 @@ if (!/^[A-Z0-9]{2,10}$/.test(PREFIJO)) {
 
 // ========== CONFIG ==========
 const API_URL  = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
-const APP_VERSION_TXT = '43.15';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
+const APP_VERSION_TXT = '43.16';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
 const APP_VERSION = 43; // V43.8: celular «carrito al tocar» — el catálogo ocupa la pantalla; 🛒 (con cantidad) en la barra de Cobrar abre la venta para corregir; 🔍 y 🔄 flotantes; «✏️ Corregir la venta» en Confirmar · V43.7: «Venta actual · Limpiar» solo aparece con productos en el carrito; 📣 comparte el afiche nuevo (og-vao-pos-2.jpg) · V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
 const HOY_KEY    = 'vao_ventas_' + PREFIJO + '_' + new Date().toISOString().slice(0, 10);
 const CARRITO_KEY= 'vao_carrito_' + PREFIJO;
@@ -1785,7 +1785,7 @@ function avisarVersionNueva() {
 
 // V34: soporte de VAO Sistemas por WhatsApp. Solo abre un chat con un texto armado:
 // nombre del comercio y prefijo (NUNCA el PIN ni datos de ventas o clientes).
-const SOPORTE_WHATSAPP = '542944907380';
+const SOPORTE_WHATSAPP = '5492944907380';   // V43.16: con el 9 (celular argentino); antes WhatsApp decía «falta el código de país»
 function abrirSoporte(motivo) {
     let nombre = '';
     try { nombre = (document.getElementById('headerTitulo').textContent || '').trim(); } catch (e) {}
@@ -1793,13 +1793,13 @@ function abrirSoporte(motivo) {
     if (motivo === 'robo') { // V37: celular perdido o robado → cerrar sesiones y PIN nuevo (lo hace VAO con Reset PIN)
         const t = 'Hola VAO Sistemas, perdí / me robaron el celular. Necesito cerrar las sesiones abiertas y un PIN nuevo.\n' +
             'Comercio: ' + (nombre ? nombre + ' ' : '') + '(' + PREFIJO + ')';
-        window.open('https://wa.me/' + SOPORTE_WHATSAPP + '?text=' + encodeURIComponent(t), '_blank', 'noopener');
+        abrirWhatsAppVAO(SOPORTE_WHATSAPP, t);
         return;
     }
     const txt = 'Hola VAO Sistemas, necesito ayuda con VAO POS.\n' +
         'Comercio: ' + (nombre ? nombre + ' ' : '') + '(' + PREFIJO + ')\n' +
         'Versión: V' + APP_VERSION + '\n\nMi consulta: ';
-    window.open('https://wa.me/' + SOPORTE_WHATSAPP + '?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+    abrirWhatsAppVAO(SOPORTE_WHATSAPP, txt);
 }
 
 // V37: Salir = cerrar sesión. Se confirma con una ventana propia (sin confirm nativo).
@@ -3180,7 +3180,7 @@ function enviarTicketWA() {
         return i.qty+'x '+nombre+' $'+(i.price*i.qty).toLocaleString('es-AR');
     }).join('\n');
     var mensaje = '📦 *' + (document.getElementById('headerTitulo').textContent || PREFIJO) + '*\n📅 '+fecha+' - '+v.hora+'\n\n'+lineas+'\n'+'--------------------------------\n'+'*Total: $'+v.total.toLocaleString('es-AR')+'* - '+metodoLabel+'\n\n¡Gracias por tu compra! 🙏';
-    window.open('https://wa.me/?text='+encodeURIComponent(mensaje), '_blank');
+    abrirWhatsAppVAO('', mensaje);   // V43.16
 }
 
 // ========== HISTORIAL DÍA ==========
@@ -4122,6 +4122,37 @@ window.addEventListener('popstate', function () {
     mostrarToast('👋 Para salir de VAO POS, tocá Atrás otra vez', 'naranja');
 });
 
+
+// ===== V45.2 — REGLA DE ORO (dueño, 13/11/2026): WhatsApp abre PRIMERO WhatsApp Business; si no está, WhatsApp común =====
+// · Número en formato internacional argentino: 54 + 9 + característica + número (sin 0 ni 15). Ej.: «0294 15 4907380» → 5492944907380.
+// · Android: se pide WhatsApp Business (com.whatsapp.w4b); si no está instalado, el mismo pedido sigue por el enlace web,
+//   que abre WhatsApp común. iPhone y computadora: enlace web (ahí no se puede elegir la aplicación).
+function _telWaVAO_(t) {
+    var d = String(t || '').replace(/\D/g, '');
+    if (!d) return '';
+    if (d.indexOf('00') === 0) d = d.slice(2);
+    if (d.indexOf('549') === 0 && d.length === 13) return d;
+    if (d.indexOf('54') === 0 && d.length === 12) return '549' + d.slice(2);   // celular argentino sin el 9
+    if (d.charAt(0) === '0') d = d.slice(1);
+    if (d.length === 12) { for (var k = 2; k <= 4; k++) if (d.substr(k, 2) === '15') { d = d.slice(0, k) + d.slice(k + 2); break; } }   // característica + 15 + número
+    if (d.length === 10) return '549' + d;
+    return d;   // otro país (por ejemplo Chile 569…): tal cual
+}
+function _urlWaVAO_(tel, texto) { var n = _telWaVAO_(tel); return 'https://wa.me/' + n + (texto ? '?text=' + encodeURIComponent(texto) : ''); }
+function abrirWhatsAppVAO(tel, texto) {
+    var web = _urlWaVAO_(tel, texto);
+    if (/Android/i.test(navigator.userAgent || '')) {
+        var n = _telWaVAO_(tel), q = (n ? 'phone=' + n : '') + (texto ? (n ? '&' : '') + 'text=' + encodeURIComponent(texto) : '');
+        window.open('intent://send/?' + q + '#Intent;scheme=whatsapp;package=com.whatsapp.w4b;S.browser_fallback_url=' + encodeURIComponent(web) + ';end', '_blank');
+        return;
+    }
+    window.open(web, '_blank', 'noopener');
+}
+// Cualquier enlace https://wa.me/… de la página pasa por la misma regla.
+document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href^="https://wa.me/"]') : null; if (!a) return;
+    e.preventDefault(); var u = new URL(a.href); abrirWhatsAppVAO(u.pathname.replace(/\//g, ''), u.searchParams.get('text') || '');
+}, true);
 // ========== V23: VALIDACIONES (las mismas que exige el servidor v028) ==========
 // Regla comercial: precio de venta mínimo = costo × (1 + recargo_minimo_pct/100).
 // Es RECARGO sobre el costo (50 % → costo 1000, venta 1500), no margen.
@@ -4301,7 +4332,7 @@ function pedirCambioPlanV40() {
     const r = _MIPLAN_V40 || {};
     const t = 'Hola VAO Sistemas, quiero cambiar mi plan de VAO POS.\nComercio: ' + (nombre ? nombre + ' ' : '') + '(' + PREFIJO + ')\nPlan actual: ' + (r.planNombre || '-') +
         ((r.complementos || []).length ? ' + ' + r.complementos.map(c => c.nombre).join(' + ') : '') + '\n\nQuiero: ';
-    window.open('https://wa.me/' + SOPORTE_WHATSAPP + '?text=' + encodeURIComponent(t), '_blank', 'noopener');
+    abrirWhatsAppVAO(SOPORTE_WHATSAPP, t);
 }
 window.addEventListener('load', () => { if (location.hash === '#miplan') setTimeout(() => { try { if (_tokenActual()) abrirPagoPlan(); } catch (e) {} }, 1500); });   // V43
 async function abrirPagoPlan() {
@@ -4367,7 +4398,7 @@ function _pedirV42_(que) {
     let nombre = ''; try { nombre = (document.getElementById('headerTitulo').textContent || '').trim(); } catch (e) {}
     const r = _MIPLAN_V40 || {};
     const t = 'Hola VAO Sistemas, quiero contratar: ' + que + '.\nComercio: ' + (nombre ? nombre + ' ' : '') + '(' + PREFIJO + ')\nPlan actual: ' + (r.planNombre || '-');
-    window.open('https://wa.me/' + SOPORTE_WHATSAPP + '?text=' + encodeURIComponent(t), '_blank', 'noopener');
+    abrirWhatsAppVAO(SOPORTE_WHATSAPP, t);
 }
 async function pagarPlanMP(btn) {
     const plan = btn.getAttribute('data-plan'), est = document.getElementById('pagoPlanEstado');

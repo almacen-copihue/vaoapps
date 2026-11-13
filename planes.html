@@ -19,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-/* planes.html v5.7 (07/11): vista previa al compartir con el afiche nuevo (og-vao-pos-2.jpg) · v5.6 (07/11): Prueba gratis arriba de «Planes» y clickeable (lleva al formulario); marco que abraza P1 → plan elegido; tarjetas alineadas · v5.5 (07/11): cada tarjeta muestra solo sus herramientas con su etiqueta encima; «Incluye ✔ Todo P1 · ✔ Todo P2» en una línea · v5.4 (07/11): sin «lista de espera» — «Reservar mi prueba gratis», aviso amable con WhatsApp y sin «no hay fecha asegurada» · v5.3 (07/11): el rompecabezas une P1 + P2 + P3 PRO en una sola pieza (antes P3 quedaba separada) · v5.2: enlace Términos · v5 (STAGING · v044.1) — tres planes como composición envolvente: P1 es la base, P2 abraza a P1, P3 PRO abraza a P1 y P2 y suma el paquete PRO.
+/* planes.html v5.8 (13/11): WhatsApp con el número internacional correcto (5492944907380) y primero WhatsApp Business · v5.7 (07/11): vista previa al compartir con el afiche nuevo (og-vao-pos-2.jpg) · v5.6 (07/11): Prueba gratis arriba de «Planes» y clickeable (lleva al formulario); marco que abraza P1 → plan elegido; tarjetas alineadas · v5.5 (07/11): cada tarjeta muestra solo sus herramientas con su etiqueta encima; «Incluye ✔ Todo P1 · ✔ Todo P2» en una línea · v5.4 (07/11): sin «lista de espera» — «Reservar mi prueba gratis», aviso amable con WhatsApp y sin «no hay fecha asegurada» · v5.3 (07/11): el rompecabezas une P1 + P2 + P3 PRO en una sola pieza (antes P3 quedaba separada) · v5.2: enlace Términos · v5 (STAGING · v044.1) — tres planes como composición envolvente: P1 es la base, P2 abraza a P1, P3 PRO abraza a P1 y P2 y suma el paquete PRO.
    Complementos opcionales aparte (verdes). Íconos y nombres salen de la matriz central del servidor (catalogoV043.apps).
    planes.html v4 (STAGING · v044) — «Armá tu plan» como rompecabezas: arrastrar y encajar, o tocar las piezas.
    planes.html v3 (STAGING · v043) — página pública. Planes P1/P2, complementos P3 «Armá tu plan». Nombres, prestaciones y precios vienen del servidor (PLANES_VAO y COMPLEMENTOS_VAO). */
@@ -255,7 +255,7 @@ footer { padding: 26px 0 40px; font-size: .88rem; color: var(--suave); }
 <div class="col hero-cta">
   <a class="btn btn-principal" id="ctaPrincipal" href="#empezar">Empezar mi prueba gratis</a>
   <div class="chico" id="ctaSub">Sin tarjeta de crédito. Se crea al instante con tu correo.</div>
-  <div class="aviso-espera oculto" id="avisoEspera">Ahora mismo están completos los lugares de prueba. Dejá tus datos y <b>te escribimos por correo apenas se libere uno</b>. ¿Tenés apuro? <a href="https://wa.me/542944907380?text=Hola%20VAO%20Sistemas%2C%20quiero%20probar%20VAO%20POS" target="_blank" rel="noopener">Escribinos por WhatsApp</a>.</div>
+  <div class="aviso-espera oculto" id="avisoEspera">Ahora mismo están completos los lugares de prueba. Dejá tus datos y <b>te escribimos por correo apenas se libere uno</b>. ¿Tenés apuro? <a href="https://wa.me/5492944907380?text=Hola%20VAO%20Sistemas%2C%20quiero%20probar%20VAO%20POS" target="_blank" rel="noopener">Escribinos por WhatsApp</a>.</div>
 </div>
 
 <section>
@@ -352,7 +352,7 @@ footer { padding: 26px 0 40px; font-size: .88rem; color: var(--suave); }
     <!-- Lista de espera -->
     <div id="espera" class="oculto">
       <p class="msg info" id="textoEspera"></p>
-      <p class="chico">No hace falta que vuelvas a anotarte. Si tenés apuro, <a href="https://wa.me/542944907380?text=Hola%20VAO%20Sistemas%2C%20reservé%20mi%20prueba%20de%20VAO%20POS" target="_blank" rel="noopener">escribinos por WhatsApp</a>.</p>
+      <p class="chico">No hace falta que vuelvas a anotarte. Si tenés apuro, <a href="https://wa.me/5492944907380?text=Hola%20VAO%20Sistemas%2C%20reservé%20mi%20prueba%20de%20VAO%20POS" target="_blank" rel="noopener">escribinos por WhatsApp</a>.</p>
     </div>
   </div>
 </section>
@@ -734,6 +734,37 @@ async function retomar() {
   } catch (e) {}
 }
 
+
+// ===== V45.2 — REGLA DE ORO (dueño, 13/11/2026): WhatsApp abre PRIMERO WhatsApp Business; si no está, WhatsApp común =====
+// · Número en formato internacional argentino: 54 + 9 + característica + número (sin 0 ni 15). Ej.: «0294 15 4907380» → 5492944907380.
+// · Android: se pide WhatsApp Business (com.whatsapp.w4b); si no está instalado, el mismo pedido sigue por el enlace web,
+//   que abre WhatsApp común. iPhone y computadora: enlace web (ahí no se puede elegir la aplicación).
+function _telWaVAO_(t) {
+    var d = String(t || '').replace(/\D/g, '');
+    if (!d) return '';
+    if (d.indexOf('00') === 0) d = d.slice(2);
+    if (d.indexOf('549') === 0 && d.length === 13) return d;
+    if (d.indexOf('54') === 0 && d.length === 12) return '549' + d.slice(2);   // celular argentino sin el 9
+    if (d.charAt(0) === '0') d = d.slice(1);
+    if (d.length === 12) { for (var k = 2; k <= 4; k++) if (d.substr(k, 2) === '15') { d = d.slice(0, k) + d.slice(k + 2); break; } }   // característica + 15 + número
+    if (d.length === 10) return '549' + d;
+    return d;   // otro país (por ejemplo Chile 569…): tal cual
+}
+function _urlWaVAO_(tel, texto) { var n = _telWaVAO_(tel); return 'https://wa.me/' + n + (texto ? '?text=' + encodeURIComponent(texto) : ''); }
+function abrirWhatsAppVAO(tel, texto) {
+    var web = _urlWaVAO_(tel, texto);
+    if (/Android/i.test(navigator.userAgent || '')) {
+        var n = _telWaVAO_(tel), q = (n ? 'phone=' + n : '') + (texto ? (n ? '&' : '') + 'text=' + encodeURIComponent(texto) : '');
+        window.open('intent://send/?' + q + '#Intent;scheme=whatsapp;package=com.whatsapp.w4b;S.browser_fallback_url=' + encodeURIComponent(web) + ';end', '_blank');
+        return;
+    }
+    window.open(web, '_blank', 'noopener');
+}
+// Cualquier enlace https://wa.me/… de la página pasa por la misma regla.
+document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href^="https://wa.me/"]') : null; if (!a) return;
+    e.preventDefault(); var u = new URL(a.href); abrirWhatsAppVAO(u.pathname.replace(/\//g, ''), u.searchParams.get('text') || '');
+}, true);
 // ── compartir y QR ──────────────────────────────────────────────────
 function prepararCompartir() {
   const texto = 'Te recomiendo VAO POS para organizar tu comercio (ventas, stock y fiados desde el celular). Probalo gratis 7 días: ' + URL_PUBLICA;

@@ -1,4 +1,4 @@
-/* vao-comun.js — v044.1 (STAGING AR). v044.1: aplicaciones base (sin prestación), menú para cambiar de aplicación con la misma sesión, P3 PRO.
+/* vao-comun.js — v045.2: WhatsApp con número internacional (54 9 …) y primero WhatsApp Business (regla de oro, 13/11/2026). v044.1 (STAGING AR). v044.1: aplicaciones base (sin prestación), menú para cambiar de aplicación con la misma sesión, P3 PRO.
    v044: Base compartida de los módulos de VAO POS.
    Un solo lugar para: dirección del servidor, sesión del comercio (el mismo PIN/token del POS), permisos por plan,
    navegación de vuelta al POS, mensajes y formato. Cada módulo es un HTML independiente que usa esta base.
@@ -151,5 +151,36 @@
     document.querySelectorAll('[data-panel]').forEach(function (p) { p.classList.toggle('oculto', p.dataset.panel !== tab); });
   };
   // Compartir texto: WhatsApp (sin número = el usuario elige el contacto) o el menú del celular
-  VAO.whatsapp = function (texto, telefono) { var t = String(telefono || '').replace(/\D/g, ''); window.open('https://wa.me/' + (t ? t : '') + '?text=' + encodeURIComponent(texto), '_blank', 'noopener'); };
+  VAO.whatsapp = function (texto, telefono) { abrirWhatsAppVAO(telefono || '', texto); };   // v045.2: número internacional y primero WhatsApp Business
 })();
+
+// ===== V45.2 — REGLA DE ORO (dueño, 13/11/2026): WhatsApp abre PRIMERO WhatsApp Business; si no está, WhatsApp común =====
+// · Número en formato internacional argentino: 54 + 9 + característica + número (sin 0 ni 15). Ej.: «0294 15 4907380» → 5492944907380.
+// · Android: se pide WhatsApp Business (com.whatsapp.w4b); si no está instalado, el mismo pedido sigue por el enlace web,
+//   que abre WhatsApp común. iPhone y computadora: enlace web (ahí no se puede elegir la aplicación).
+function _telWaVAO_(t) {
+    var d = String(t || '').replace(/\D/g, '');
+    if (!d) return '';
+    if (d.indexOf('00') === 0) d = d.slice(2);
+    if (d.indexOf('549') === 0 && d.length === 13) return d;
+    if (d.indexOf('54') === 0 && d.length === 12) return '549' + d.slice(2);   // celular argentino sin el 9
+    if (d.charAt(0) === '0') d = d.slice(1);
+    if (d.length === 12) { for (var k = 2; k <= 4; k++) if (d.substr(k, 2) === '15') { d = d.slice(0, k) + d.slice(k + 2); break; } }   // característica + 15 + número
+    if (d.length === 10) return '549' + d;
+    return d;   // otro país (por ejemplo Chile 569…): tal cual
+}
+function _urlWaVAO_(tel, texto) { var n = _telWaVAO_(tel); return 'https://wa.me/' + n + (texto ? '?text=' + encodeURIComponent(texto) : ''); }
+function abrirWhatsAppVAO(tel, texto) {
+    var web = _urlWaVAO_(tel, texto);
+    if (/Android/i.test(navigator.userAgent || '')) {
+        var n = _telWaVAO_(tel), q = (n ? 'phone=' + n : '') + (texto ? (n ? '&' : '') + 'text=' + encodeURIComponent(texto) : '');
+        window.open('intent://send/?' + q + '#Intent;scheme=whatsapp;package=com.whatsapp.w4b;S.browser_fallback_url=' + encodeURIComponent(web) + ';end', '_blank');
+        return;
+    }
+    window.open(web, '_blank', 'noopener');
+}
+// Cualquier enlace https://wa.me/… de la página pasa por la misma regla.
+document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href^="https://wa.me/"]') : null; if (!a) return;
+    e.preventDefault(); var u = new URL(a.href); abrirWhatsAppVAO(u.pathname.replace(/\//g, ''), u.searchParams.get('text') || '');
+}, true);
