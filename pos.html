@@ -264,7 +264,9 @@ body {
 }
 @media (max-width: 599px) {
     .btn-vaciar { align-items: center; justify-content: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(255,255,255,.18); color: #fff; font-size: 1.05rem; margin-right: 6px; cursor: pointer; flex-shrink: 0; }
-    body.hay-venta .btn-vaciar { display: inline-flex !important; }
+    body.hay-venta .btn-vaciar { display: none !important; }   /* V43.18: el 🗑 pasó a flotante */
+    .fab-v438 .fab-vaciar { display: none; background: #FFEBEE; color: #C62828; }
+    body.hay-venta .fab-v438 .fab-vaciar { display: block; }
     #btnInstalarApp { right: auto !important; left: 12px !important; bottom: calc(var(--tb, 56px) + 14px) !important; }   /* V43.15: no tapa los botones flotantes */
     body.carrito-on #btnInstalarApp { display: none !important; }
 }
@@ -1052,6 +1054,7 @@ body.carrito-on .fab-cot { display: none !important; }
             <button class="btn-tool hoy" id="btnHoy" onclick="abrirResumen()"><span class="ico">📋</span><span class="txt">Hoy</span></button>
             <button class="btn-tool fiados" id="btnFiados" onclick="window.location.href='fiados.html?p='+PREFIJO"><span class="ico">🧾</span><span class="txt">Fiados</span></button>
             <button class="btn-tool datos" id="btnMisDatos" onclick="window.location.href='misdatos.html?p='+PREFIJO"><span class="ico">🏪</span><span class="txt">Mis datos</span></button>
+            <button class="btn-tool actualizar" id="btnActualizarP1" data-recargar onclick="cargarProductos(true)" title="Traer de nuevo precios, stock y productos nuevos (el carrito no se toca)"><span class="ico">🔄</span><span class="txt">Actualizar</span></button>   <!-- V43.18: función base P1 (todos los planes) -->
         </div>
     </section>
     <section class="tarjeta-plan" id="tarjetaP2" data-plan="P2" aria-labelledby="tituloP2">
@@ -1102,7 +1105,7 @@ body.carrito-on .fab-cot { display: none !important; }
                    display:flex;align-items:center;justify-content:center;transition:all 0.2s;">
         ☰
     </button>
-    <button onclick="cargarProductos()" id="btnRecargar"
+    <button onclick="cargarProductos(true)" id="btnRecargar" data-recargar
             style="width:42px;height:42px;border:2px solid var(--lavanda-light);border-radius:12px;
                    background:white;cursor:pointer;font-size:1rem;flex-shrink:0;
                    display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
@@ -1131,7 +1134,7 @@ body.carrito-on .fab-cot { display: none !important; }
 <button type="button" class="fab-cot" id="fabCotizarV4314" style="display:none" onclick="window.location.href='cotizador.html?p='+PREFIJO" aria-label="Cotizar (presupuestos)" title="Cotizar: presupuestos para clientes">📝<span>Cotizar</span></button>
 <div class="fab-v438" id="fabV438">
     <button type="button" onclick="toggleBuscarV438()" aria-label="Buscar producto" title="Buscar producto">🔍</button>
-    <button type="button" onclick="cargarProductos()" aria-label="Actualizar productos" title="Actualizar productos">🔄</button>
+    <button type="button" class="fab-vaciar" id="fabVaciarV4318" onclick="limpiarVenta()" aria-label="Vaciar el carrito" title="Vaciar el carrito">🗑</button>   <!-- V43.18: vaciar flotante (se usa mucho); 🔄 pasó a la botonera P1 -->
 </div>
 <div class="carrito-fondo-v438" onclick="toggleCarritoV438(false)"></div>
 <!-- VENTA ACTUAL -->
@@ -1458,8 +1461,8 @@ if (!/^[A-Z0-9]{2,10}$/.test(PREFIJO)) {
 
 // ========== CONFIG ==========
 const API_URL  = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
-const APP_VERSION_TXT = '43.17';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
-const APP_VERSION = 43; // V43.17: computadora — catálogo y venta lado a lado (el catálogo usa todo el alto) y herramientas en una franja compacta · V43.8: celular «carrito al tocar» — el catálogo ocupa la pantalla; 🛒 (con cantidad) en la barra de Cobrar abre la venta para corregir; 🔍 y 🔄 flotantes; «✏️ Corregir la venta» en Confirmar · V43.7: «Venta actual · Limpiar» solo aparece con productos en el carrito; 📣 comparte el afiche nuevo (og-vao-pos-2.jpg) · V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
+const APP_VERSION_TXT = '43.18';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
+const APP_VERSION = 43; // V43.18: 🗑 vaciar flotante (celular); 🔄 Actualizar en la botonera P1 (base) con aviso; volver del Cotizador sin recargar todo · V43.17: computadora — catálogo y venta lado a lado (el catálogo usa todo el alto) y herramientas en una franja compacta · V43.8: celular «carrito al tocar» — el catálogo ocupa la pantalla; 🛒 (con cantidad) en la barra de Cobrar abre la venta para corregir; 🔍 y 🔄 flotantes; «✏️ Corregir la venta» en Confirmar · V43.7: «Venta actual · Limpiar» solo aparece con productos en el carrito; 📣 comparte el afiche nuevo (og-vao-pos-2.jpg) · V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
 const HOY_KEY    = 'vao_ventas_' + PREFIJO + '_' + new Date().toISOString().slice(0, 10);
 const CARRITO_KEY= 'vao_carrito_' + PREFIJO;
 
@@ -1695,17 +1698,40 @@ async function intentarLoginPin() {
     btn.disabled = false; btn.textContent = 'Ingresar';
 }
 
+// V43.18: arranque rápido. Mientras la pestaña sigue abierta, el POS guarda en la sesión del navegador (sessionStorage, se borra al cerrar)
+// la última configuración y el catálogo. Al volver de otra pantalla (Cotizador, Clientes…) o recargar, se muestran AL INSTANTE
+// y enseguida se confirman con el servidor como siempre (si el PIN venció, aparece la pantalla del PIN). El servidor valida cada venta igual.
+const _SNAP_MIN_V4318_ = 30;
+function _snapV4318_(k) { try { const o = JSON.parse(sessionStorage.getItem(k + PREFIJO) || 'null'); return o && (Date.now() - o.t) < _SNAP_MIN_V4318_ * 60000 ? o : null; } catch (e) { return null; } }
+function _guardarSnapV4318_(k, o) { try { o.t = Date.now(); sessionStorage.setItem(k + PREFIJO, JSON.stringify(o)); } catch (e) {} }
+function _pintarRapidoV4318_(token) {
+    const c = _snapV4318_('vao_snapcfg_'), pr = _snapV4318_('vao_snapprod_');
+    if (!c || !pr || c.tok !== token || !c.d || !c.d.config || !Array.isArray(pr.productos) || !pr.productos.length) return false;
+    try {
+        if (productos.length) return false;   // el servidor ya contestó: no hace falta
+        CONFIG_ACTUAL = c.d.config; COBRO_ACTUAL = c.d.cobro || { avanzado: false, cot: {} }; PRESTACIONES_ACTUAL = c.d.prestaciones || null;
+        generarToolbarSegunPacks(CONFIG_ACTUAL); mxMostrarBoton(); ocultarOverlayPin();
+        mostrarEstadoPrueba(CONFIG_ACTUAL.estadoPrueba); aplicarModoConsulta(CONFIG_ACTUAL.modoConsulta);
+        productos = pr.productos.filter(p => p.name && p.price > 0);
+        renderVenta(); if (listaTodosAbierta) renderListaTodos(); _fotosCargarV0451_();
+        window.__pintadoRapidoV4318 = true; return true;
+    } catch (e) { return false; }
+}
 async function verificarSesionCliente() {
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) { mostrarFormularioPin(); return; }
+    setTimeout(() => _pintarRapidoV4318_(token), 0);   // V43.18
     try {
         const url = API_URL + '?action=getConfig&prefijo=' + PREFIJO + '&data=' + encodeURIComponent(JSON.stringify({ token: token, modoConsulta: true })); // V25
         const r = await fetch(url, { redirect: 'follow' });
         const d = await r.json();
         if (d.error) {
             localStorage.removeItem(TOKEN_KEY);
+            try { sessionStorage.removeItem('vao_snapcfg_' + PREFIJO); sessionStorage.removeItem('vao_snapprod_' + PREFIJO); } catch (e) {}   // V43.18
+            if (window.__pintadoRapidoV4318) { document.getElementById('overlayPin').style.display = ''; productos = []; renderVenta(); if (listaTodosAbierta) renderListaTodos(); }   // V43.18: la copia rápida no reemplaza al PIN
             mostrarFormularioPin(d.error);
         } else {
+            _guardarSnapV4318_('vao_snapcfg_', { tok: token, d: { config: d.config, cobro: d.cobro, prestaciones: d.prestaciones } });   // V43.18
             CONFIG_ACTUAL = d.config;
             COBRO_ACTUAL = d.cobro || { avanzado: false, cot: {} }; // V39
             PRESTACIONES_ACTUAL = d.prestaciones || null; // V40 (servidor v043; con uno anterior sigue como antes)
@@ -1851,6 +1877,7 @@ function cancelarSalir() { document.getElementById('modalSalir').style.display =
 function irAlInicio() {
     const token = _tokenActual();
     localStorage.removeItem(TOKEN_KEY);
+    try { sessionStorage.removeItem('vao_snapcfg_' + PREFIJO); sessionStorage.removeItem('vao_snapprod_' + PREFIJO); } catch (e) {}   // V43.18
     fetch(API_URL + '?action=cerrarSesion&prefijo=' + PREFIJO + '&data=' + encodeURIComponent(JSON.stringify({ token: token })), { redirect: 'follow' }).catch(() => {});
     window.location.href = 'index.html';
 }
@@ -1924,9 +1951,13 @@ function mostrarToast(msg, tipo) {
 }
 
 // ========== CARGAR PRODUCTOS ==========
-async function cargarProductos() {
+async function cargarProductos(manual) {   // V43.18: manual = lo pidió el comerciante (🔄): se avisa al terminar
     const btnR = document.getElementById('btnRecargar');
     if (btnR) { btnR.textContent = '⏳'; btnR.disabled = true; }
+    const botP1 = document.getElementById('btnActualizarP1'), icoP1 = botP1 && botP1.querySelector('.ico');
+    if (botP1) { botP1.disabled = true; icoP1.textContent = '⏳'; }
+    const finP1 = () => { if (botP1) { botP1.disabled = false; icoP1.textContent = '🔄'; } };
+    if (manual === true) mostrarToast('🔄 Actualizando productos…', 'naranja');
     const ind = document.getElementById('indicadorCarga');
     ind.classList.remove('ok'); ind.classList.add('cargando'); ind.title = 'Cargando...';
     try {
@@ -1935,22 +1966,24 @@ async function cargarProductos() {
         if (data.error) {
             ind.classList.remove('cargando');
             ind.title = 'Error: ' + data.error;
-            if (btnR) { btnR.textContent = '🔄'; btnR.disabled = false; }
+            if (btnR) { btnR.textContent = '🔄'; btnR.disabled = false; } finP1();
             mostrarToast('❌ ' + data.error, 'rojo');
             return;
         }
         const arr = data.productos || [];
         productos = arr.filter(p => p.name && p.price > 0);
+        _guardarSnapV4318_('vao_snapprod_', { productos: productos });   // V43.18: arranque rápido al volver
         ind.classList.remove('cargando'); ind.classList.add('ok');
         ind.title = productos.length + ' productos';
-        if (btnR) { btnR.textContent = '🔄'; btnR.disabled = false; }
+        if (btnR) { btnR.textContent = '🔄'; btnR.disabled = false; } finP1();
         renderVenta();
-        if (listaTodosAbierta) renderListaTodos();
+        if (listaTodosAbierta) renderListaTodos(true);
+        if (manual === true) mostrarToast('✅ Productos actualizados: ' + productos.length + (ventaActual.length ? ' · el carrito quedó igual' : ''), 'verde');
         _fotosCargarV0451_();   // V43.13: miniaturas (una consulta, con caché)
     } catch(e) {
         ind.classList.remove('cargando');
         ind.title = 'Error de conexión';
-        if (btnR) { btnR.textContent = '🔄'; btnR.disabled = false; }
+        if (btnR) { btnR.textContent = '🔄'; btnR.disabled = false; } finP1();
         mostrarToast('❌ Error al cargar productos', 'rojo');
     }
 }
@@ -2446,6 +2479,9 @@ function misFotosQuitarV0451(b) {
 function cerrarMisFotosV0451() { document.getElementById('modalMisFotos').classList.remove('open'); }
 
 // ===== V43.8 (celular): «carrito al tocar» =====
+window.addEventListener('pageshow', function (e) {   // V43.18: vuelta instantánea desde Cotizador y demás pantallas
+    if (e.persisted && typeof PREFIJO !== 'undefined' && PREFIJO && _tokenActual()) { try { cargarProductos(); } catch (x) {} }
+});
 const _dosColV4317_ = () => !!(window.matchMedia && window.matchMedia('(min-width: 900px)').matches);
 const _celuV438_ = () => !!(window.matchMedia && window.matchMedia('(max-width: 599px)').matches);
 let _carritoNAntV438 = 0;

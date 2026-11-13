@@ -1,4 +1,4 @@
-/* vao-comun.js — v045.2: WhatsApp con número internacional (54 9 …) y primero WhatsApp Business (regla de oro, 13/11/2026). v044.1 (STAGING AR). v044.1: aplicaciones base (sin prestación), menú para cambiar de aplicación con la misma sesión, P3 PRO.
+/* vao-comun.js — v045.3: «← POS» vuelve atrás (el POS aparece al instante, sin recargar todo) cuando se llegó desde el POS. v045.2: WhatsApp con número internacional (54 9 …) y primero WhatsApp Business (regla de oro, 13/11/2026). v044.1 (STAGING AR). v044.1: aplicaciones base (sin prestación), menú para cambiar de aplicación con la misma sesión, P3 PRO.
    v044: Base compartida de los módulos de VAO POS.
    Un solo lugar para: dirección del servidor, sesión del comercio (el mismo PIN/token del POS), permisos por plan,
    navegación de vuelta al POS, mensajes y formato. Cada módulo es un HTML independiente que usa esta base.
@@ -184,3 +184,22 @@ document.addEventListener('click', function (e) {
     var a = e.target && e.target.closest ? e.target.closest('a[href^="https://wa.me/"]') : null; if (!a) return;
     e.preventDefault(); var u = new URL(a.href); abrirWhatsAppVAO(u.pathname.replace(/\//g, ''), u.searchParams.get('text') || '');
 }, true);
+
+/* v045.3 — Volver al POS sin recargar: si esta pantalla se abrió desde el POS del mismo comercio, «← POS» / «Volver al POS»
+   hacen «atrás» y el navegador muestra el POS tal como estaba (carrito incluido); el POS actualiza los productos solo, de fondo.
+   Si se llegó de otro lado (enlace, otra herramienta, pestaña nueva), el enlace funciona como siempre. */
+(function () {
+  function vinoDelPos_() {
+    try {
+      if (!document.referrer || history.length < 2) return false;
+      var r = new URL(document.referrer), aqui = new URL(location.href);
+      return r.origin === aqui.origin && /\/pos\.html$/.test(r.pathname) && (r.searchParams.get('p') || '').toUpperCase() === (aqui.searchParams.get('p') || '').toUpperCase();
+    } catch (e) { return false; }
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href]') : null; if (!a || a.target === '_blank') return;
+    var u; try { u = new URL(a.getAttribute('href'), location.href); } catch (x) { return; }
+    if (u.origin !== location.origin || !/\/pos\.html$/.test(u.pathname) || !vinoDelPos_()) return;
+    e.preventDefault(); history.back();
+  }, true);
+})();
