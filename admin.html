@@ -144,6 +144,16 @@ body {
     box-shadow: 0 2px 12px rgba(0,0,0,0.2);
 }
 
+/* V22.6: franja de diagnóstico */
+.diag-v226 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 14px; font-size: .78rem; background: #ECEFF1; color: #37474F; border-bottom: 1px solid #CFD8DC; }
+.diag-v226 .sep { color: #90A4AE; }
+.diag-v226 .ok { color: #2E7D32; font-weight: 800; }
+.diag-v226 .nover { color: #B25E00; font-weight: 800; }
+.diag-v226.mal { background: #FFEBEE; border-bottom-color: #E57373; color: #B71C1C; }
+.diag-v226 .malo { color: #C62828; font-weight: 900; }
+.diag-v226 .diag-hora { color: #78909C; font-size: .72rem; }
+.diag-v226 button { margin-left: auto; border: 1px solid #B0BEC5; background: #fff; border-radius: 8px; padding: 2px 8px; cursor: pointer; font-size: .85rem; }
+.diag-v226 button:disabled { opacity: .5; cursor: wait; }
 .header-logo {
     display: flex;
     align-items: center;
@@ -707,6 +717,16 @@ details.ctr-com[open] > summary { border-bottom:1px solid #EEF2F6; }
             <button class="btn-logout" onclick="cerrarSesion()">🚪 Salir</button>
         </div>
     </div>
+    <!-- V22.6: franja de diagnóstico (solo lectura): versión de esta página + versión y entorno REALES del servidor (getInfo) -->
+    <div class="diag-v226" id="diagV226" role="status" aria-live="polite">
+        <span><b>APP:</b> Admin v<span id="diagApp"></span></span>
+        <span class="sep">·</span>
+        <span><b>SERVIDOR:</b> <span id="diagServidor">consultando…</span></span>
+        <span class="sep">·</span>
+        <span><b>ENTORNO:</b> <span id="diagEntorno">—</span></span>
+        <span class="diag-hora" id="diagHora"></span>
+        <button type="button" id="diagBtn" onclick="consultarServidorV226()" title="Volver a consultar el servidor (getInfo)" aria-label="Volver a consultar el servidor">🔄</button>
+    </div>
 
     <!-- Contenido -->
     <div class="contenido">
@@ -962,12 +982,12 @@ details.ctr-com[open] > summary { border-bottom:1px solid #EEF2F6; }
 <div class="toast" id="toast"></div>
 
 <script>
-const APP_VERSION = 22; // V22.5: el Cotizador figura en P2 Gestión (no como complemento) · V22.4: cobro «como en un cuaderno» (casilla «aceptó los Términos de uso» si no hay contrato) y 🏠 comercio interno de VAO en Vigencia y pagos · V22.3: «Complemento opcional» (antes «Complemento P3»); el candado de pagos explica qué falta en STAGING y en Producción · V22.2 (v044.2): complementos «para P1, P2, P3 PRO» (antes los códigos internos); fila «Precio mensual» (dice «/ lanzamiento» solo si hay alguno); la cotización la carga cada comercio (VAO también puede, como soporte) · V22 (v044.1): planes P1 · P2 · P3 PRO integrados (activación en un paso con vista previa, cambio de plan a P3 con el pago), complementos opcionales aparte, botonera de cada comercio desde la matriz central y aviso de combinaciones contradictorias · V21 (v043): 📋 Planes y contrataciones — P1/P2/P3, prestaciones por comercio (catálogo/contratado/habilitado/suspendido), complementos, precios, historial y elecciones pendientes // V20: 💱 Cobro por comercio (cobro avanzado prender/apagar, cotizaciones USD/CLP, cobros sin terminar) y uso de la planilla
+const APP_VERSION = 22; const APP_VERSION_TXT = '22.6'; // V22.6: franja de diagnóstico — versión y entorno REALES del servidor (getInfo), una consulta al entrar y otra solo con 🔄 · V22.5: el Cotizador figura en P2 Gestión (no como complemento) · V22.4: cobro «como en un cuaderno» (casilla «aceptó los Términos de uso» si no hay contrato) y 🏠 comercio interno de VAO en Vigencia y pagos · V22.3: «Complemento opcional» (antes «Complemento P3»); el candado de pagos explica qué falta en STAGING y en Producción · V22.2 (v044.2): complementos «para P1, P2, P3 PRO» (antes los códigos internos); fila «Precio mensual» (dice «/ lanzamiento» solo si hay alguno); la cotización la carga cada comercio (VAO también puede, como soporte) · V22 (v044.1): planes P1 · P2 · P3 PRO integrados (activación en un paso con vista previa, cambio de plan a P3 con el pago), complementos opcionales aparte, botonera de cada comercio desde la matriz central y aviso de combinaciones contradictorias · V21 (v043): 📋 Planes y contrataciones — P1/P2/P3, prestaciones por comercio (catálogo/contratado/habilitado/suspendido), complementos, precios, historial y elecciones pendientes // V20: 💱 Cobro por comercio (cobro avanzado prender/apagar, cotizaciones USD/CLP, cobros sin terminar) y uso de la planilla
 document.addEventListener('DOMContentLoaded', function(){
     var tag = document.createElement('span');
     tag.id = 'version-tag';
     tag.style.cssText = 'position:fixed;right:10px;bottom:8px;font-size:11px;color:#8a95a1;z-index:9999;';
-    tag.textContent = 'v' + APP_VERSION;
+    tag.textContent = 'v' + APP_VERSION_TXT;
     document.body.appendChild(tag);
 });
 const API_URL = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
@@ -1090,10 +1110,54 @@ function mostrarError(msg) {
     err.style.display = 'block';
 }
 
+// ── V22.6: DIAGNÓSTICO DEL SERVIDOR (solo lectura) ───────────────────
+// La versión y el entorno salen SOLO de getInfo. Si no responde: «Servidor no verificado» (nunca se supone una versión).
+// Usa la conexión original (no la que renueva la sesión de Admin) y no toca nada del panel: si falla, el panel sigue igual.
+let _diagEnCursoV226_ = false;
+function _entornoPaginaV226_() { return /staging/i.test(location.hostname) ? 'staging' : (/vercel\.app$/i.test(location.hostname) ? 'produccion' : ''); }
+async function consultarServidorV226() {
+    if (_diagEnCursoV226_) return;                       // doble toque: no se acumulan consultas
+    _diagEnCursoV226_ = true;
+    const $d = id => document.getElementById(id), caja = $d('diagV226'), btn = $d('diagBtn');
+    if (!caja) { _diagEnCursoV226_ = false; return; }
+    $d('diagApp').textContent = APP_VERSION_TXT;
+    btn.disabled = true; $d('diagServidor').innerHTML = 'consultando…';
+    const ctl = ('AbortController' in window) ? new AbortController() : null;
+    const corte = setTimeout(() => { if (ctl) ctl.abort(); }, 10000);
+    let info = null, motivo = '';
+    try {
+        const r = await _fetchOriginal(API_URL + '?action=getInfo', { redirect: 'follow', signal: ctl ? ctl.signal : undefined });
+        const j = await r.json();
+        if (j && j.ok === true && typeof j.version === 'string' && j.version) info = j; else motivo = 'respuesta inválida';
+    } catch (e) { motivo = (e && e.name === 'AbortError') ? 'sin respuesta en 10 s' : 'sin conexión o respuesta inválida'; }
+    clearTimeout(corte);
+    const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    caja.classList.remove('mal');
+    if (!info) {
+        $d('diagServidor').innerHTML = '<span class="nover">⚠️ Servidor no verificado</span> (' + _esc(motivo) + ')';
+        $d('diagEntorno').textContent = 'no verificado';
+        $d('diagHora').textContent = 'intento: ' + hora;
+    } else {
+        const ent = String((info.sistema && info.sistema.entorno) || '').toLowerCase();
+        const entTxt = ent === 'staging' ? 'STAGING' : (ent === 'produccion' ? 'PRODUCCIÓN' : (ent ? ent.toUpperCase() : 'sin dato'));
+        const pag = _entornoPaginaV226_();
+        const coincide = !pag || pag === ent;
+        const pla = String(info.planillaActiva || ''), plaOk = /\(correcta\)/.test(pla);
+        $d('diagServidor').innerHTML = '<span class="ok">' + _esc(info.version) + ' ✅</span>';
+        $d('diagEntorno').innerHTML = !coincide
+            ? '<span class="malo">⛔ ' + _esc(entTxt) + ' — EL ENTORNO NO COINCIDE: esta página es de ' + (pag === 'staging' ? 'STAGING' : 'PRODUCCIÓN') + '</span>'
+            : _esc(entTxt) + (plaOk ? ' · planilla correcta' : (pla ? ' · <span class="malo">⛔ planilla: ' + _esc(pla) + '</span>' : ''));
+        if (!coincide || (pla && !plaOk)) caja.classList.add('mal');
+        $d('diagHora').textContent = 'consultado: ' + hora;
+    }
+    btn.disabled = false; _diagEnCursoV226_ = false;
+}
+
 // ── PANEL ADMIN ───────────────────────────────────────────────────
 function mostrarAdmin() {
     document.getElementById('panelLogin').style.display = 'none';
     document.getElementById('panelAdmin').style.display = 'block';
+    consultarServidorV226();   // V22.6: una consulta al entrar (después, solo con 🔄)
     cargarClientes();
     actualizarBadgeRegistros(); setInterval(actualizarBadgeRegistros, 60000); // V11: indicador visible y actualizado
     cargarPlanes().then(reabrirAltaPendiente);
