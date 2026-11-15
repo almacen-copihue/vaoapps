@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stock · VAO POS</title>
+<link rel="stylesheet" href="vao-comun.css">
+<style>
+/* stock.html v1.4 — 2026-11-15 */
+
+/* ── Resumen global ── */
+.stock-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stock-chip {
+  background: var(--papel);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 12px 10px;
+  text-align: center;
+  border-top: 4px solid var(--borde);
+}
+.stock-chip.rojo  { border-top-color: #C62828; }
+.stock-chip.amarillo { border-top-color: #F9A825; }
+.stock-chip.verde { border-top-color: #2E8B57; }
+.stock-chip .num  { font-size: 2rem; font-weight: 800; line-height: 1; }
+.stock-chip .lbl  { font-size: .72rem; color: var(--suave); margin-top: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
+.stock-chip.rojo  .num { color: #C62828; }
+.stock-chip.amarillo .num { color: #E65100; }
+.stock-chip.verde .num { color: #2E8B57; }
+
+/* ── Barra de búsqueda y filtros ── */
+.stock-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.stock-toolbar input {
+  flex: 1;
+  min-width: 140px;
+  border: 2px solid var(--borde);
+  border-radius: 10px;
+  padding: 9px 12px;
+  font: 400 .9rem inherit;
+  background: var(--papel);
+  color: var(--texto);
+}
+.stock-toolbar input:focus { outline: none; border-color: var(--grupo); }
+.stock-filtro-btn {
+  border: 2px solid var(--borde);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font: 700 .82rem inherit;
+  background: var(--papel);
+  color: var(--suave);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.stock-filtro-btn.activo {
+  border-color: var(--grupo);
+  background: var(--grupo-fondo);
+  color: var(--grupo-tinta);
+}
+
+/* ── Lista de productos ── */
+.stock-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.stock-item {
+  background: var(--papel);
+  border-radius: 12px;
+  box-shadow: var(--sombra);
+  padding: 11px 13px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+  border-left: 5px solid var(--borde);
+  transition: border-color .15s;
+}
+.stock-item.rojo    { border-left-color: #C62828; }
+.stock-item.amarillo{ border-left-color: #F9A825; }
+.stock-item.verde   { border-left-color: #2E8B57; }
+
+.stock-item-info {
+  flex: 1;
+  min-width: 0;
+  order: 1;
+}
+.stock-item-nombre {
+  font-weight: 700;
+  font-size: .95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.stock-item-cat {
+  font-size: .75rem;
+  color: var(--suave);
+}
+.stock-item-dias {
+  order: 2;
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.stock-item-dias .dias-num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.stock-item-dias .dias-lbl {
+  font-size: .68rem;
+  color: var(--suave);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.rojo  .dias-num { color: #C62828; }
+.amarillo .dias-num { color: #E65100; }
+.verde .dias-num { color: #2E8B57; }
+
+/* barra de stock */
+.stock-item-barra {
+  width: 100%;
+  order: 3;
+}
+.stock-reponer {
+  font-size: .78rem;
+  font-weight: 800;
+  color: #C62828;
+  letter-spacing: .5px;
+  padding: 3px 0 1px;
+}
+.stock-barra-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+.stock-barra-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--borde);
+  overflow: hidden;
+}
+.stock-barra-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .3s ease;
+}
+.rojo    .stock-barra-fill { background: #C62828; }
+.amarillo .stock-barra-fill { background: #F9A825; }
+.verde   .stock-barra-fill { background: #2E8B57; }
+.stock-barra-unidades {
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--suave);
+  white-space: nowrap;
+}
+
+/* cierre barra-wrap */
+
+/* Sin datos */
+.stock-sin-datos {
+  text-align: center;
+  color: var(--suave);
+  padding: 40px 20px;
+}
+.stock-sin-datos .i { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+
+/* Aviso datos demo */
+.stock-demo-aviso {
+  background: var(--amarillo);
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: .82rem;
+  color: var(--suave);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+</style>
+</head>
+<body>
+<script src="vao-comun.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   stock.html v1.4 — Dashboard de inventario · VAO POS
+   Lee: INVENTARIO_XX (stock actual) + VENTAS_XX (últimos 7 días)
+   Acción servidor: getStockCritico (v045.3)
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Estado ── */
+let _productos = [];
+let _filtroActivo = 'criticos'; // 'todos' | 'criticos' | 'sin_stock'
+let _busqueda = '';
+
+/* ── Datos de prueba (se reemplazan por VAO.api cuando el servidor esté listo) ── */
+function _datosDemo_() {
+  return [
+    { nombre: 'Leche entera 1L',    categoria: 'Lácteos',   stock: 2,  ventasDia: 2.8 },
+    { nombre: 'Manteca 200g',       categoria: 'Lácteos',   stock: 0,  ventasDia: 1.1 },
+    { nombre: 'Arroz 1kg',          categoria: 'Secos',     stock: 24, ventasDia: 1.4 },
+    { nombre: 'Fideos 500g',        categoria: 'Secos',     stock: 8,  ventasDia: 0.9 },
+    { nombre: 'Aceite girasol 1L',  categoria: 'Aceites',   stock: 3,  ventasDia: 1.6 },
+    { nombre: 'Azúcar 1kg',         categoria: 'Secos',     stock: 0,  ventasDia: 0.7 },
+    { nombre: 'Yerba 500g',         categoria: 'Infusiones',stock: 11, ventasDia: 1.2 },
+    { nombre: 'Coca-Cola 2.25L',    categoria: 'Bebidas',   stock: 6,  ventasDia: 2.1 },
+    { nombre: 'Agua mineral 1.5L',  categoria: 'Bebidas',   stock: 18, ventasDia: 1.0 },
+    { nombre: 'Pan lactal',         categoria: 'Panadería', stock: 4,  ventasDia: 3.5 },
+    { nombre: 'Queso cremoso 400g', categoria: 'Lácteos',   stock: 1,  ventasDia: 1.8 },
+    { nombre: 'Jabón en polvo 1kg', categoria: 'Limpieza',  stock: 7,  ventasDia: 0.4 },
+    { nombre: 'Papel higiénico x4', categoria: 'Limpieza',  stock: 0,  ventasDia: 1.0 },
+    { nombre: 'Tomate perita lata', categoria: 'Conservas', stock: 15, ventasDia: 0.6 },
+    { nombre: 'Atún al natural',    categoria: 'Conservas', stock: 9,  ventasDia: 0.5 },
+    { nombre: 'Mayonesa 500g',      categoria: 'Condimentos',stock: 2, ventasDia: 0.9 },
+    { nombre: 'Sal fina 1kg',       categoria: 'Condimentos',stock: 22, ventasDia: 0.3 },
+    { nombre: 'Galletitas dulces',  categoria: 'Almacén',   stock: 5,  ventasDia: 1.7 },
+    { nombre: 'Café molido 250g',   categoria: 'Infusiones',stock: 3,  ventasDia: 0.8 },
+    { nombre: 'Shampoo 400ml',      categoria: 'Higiene',   stock: 0,  ventasDia: 0.5 },
+  ];
+}
+
+/* ── Clasificar producto ── */
+function _clasificar_(p) {
+  if (p.stock === 0) return 'rojo';
+  if (p.ventasDia <= 0) return 'verde'; // sin ventas recientes → no urgente
+  const dias = p.stock / p.ventasDia;
+  if (dias <= 3) return 'rojo';
+  if (dias <= 7) return 'amarillo';
+  return 'verde';
+}
+
+function _diasTexto_(p) {
+  if (p.stock === 0) return { num: '0', lbl: 'sin stock' };
+  if (p.ventasDia <= 0) return { num: '—', lbl: 'sin ventas' };
+  const d = p.stock / p.ventasDia;
+  if (d >= 30) return { num: '30+', lbl: 'días' };
+  if (d < 1) return { num: '<1', lbl: 'día' };
+  const di = Math.floor(d);
+  return { num: String(di), lbl: di === 1 ? 'día' : 'días' };
+}
+
+/* ── Render ── */
+function _render_() {
+  const lista = _productos.filter(p => {
+    const clase = _clasificar_(p);
+    if (_filtroActivo === 'criticos' && clase === 'verde') return false;
+    if (_filtroActivo === 'sin_stock' && p.stock > 0) return false;
+    if (_busqueda) {
+      const q = _busqueda.toLowerCase();
+      if (!p.nombre.toLowerCase().includes(q) && !p.categoria.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  // ordenar: sin stock primero, luego por días ascendente
+  lista.sort((a, b) => {
+    if (a.stock === 0 && b.stock > 0) return -1;
+    if (b.stock === 0 && a.stock > 0) return 1;
+    const dA = a.ventasDia > 0 ? a.stock / a.ventasDia : 999;
+    const dB = b.ventasDia > 0 ? b.stock / b.ventasDia : 999;
+    return dA - dB;
+  });
+
+  // máximo stock para escalar las barras
+  const maxStock = Math.max(..._productos.map(p => p.stock), 1);
+
+  const contenedor = document.getElementById('stockLista');
+  if (!lista.length) {
+    contenedor.innerHTML = '<div class="stock-sin-datos"><span class="i">✅</span>Sin productos críticos</div>';
+    return;
+  }
+
+  contenedor.innerHTML = lista.map(p => {
+    const clase = _clasificar_(p);
+    const { num, lbl } = _diasTexto_(p);
+    const pct = Math.min(100, Math.round((p.stock / maxStock) * 100));
+    const barraHTML = p.stock === 0
+      ? `<div class="stock-reponer">🚫 REPONER</div>`
+      : `<div class="stock-barra-wrap">
+           <div class="stock-barra-track"><div class="stock-barra-fill" style="width:${pct}%"></div></div>
+           <div class="stock-barra-unidades">${p.stock} u.</div>
+         </div>`;
+    return `
+      <div class="stock-item ${clase}">
+        <div class="stock-item-info">
+          <div class="stock-item-nombre">${p.nombre}</div>
+          <div class="stock-item-cat">${p.categoria}</div>
+        </div>
+        <div class="stock-item-dias">
+          <div class="dias-num">${num}</div>
+          <div class="dias-lbl">${lbl}</div>
+        </div>
+        <div class="stock-item-barra">${barraHTML}</div>
+      </div>`;
+  }).join('');
+}
+
+function _renderResumen_() {
+  const sinStock  = _productos.filter(p => p.stock === 0).length;
+  const criticos  = _productos.filter(p => _clasificar_(p) === 'rojo' && p.stock > 0).length;
+  const ok        = _productos.filter(p => _clasificar_(p) === 'verde').length;
+  document.getElementById('cntSinStock').textContent  = sinStock;
+  document.getElementById('cntCriticos').textContent  = criticos;
+  document.getElementById('cntOk').textContent        = ok;
+}
+
+/* ── Filtros ── */
+function setFiltro(f) {
+  _filtroActivo = f;
+  document.querySelectorAll('.stock-filtro-btn').forEach(b => b.classList.toggle('activo', b.dataset.f === f));
+  _render_();
+}
+
+/* ── Entrada ── */
+document.addEventListener('DOMContentLoaded', async () => {
+  /* Intentar VAO.iniciar si hay sesión real; si no, igual mostrar la demo */
+  const _arrancar_ = () => {
+    /* Intentar servidor real; si falla o no hay sesión → datos de demostración */
+    if (typeof VAO !== 'undefined' && VAO.api) {
+      VAO.api('getStockCritico', {})
+        .then(resp => {
+          if (resp && resp.success && Array.isArray(resp.productos) && resp.productos.length > 0) {
+            _productos = resp.productos;
+            document.getElementById('avisoDemo').style.display = 'none';   // ocultar aviso demo
+          } else {
+            // servidor responde pero sin datos (plan P1, sin inventario, etc.)
+            const motivo = (resp && resp.error) ? resp.error : 'Sin datos en el servidor.';
+            document.getElementById('avisoDemo').innerHTML = '⚠️ <span>' + motivo + ' · Mostrando datos de prueba · <strong>v1.4</strong></span>';
+            _productos = _datosDemo_();
+          }
+          _renderResumen_();
+          _render_();
+        })
+        .catch(() => {
+          _productos = _datosDemo_();
+          _renderResumen_();
+          _render_();
+        });
+    } else {
+      _productos = _datosDemo_();
+      _renderResumen_();
+      _render_();
+    }
+  };
+
+  if (typeof VAO !== 'undefined' && VAO.iniciar) {
+    try {
+      const ok = await Promise.race([
+        VAO.iniciar({ modulo: 'stock', titulo: 'Stock', icono: '📦', grupo: 'P2', version: '1.4' }),
+        new Promise(r => setTimeout(() => r('timeout'), 3000))
+      ]);
+      _arrancar_();
+    } catch(e) { _arrancar_(); }
+  } else {
+    _arrancar_();
+  }
+});
+</script>
+
+<!-- cabecera la inyecta VAO.iniciar -->
+<main class="vao">
+
+  <!-- Aviso demo -->
+  <div class="stock-demo-aviso" id="avisoDemo">
+    🧪 <span>Datos de prueba — sin sesión activa · <strong>v1.4</strong></span>
+  </div>
+
+  <!-- Resumen global -->
+  <div class="stock-resumen">
+    <div class="stock-chip rojo">
+      <div class="num" id="cntSinStock">—</div>
+      <div class="lbl">Sin stock</div>
+    </div>
+    <div class="stock-chip amarillo">
+      <div class="num" id="cntCriticos">—</div>
+      <div class="lbl">Críticos</div>
+    </div>
+    <div class="stock-chip verde">
+      <div class="num" id="cntOk">—</div>
+      <div class="lbl">En orden</div>
+    </div>
+  </div>
+
+  <!-- Buscador y filtros -->
+  <div class="stock-toolbar">
+    <input type="search" placeholder="Buscar producto o categoría…"
+           oninput="_busqueda=this.value;_render_()">
+    <button class="stock-filtro-btn activo" data-f="criticos" onclick="setFiltro('criticos')">🔴 Críticos</button>
+    <button class="stock-filtro-btn" data-f="sin_stock"  onclick="setFiltro('sin_stock')">0 stock</button>
+    <button class="stock-filtro-btn" data-f="todos"       onclick="setFiltro('todos')">Todos</button>
+  </div>
+
+  <!-- Lista -->
+  <div class="stock-lista" id="stockLista">
+    <div class="stock-sin-datos"><span class="i">⏳</span>Cargando…</div>
+  </div>
+
+</main>
+</body>
+</html>
