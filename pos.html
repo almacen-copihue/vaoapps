@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>SmartPOS · VAO Sistemas</title>
+<title>[STAGING] SmartPOS · VAO Sistemas</title>
 <!-- V33: app instalable (PWA). Íconos con el logo nuevo de VAO. -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0D47A1">
@@ -140,6 +140,9 @@ body {
         .btn-tool.stats    { background: rgba(90,158,111,0.85); }
 .btn-tool.fiados   { background: rgba(142,68,173,0.75); } /* V22: antes no tenía fondo y el texto blanco no se leía */
 .btn-tool.datos    { background: rgba(30,136,229,0.75); } /* V25: Mis datos */
+.btn-tool.ajconfig { background: rgba(255,255,255,0.18); } /* V43.24: ⚙️ Ajustes directo en P1 */
+.btn-tool.sendwa   { background: rgba(37,211,102,0.22); }  /* V43.27: SendWA — verde WA tenue */
+.btn-tool.stock    { background: rgba(126,87,194,0.18); }  /* V43.28: Stock — violeta P2 tenue */
 /* V28: enlace «📄 Términos» del encabezado (mismo aspecto que 📣 y 🏠). En celulares, solo el ícono (la descripción accesible siempre está). */
 .lnk-terminos { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.15); color: white; border-radius: 20px;
                 padding: 5px 10px; font-size: 0.72rem; font-weight: 700; text-decoration: none; font-family: inherit; white-space: nowrap; margin-right: 6px; }
@@ -440,16 +443,21 @@ body.carrito-on .fab-cot { display: none !important; }
     .header-sub { font-size: .55rem; letter-spacing: 1px; }
     .header-right { gap: 4px; } .header-right > button, .header-right > a { margin-right: 0 !important; }
     .planes-pos.mini .planes-cuenta { display: none; }
-    .planes-pos.mini { flex-direction: column; gap: 6px; padding: 6px 8px; }
-    .planes-pos.mini .mini-tabs { display: flex; gap: 6px; }
-    .mini-tabs button { flex: 1 1 0; min-width: 0; height: 38px; border: 0; border-radius: 10px; background: #fff; font-family: inherit; font-weight: 900; font-size: .95rem; cursor: pointer; border-top: 4px solid var(--mt, #1E88E5); color: var(--mt-t, #0D47A1); display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
-    .mini-tabs button small { font-weight: 700; font-size: .62rem; opacity: .75; }
-    .mini-tabs button.P1 { --mt: #1E88E5; --mt-t: #0D47A1; } .mini-tabs button.P2 { --mt: #7E57C2; --mt-t: #4527A0; }
-    .mini-tabs button.P3 { --mt: #B07D12; --mt-t: #6B4A00; } .mini-tabs button.C { --mt: #2E8B57; --mt-t: #1B5E20; }
-    .mini-tabs button.activo { background: var(--mt); color: #fff; }
+    .planes-pos.mini { flex-direction: column; gap: 0; padding: 0; }
+    /* V43.21: mini-tabs = ícono swipe sutil, sin estado ni indicador de plan */
+    .planes-pos.mini .mini-tabs { display: flex; justify-content: center; align-items: center; padding: 3px 8px 2px; background: #0A2472; }
+    .mini-tabs button { display: none; }   /* V43.21: botones ocultos — navegación solo por swipe */
+    /* V43.26: barrita paginadora deslizante — 25% del ancho, se posiciona según plan activo */
+    .mini-tabs { position: relative; }
+    .mini-tabs .mini-pill { position: absolute; bottom: 0; left: 0; width: 25%; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.75); transition: transform 0.22s ease; pointer-events: none; }
+    /* Posiciones: idx 0→0%, 1→25%, 2→50%, 3→75% */
+    .mini-tabs .mini-pill[data-idx="0"] { transform: translateX(0%); }
+    .mini-tabs .mini-pill[data-idx="1"] { transform: translateX(100%); }
+    .mini-tabs .mini-pill[data-idx="2"] { transform: translateX(200%); }
+    .mini-tabs .mini-pill[data-idx="3"] { transform: translateX(300%); }
     .planes-pos.mini .tarjeta-plan.plegada { display: none !important; }
     .planes-pos.mini .tarjeta-plan .tp-cab { display: none; }
-    .planes-pos.mini .tarjeta-plan { padding: 6px; }
+    .planes-pos.mini .tarjeta-plan { padding: 6px 8px 8px; border-radius: 0; border-top: 3px solid var(--tp-color); }
     body .total-bar { padding: 5px 12px; }   /* «body» para ganarle a las reglas generales que están más abajo */
     body .total-label { font-size: .62rem; } body .total-monto { font-size: 1.3rem; line-height: 1.1; }
     body .btn-cobrar { padding: 8px 20px; font-size: .95rem; }
@@ -790,8 +798,28 @@ body.carrito-on .fab-cot { display: none !important; }
 .mx-linea select { flex:1.3; } .mx-linea input { flex:1; }
 .mx-linea button { border:none; background:#ffebee; color:#c62828; border-radius:8px; padding:8px 10px; font-weight:900; cursor:pointer; }
 .mx-agregar { width:100%; padding:9px; border:1.5px dashed #90caf9; background:#f5faff; color:#1565c0; border-radius:10px; font-weight:800; cursor:pointer; margin-bottom:8px; }
-.mx-resumen { background:#f7f7fb; border-radius:10px; padding:8px 10px; font-size:0.85rem; margin-bottom:8px; line-height:1.5; }
+/* v045.3: resumen mixto visual estilo seba21 */
+.mx-resumen { margin-bottom:10px; }
+.mx-bloque-total { background:#f0f0f0; border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.mx-bloque-total .mx-etiq { font-size:0.78rem; color:#666; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.mx-bloque-total .mx-val { font-size:1.25rem; font-weight:900; color:#222; }
+.mx-bloque-pagado { background:#e8f4fd; border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.mx-bloque-pagado .mx-etiq { font-size:0.78rem; color:#1565c0; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.mx-bloque-pagado .mx-val { font-size:1.25rem; font-weight:900; color:#1565c0; }
+.mx-bloque-falta { background:#ffebee; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-left:4px solid #c62828; }
+.mx-bloque-falta .mx-etiq { font-size:0.78rem; color:#c62828; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; }
+.mx-bloque-falta .mx-val { font-size:1.5rem; font-weight:900; color:#c62828; }
+.mx-bloque-vuelto { background:#e8f5e9; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; border-left:4px solid #1b5e20; }
+.mx-bloque-vuelto .mx-etiq { font-size:0.78rem; color:#1b5e20; font-weight:900; text-transform:uppercase; letter-spacing:0.5px; }
+.mx-bloque-vuelto .mx-val { font-size:1.5rem; font-weight:900; color:#1b5e20; }
+.mx-bloque-exacto { background:#e8f5e9; border-radius:12px; padding:10px 14px; text-align:center; margin-bottom:6px; border:2px solid #43a047; }
+.mx-bloque-exacto span { font-size:0.9rem; font-weight:900; color:#1b5e20; }
+.mx-aviso-cot { font-size:0.78rem; color:#B26A00; padding:4px 0; line-height:1.4; }
 .mx-check { display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:700; margin:6px 0; }
+/* v045.3: toggles visuales para fiar/deuda */
+.mx-toggle { flex:1; display:flex; align-items:center; gap:7px; font-size:0.82rem; font-weight:800; padding:9px 12px; border-radius:12px; border:2px solid #e0e0e0; background:#fafafa; cursor:pointer; transition:all 0.15s; }
+.mx-toggle input { width:16px; height:16px; cursor:pointer; accent-color:#1565c0; }
+.mx-toggle:has(input:checked) { background:#e3f2fd; border-color:#90caf9; color:#1565c0; }
 .mx-previa { margin-top:8px; padding:10px; border-radius:10px; font-size:0.85rem; line-height:1.45; white-space:pre-wrap; display:none; }
 .mx-previa.ok { display:block; background:#e8f5e9; color:#1b5e20; } .mx-previa.aviso { display:block; background:#fff3e0; color:#e65100; } .mx-previa.error { display:block; background:#ffebee; color:#b71c1c; }
 .btn-metodo {
@@ -935,6 +963,27 @@ body.carrito-on .fab-cot { display: none !important; }
 </style>
 </head>
 <body>
+<!-- STAGING-ONLY:INICIO -->
+<style>
+@keyframes vaoStgPulso {
+    0%, 94%, 100% { transform: scale(1); }
+    96% { transform: scale(1.12); box-shadow: 0 0 0 6px rgba(255,120,0,.35); }
+    98% { transform: scale(1); }
+}
+#vaoStagingBadge { animation: vaoStgPulso 30s ease-in-out infinite; transform-origin: left bottom; }
+@media (prefers-reduced-motion: reduce) { #vaoStagingBadge { animation: none; } }
+</style>
+<div id="vaoStagingBadge" style="position:fixed;left:6px;bottom:84px;z-index:99999;padding:3px 8px;border-radius:10px;background:rgba(255,120,0,0.88);color:#fff;font:600 11px/1.3 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.25);">🧪 STAGING · sistema de pruebas</div>
+<script>
+(function () { // mantener [STAGING] en el título aunque el POS lo reemplace
+    var P = '[STAGING] ';
+    function f() { if (document.title.indexOf(P) !== 0) document.title = P + document.title; }
+    f();
+    var t = document.querySelector('title');
+    if (t) new MutationObserver(f).observe(t, { childList: true, characterData: true, subtree: true });
+})();
+</script>
+<!-- STAGING-ONLY:FIN -->
 
 <!-- OVERLAY PIN -->
 <div id="overlayPin" style="position:fixed;inset:0;z-index:5000;background:linear-gradient(135deg,#0A2472,#1E88E5);
@@ -1053,7 +1102,7 @@ body.carrito-on .fab-cot { display: none !important; }
             <button class="btn-tool ingreso" id="btnIngreso" onclick="abrirIngreso()"><span class="ico">📦</span><span class="txt">Ingresar</span></button>
             <button class="btn-tool hoy" id="btnHoy" onclick="abrirResumen()"><span class="ico">📋</span><span class="txt">Hoy</span></button>
             <button class="btn-tool fiados" id="btnFiados" onclick="window.location.href='fiados.html?p='+PREFIJO"><span class="ico">🧾</span><span class="txt">Fiados</span></button>
-            <button class="btn-tool datos" id="btnMisDatos" onclick="window.location.href='misdatos.html?p='+PREFIJO"><span class="ico">🏪</span><span class="txt">Mis datos</span></button>
+            <button class="btn-tool ajconfig" id="btnMisDatos" onclick="window.location.href='misdatos.html?p='+PREFIJO+'#ajustes'" title="Mis datos y configuración"><span class="ico">⚙️</span><span class="txt">Ajustes</span></button>
             <button class="btn-tool actualizar" id="btnActualizarP1" data-recargar onclick="cargarProductos(true)" title="Traer de nuevo precios, stock y productos nuevos (el carrito no se toca)"><span class="ico">🔄</span><span class="txt">Actualizar</span></button>   <!-- V43.18: función base P1 (todos los planes) -->
         </div>
     </section>
@@ -1065,6 +1114,8 @@ body.carrito-on .fab-cot { display: none !important; }
             <button class="btn-tool stats" id="btnReportes" onclick="window.location.href='reportes.html?p='+PREFIJO"><span class="ico">📊</span><span class="txt">Reportes</span></button>
             <button class="btn-tool clientes" id="btnClientesP2" onclick="window.location.href='clientes.html?p='+PREFIJO"><span class="ico">👥</span><span class="txt">Clientes</span></button>
             <button class="btn-tool anular" id="btnAnularP2" onclick="window.location.href='anular.html?p='+PREFIJO"><span class="ico">↩️</span><span class="txt">Anular</span></button>
+            <button class="btn-tool sendwa" id="btnSendWAP2" onclick="window.location.href='sendwa.html?p='+PREFIJO" title="Publicar productos por WhatsApp"><span class="ico">📲</span><span class="txt">SendWA</span></button>   <!-- V43.27: SendWA en P2 -->
+            <button class="btn-tool stock" id="btnStockP2" onclick="window.location.href='stock.html?p='+PREFIJO" title="Stock crítico"><span class="ico">📦</span><span class="txt">Stock</span></button>   <!-- V43.28: Stock crítico en P2 -->
         </div>
     </section>
     <section class="tarjeta-plan" id="tarjetaP3" data-plan="P3" aria-labelledby="tituloP3">
@@ -1194,8 +1245,11 @@ body.carrito-on .fab-cot { display: none !important; }
             <div id="mxLineas"></div>
             <button type="button" class="mx-agregar" id="mxBtnAgregar" onclick="mxAgregarLinea()">＋ Agregar pago</button>
             <div class="mx-resumen" id="mxResumen"></div>
-            <label class="mx-check"><input type="checkbox" id="mxFiar" onchange="mxOpcion('fiar')"> 🧾 Fiar lo que falta</label>
-            <label class="mx-check"><input type="checkbox" id="mxDeuda" onchange="mxOpcion('deuda')"> 💳 Cobrar también deuda de un cliente</label>
+            <!-- v045.3: opciones como toggles visuales -->
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <label class="mx-toggle" id="lblFiar"><input type="checkbox" id="mxFiar" onchange="mxOpcion('fiar')"> 🧾 Fiar lo que falta</label>
+              <label class="mx-toggle" id="lblDeuda"><input type="checkbox" id="mxDeuda" onchange="mxOpcion('deuda')"> 💙 Cobrar deuda</label>
+            </div>
             <div id="mxClienteBox" style="display:none;">
                 <input type="text" class="form-input" id="mxCliente" placeholder="Nombre del cliente" style="margin-bottom:6px;" oninput="mxCambio()">
                 <input type="tel" class="form-input" id="mxTelefono" placeholder="Teléfono (opcional)" style="margin-bottom:6px;" oninput="mxCambio()">
@@ -1460,8 +1514,8 @@ if (!/^[A-Z0-9]{2,10}$/.test(PREFIJO)) {
 }
 
 // ========== CONFIG ==========
-const API_URL  = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
-const APP_VERSION_TXT = '43.18';   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
+const API_URL  = 'https://script.google.com/macros/s/AKfycbzlfo16ivECUH-qUkjIllj636bK9uE9GuFBxaddKK3KQT06xnrv1BObwlvFQ_3WvY_f/exec';
+const APP_VERSION_TXT = '43.28';   // V43.28: botón Stock en P2 (stock.html) + config.pack2_editor_stock   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
 const APP_VERSION = 43; // V43.18: 🗑 vaciar flotante (celular); 🔄 Actualizar en la botonera P1 (base) con aviso; volver del Cotizador sin recargar todo · V43.17: computadora — catálogo y venta lado a lado (el catálogo usa todo el alto) y herramientas en una franja compacta · V43.8: celular «carrito al tocar» — el catálogo ocupa la pantalla; 🛒 (con cantidad) en la barra de Cobrar abre la venta para corregir; 🔍 y 🔄 flotantes; «✏️ Corregir la venta» en Confirmar · V43.7: «Venta actual · Limpiar» solo aparece con productos en el carrito; 📣 comparte el afiche nuevo (og-vao-pos-2.jpg) · V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
 const HOY_KEY    = 'vao_ventas_' + PREFIJO + '_' + new Date().toISOString().slice(0, 10);
 const CARRITO_KEY= 'vao_carrito_' + PREFIJO;
@@ -1513,6 +1567,8 @@ function generarToolbarSegunPacks(config) {
         btnClientesP2: config.extra_fiados && conGestion,     // P2: gestión completa de fiados y clientes
         btnMisDatos: true,
         btnAnularP2: config.pack2_editor_stock === true && !(CONFIG_ACTUAL && CONFIG_ACTUAL.modoConsulta),
+        btnSendWAP2: config.pack2_sendwa === true,              // V43.27: SendWA — controlado por pack2_sendwa en planilla
+        btnStockP2:  config.pack2_editor_stock === true,        // V43.28: Stock crítico — mismo acceso que Inventario P2
         btnCobroAvanzado: _cobroAvanzadoV41_(config),
         btnCotizaciones: _cobroAvanzadoV41_(config) && _hayCotizacionV41_()
     };
@@ -1552,17 +1608,17 @@ function _plegablesV432_() {
     cont.classList.toggle('mini', vis.length > 1);   // V43.6: en el celular, fila de mini botones
     let mt = cont.querySelector('.mini-tabs'); if (!mt) { mt = document.createElement('div'); mt.className = 'mini-tabs'; mt.setAttribute('role', 'tablist'); cont.insertBefore(mt, cont.firstChild); }
     const ETQ = { tarjetaP1: ['P1', 'Esencial'], tarjetaP2: ['P2', 'Gestión'], tarjetaP3: ['P3', 'PRO'], tarjetaC: ['C+', 'Compl.'] };   // V43.6: «C+» = complementos (pedido del dueño)
-    mt.innerHTML = vis.map(t => '<button type="button" role="tab" class="' + t.dataset.plan + '" data-t="' + t.id + '">' + ETQ[t.id][0] + (ETQ[t.id][1] ? '<small>' + ETQ[t.id][1] + '</small>' : '') + '</button>').join('');
+    mt.innerHTML = vis.map(t => '<button type="button" role="tab" class="' + t.dataset.plan + '" data-t="' + t.id + '">' + ETQ[t.id][0] + (ETQ[t.id][1] ? '<small>' + ETQ[t.id][1] + '</small>' : '') + '</button>').join('') + '<div class="mini-pill" data-idx="0"></div>';   // V43.26: barrita paginadora
     mt.querySelectorAll('button').forEach(b => b.onclick = () => { const ab = document.querySelector('#planesPos .tarjeta-plan:not(.plegada)'); _abrirTarjetaV432_(ab && ab.id === b.dataset.t ? '' : b.dataset.t, true); });
     let abierta = null; try { abierta = localStorage.getItem(_claveTarjetaV432_()); } catch (e) {}
     const celu = window.matchMedia && window.matchMedia('(max-width: 599px)').matches;
-    if (abierta === 'ninguna' && celu) abierta = '';
-    else if (!vis.some(t => t.id === abierta)) abierta = celu ? '' : (vis.length ? vis[0].id : null);   // V43.6: en el celular arranca todo cerrado (más lugar para el catálogo)
+    if (!vis.some(t => t.id === abierta)) abierta = vis.length ? vis[0].id : null;   // V43.23: siempre abierta en P1
     _abrirTarjetaV432_(abierta, false);
     const apps = _appsV43_(), p3 = document.getElementById('btnVerP3');
     const verP3 = (PRESTACIONES_ACTUAL && PRESTACIONES_ACTUAL.planesP1P2P3 && apps && !apps.some(a => a.grupo === 'P3' && a.habilitada));
     if (p3) p3.style.display = verP3 ? '' : 'none';
     const h3 = document.getElementById('hdrVerP3'); if (h3) h3.style.display = verP3 ? '' : 'none';   // V43.6: el ✨ del encabezado (celular) sigue la misma regla
+    if (celu) _swipePlanesV4320_();   // V43.20: swipe horizontal
 }
 // V43.3: «✨ P3 PRO» abre SU propia ventana (no Mi plan): precio, las herramientas que suma con su explicación y «Pedir P3 PRO».
 // Las herramientas salen de la matriz central del servidor (getConfig.prestaciones.apps, grupo P3); el precio, de getPlanesPublicos.
@@ -1588,12 +1644,52 @@ function _abrirTarjetaV432_(id, guardar) {
         const cab = t.querySelector('.tp-cab'); if (cab) cab.setAttribute('aria-expanded', abierta ? 'true' : 'false');
     });
     document.querySelectorAll('#planesPos .mini-tabs button').forEach(b => { const on = b.dataset.t === id; b.classList.toggle('activo', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
-    if (guardar) { try { localStorage.setItem(_claveTarjetaV432_(), id || 'ninguna'); } catch (e) {} }   // V43.6: también se recuerda «todo cerrado»
+    // V43.26: mover la barrita paginadora al índice del plan activo
+    const _btns = [...document.querySelectorAll('#planesPos .mini-tabs button')];
+    const _pill = document.querySelector('#planesPos .mini-tabs .mini-pill');
+    if (_pill) { const _idx = _btns.findIndex(b => b.dataset.t === id); _pill.dataset.idx = _idx >= 0 ? _idx : 0; }
+    if (guardar) { try { localStorage.setItem(_claveTarjetaV432_(), id || 'cerrar'); } catch (e) {} }
+}
+
+// V43.20: auto-cierre de la botonera a los 4 s. Se cancela si el usuario toca cualquier botón del panel.
+let _autoCierreTimV4320 = null;
+function _autoCierreV4320_(idActual) {
+    clearTimeout(_autoCierreTimV4320);
+    _autoCierreTimV4320 = setTimeout(function () {
+        // Solo cierra si siguen sin tocar nada desde que arrancó
+        const ab = document.querySelector('#planesPos .tarjeta-plan:not(.plegada)');
+        if (ab && ab.id === idActual) _abrirTarjetaV432_('', true);
+    }, 4000);
+    // Cancelar al tocar cualquier botón de la botonera
+    const cont = document.getElementById('planesPos');
+    if (cont && !cont.dataset.v4320) {
+        cont.dataset.v4320 = '1';
+        cont.addEventListener('pointerdown', function () { clearTimeout(_autoCierreTimV4320); }, { passive: true });
+    }
+}
+
+// V43.20: swipe horizontal sobre la botonera para cambiar de tarjeta
+function _swipePlanesV4320_() {
+    const cont = document.getElementById('planesPos'); if (!cont || cont.dataset.swipe4320) return;
+    cont.dataset.swipe4320 = '1';
+    let sx = 0, sy = 0, mov = false;
+    cont.addEventListener('touchstart', function (e) { sx = e.touches[0].clientX; sy = e.touches[0].clientY; mov = false; }, { passive: true });
+    cont.addEventListener('touchmove', function (e) { mov = true; }, { passive: true });
+    cont.addEventListener('touchend', function (e) {
+        if (!mov) return;
+        const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+        if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;   // muy corto o más vertical que horizontal
+        const IDS = ['tarjetaP1', 'tarjetaP2', 'tarjetaP3', 'tarjetaC'].filter(id => { const t = document.getElementById(id); return t && t.style.display !== 'none'; });
+        const ab = document.querySelector('#planesPos .tarjeta-plan:not(.plegada)');
+        const ci = ab ? IDS.indexOf(ab.id) : 0;
+        const ni = dx < 0 ? Math.min(ci + 1, IDS.length - 1) : Math.max(ci - 1, 0);
+        if (ni !== ci) { clearTimeout(_autoCierreTimV4320); _abrirTarjetaV432_(IDS[ni], true); }
+    }, { passive: true });
 }
 
 // V43 (v044.1): botonera desde la MATRIZ CENTRAL (getConfig.prestaciones.apps): cada aplicación tiene un solo botón y su destino.
 const BOTON_APP_V43_ = { btnIngreso: 'ingresar', btnHoy: 'hoy', btnFiados: 'fiados', btnMisDatos: 'misdatos', btnAjuste: 'ajustar', btnInventarioP2: 'inventario',
-                         btnReportes: 'reportes', btnClientesP2: 'clientes', btnAnularP2: 'anular', btnCobroAvanzado: 'mixto', btnCotizaciones: 'monedas' };
+                         btnReportes: 'reportes', btnClientesP2: 'clientes', btnAnularP2: 'anular', btnSendWAP2: 'sendwa', btnStockP2: 'stock', btnCobroAvanzado: 'mixto', btnCotizaciones: 'monedas' };   // V43.28: + btnStockP2 (stock.html)
 function _appsV43_() { return (PRESTACIONES_ACTUAL && PRESTACIONES_ACTUAL.apps) || null; }
 function _ocultosV432_() { return (PRESTACIONES_ACTUAL && Array.isArray(PRESTACIONES_ACTUAL.ocultos)) ? PRESTACIONES_ACTUAL.ocultos : []; }   // V43.2 (servidor v044.2)
 function _aplicarAppsV43_(botones) {
@@ -2480,7 +2576,16 @@ function cerrarMisFotosV0451() { document.getElementById('modalMisFotos').classL
 
 // ===== V43.8 (celular): «carrito al tocar» =====
 window.addEventListener('pageshow', function (e) {   // V43.18: vuelta instantánea desde Cotizador y demás pantallas
-    if (e.persisted && typeof PREFIJO !== 'undefined' && PREFIJO && _tokenActual()) { try { cargarProductos(); } catch (x) {} }
+    if (e.persisted && typeof PREFIJO !== 'undefined' && PREFIJO && _tokenActual()) {
+        try { cargarProductos(); } catch (x) {}
+        // V43.22: al volver siempre mostrar P1 en mobile (el usuario ya usó otra pantalla, vuelve al punto de partida)
+        if (window.matchMedia && window.matchMedia('(max-width: 599px)').matches) {
+            try {
+                const vis = ['tarjetaP1','tarjetaP2','tarjetaP3','tarjetaC'].filter(id => { const t = document.getElementById(id); return t && t.style.display !== 'none'; });
+                if (vis.length) _abrirTarjetaV432_(vis[0], false);   // V43.23: vuelve a P1, sin auto-cierre
+            } catch (x) {}
+        }
+    }
 });
 const _dosColV4317_ = () => !!(window.matchMedia && window.matchMedia('(min-width: 900px)').matches);
 const _celuV438_ = () => !!(window.matchMedia && window.matchMedia('(max-width: 599px)').matches);
@@ -3374,9 +3479,21 @@ function mxCambio() {
     let pagado = 0, sinCot = false;
     _mxLineas.forEach(l => { const m = Number(l.monto) || 0; if (l.moneda && l.moneda !== 'ARS') { if (cot[l.moneda]) pagado += m * cot[l.moneda]; else sinCot = true; } else pagado += m; });
     const total = _mxTotal(), dif = Math.round((pagado - total) * 100) / 100;
-    document.getElementById('mxResumen').innerHTML = 'Total: <b>' + _mxFmt(total) + '</b> · Pagado: <b>' + _mxFmt(pagado) + '</b><br>' +
-        (dif < 0 ? 'Falta: <b style="color:#c62828">' + _mxFmt(-dif) + '</b>' : 'Vuelto (en pesos): <b style="color:#1b5e20">' + _mxFmt(dif) + '</b>') +
-        (sinCot ? '<br>⚠️ Hay una moneda sin cotización.' : '') + _mxAvisoCotV432_();
+    // v045.3: resumen visual estilo seba21 — bloques separados con color
+    let html = '';
+    html += '<div class="mx-bloque-total"><span class="mx-etiq">Total</span><span class="mx-val">' + _mxFmt(total) + '</span></div>';
+    if (pagado > 0) html += '<div class="mx-bloque-pagado"><span class="mx-etiq">Pagado</span><span class="mx-val">' + _mxFmt(pagado) + '</span></div>';
+    if (dif < 0) {
+        html += '<div class="mx-bloque-falta"><span class="mx-etiq">❌ Falta</span><span class="mx-val">' + _mxFmt(-dif) + '</span></div>';
+    } else if (dif > 0) {
+        html += '<div class="mx-bloque-vuelto"><span class="mx-etiq">✅ Vuelto</span><span class="mx-val">' + _mxFmt(dif) + '</span></div>';
+    } else if (pagado > 0) {
+        html += '<div class="mx-bloque-exacto"><span>✅ Monto exacto — sin vuelto</span></div>';
+    }
+    if (sinCot) html += '<div class="mx-aviso-cot">⚠️ Hay una moneda sin cotización.</div>';
+    const avisoCot = _mxAvisoCotV432_();
+    if (avisoCot) html += '<div class="mx-aviso-cot">' + avisoCot.replace(/<br><small>/g,'').replace(/<\/small>/g,'') + '</div>';
+    document.getElementById('mxResumen').innerHTML = html;
     if (!_leerVentaEnCurso()) {
         _mxRevisado = null;
         const p = document.getElementById('mxPrevia'); p.className = 'mx-previa'; p.textContent = '';
@@ -3401,7 +3518,31 @@ function _mxArmarOp(opId) {
     }
     return op;
 }
+// v045.3: previa visual con bloques de color (texto plano queda como fallback)
 function _mxPrevia(texto, tipo) { const p = document.getElementById('mxPrevia'); p.className = 'mx-previa ' + tipo; p.textContent = texto; }
+function _mxPreviaRev(e, ingresos, avisos) {
+    // Muestra la revisión del servidor con bloques visuales claros
+    const p = document.getElementById('mxPrevia');
+    p.className = 'mx-previa ok';
+    let h = '<div style="font-size:0.78rem;font-weight:900;color:#1b5e20;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">✔ Revisión — todavía no se cobró nada</div>';
+    // Medios de pago
+    if (ingresos && ingresos.length) {
+        ingresos.forEach(i => {
+            h += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #c8e6c9;font-size:0.88rem;">' +
+                 '<span>💰 ' + i.medio + (i.moneda && i.moneda !== 'ARS' ? ' <small style="opacity:0.7">(' + i.moneda + ')</small>' : '') + '</span>' +
+                 '<b>' + _mxFmt(i.importe) + '</b></div>';
+        });
+    }
+    // Vuelto / deuda / fiado
+    if (e.vuelto > 0) h += '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.95rem;font-weight:900;color:#1b5e20;border-top:2px solid #a5d6a7;margin-top:4px;"><span>✅ Vuelto</span><span>' + _mxFmt(e.vuelto) + '</span></div>';
+    if (e.deuda > 0) h += '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.88rem;font-weight:700;color:#1565c0;"><span>💙 Abono a la deuda</span><span>' + _mxFmt(e.deuda) + '</span></div>';
+    if (e.fiado > 0) h += '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.88rem;font-weight:700;color:#e65100;"><span>🧾 Queda fiado</span><span>' + _mxFmt(e.fiado) + '</span></div>';
+    if (avisos && avisos.length) {
+        p.className = 'mx-previa aviso';
+        avisos.forEach(a => { h += '<div style="font-size:0.82rem;color:#e65100;padding-top:4px;">⚠️ ' + a + '</div>'; });
+    }
+    p.innerHTML = h;
+}
 async function confirmarVentaMixto() {
     const btn = document.getElementById('btnOkConfirm');
     let enCurso = _leerVentaEnCurso();
@@ -3426,11 +3567,7 @@ async function confirmarVentaMixto() {
             if (!r) { btn.textContent = '🔎 Revisar cobro'; _mxPrevia('Sin conexión: no se pudo revisar. No se cobró nada.', 'error'); return; }
             if (!r.success) { btn.textContent = '🔎 Revisar cobro'; _mxPrevia('❌ ' + (r.error || 'No se pudo revisar.'), 'error'); return; }
             const e = r.esperado;
-            const lineas = ['Revisión (todavía no se cobró nada):', 'Compra: ' + _mxFmt(e.total)].concat(
-                r.ingresos.map(i => '· ' + i.medio + (i.moneda !== 'ARS' ? ' ' + i.moneda : '') + ': ' + _mxFmt(i.importe)),
-                e.deuda ? ['A la deuda: ' + _mxFmt(e.deuda)] : [], e.fiado ? ['Queda fiado: ' + _mxFmt(e.fiado)] : [],
-                ['Vuelto (efectivo en pesos): ' + _mxFmt(e.vuelto)], (r.avisos || []).map(a => '⚠️ ' + a));
-            _mxPrevia(lineas.join('\n'), (r.avisos && r.avisos.length) ? 'aviso' : 'ok');
+            _mxPreviaRev(e, r.ingresos, r.avisos); // v045.3: bloques visuales
             _mxRevisado = { firma: firma, esperado: e };
             btn.textContent = '✅ Confirmar cobro';
             return;
@@ -3448,7 +3585,9 @@ async function confirmarVentaMixto() {
         ventaActual = []; _mxLineas = []; _mxRevisado = null; localStorage.removeItem(CARRITO_KEY); renderVenta(); cargarProductos();
         ['mxFiar', 'mxDeuda'].forEach(id => { document.getElementById(id).checked = false; }); ['mxCliente', 'mxTelefono', 'mxDeudaMonto'].forEach(id => { document.getElementById(id).value = ''; }); // la próxima venta empieza limpia
         const av = (rs.avisos || []).map(a => '⚠️ ' + a);
-        _mxPrevia([resp.mensaje || 'Cobro registrado.'].concat(rs.deuda ? ['A la deuda: ' + _mxFmt(rs.deuda)] : [], rs.fiado ? ['Quedó fiado: ' + _mxFmt(rs.fiado)] : [], av).join('\n'), av.length ? 'aviso' : 'ok');
+        // v045.3: resultado visual con bloques
+        _mxPreviaRev({ vuelto: rs.vuelto || 0, deuda: rs.deuda || 0, fiado: rs.fiado || 0 },
+            [], av); // ingresos ya se ven arriba; solo vuelto/deuda/fiado/avisos
         if (items.length) document.getElementById('btnTicketWA').style.display = 'block';
         btn.textContent = '✅ Confirmado';
         mostrarToast(resp.yaExistia ? '✅ Ese cobro ya estaba registrado (no se cobró dos veces)' : '✅ Cobro registrado' + (rs.vuelto ? ' · Vuelto ' + _mxFmt(rs.vuelto) : ''), 'verde');
