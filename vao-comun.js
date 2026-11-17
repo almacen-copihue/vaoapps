@@ -1,4 +1,4 @@
-/* vao-comun.js — v045.3: «← POS» vuelve atrás (el POS aparece al instante, sin recargar todo) cuando se llegó desde el POS. v045.2: WhatsApp con número internacional (54 9 …) y primero WhatsApp Business (regla de oro, 13/11/2026). v044.1 (STAGING AR). v044.1: aplicaciones base (sin prestación), menú para cambiar de aplicación con la misma sesión, P3 PRO.
+/* vao-comun.js — v045.6: VAO.iniciar tolera pantallas sin contenedores estándar. v045.5: indicador de conexión, «Conectando…» al abrir (nunca pantalla en blanco), buscador sin tildes que avisa mientras carga y no se queda vacío si falla. v045.3: «← POS» vuelve atrás (el POS aparece al instante, sin recargar todo) cuando se llegó desde el POS. v045.2: WhatsApp con número internacional (54 9 …) y primero WhatsApp Business (regla de oro, 13/11/2026). v044.1 (STAGING AR). v044.1: aplicaciones base (sin prestación), menú para cambiar de aplicación con la misma sesión, P3 PRO.
    v044: Base compartida de los módulos de VAO POS.
    Un solo lugar para: dirección del servidor, sesión del comercio (el mismo PIN/token del POS), permisos por plan,
    navegación de vuelta al POS, mensajes y formato. Cada módulo es un HTML independiente que usa esta base.
@@ -23,13 +23,31 @@
   // Comunicación con el servidor: POST con texto plano (sin pre-vuelo). Nunca se mandan claves en la dirección.
   VAO.api = function (action, data) {
     var body = JSON.stringify({ action: action, prefijo: PREFIJO, data: Object.assign({ token: VAO.token() }, data || {}) });
+    VAO._red(+1);   // v045.5: indicador de conexión visible mientras el servidor responde
     return fetch(API_URL, { method: 'POST', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: body })
       .then(function (r) { return r.json(); })
       .then(function (j) {
+        VAO._red(-1);
         if (j && /sesi[oó]n/i.test(j.error || '') && /venci|inv[aá]lid|PIN/i.test(j.error || '')) VAO.sesionVencida(j.error);
         return j;
-      });
+      }, function (e) { VAO._red(-1, true); throw e; });
   };
+  // v045.5: píldora de estado de conexión (⏳ conectando / 📡 sin conexión). Solo informa: no reintenta nada por su cuenta.
+  VAO._pend = 0;
+  VAO._red = function (d, fallo) {
+    VAO._pend = Math.max(0, VAO._pend + d);
+    var p = document.getElementById('vaoRed');
+    if (!p && document.body) { p = document.createElement('div'); p.id = 'vaoRed'; p.setAttribute('role', 'status'); p.setAttribute('aria-live', 'polite');
+      p.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:100000;padding:5px 12px;border-radius:14px;font:700 12px/1.3 system-ui,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,.2);display:none;pointer-events:none;';
+      document.body.appendChild(p); }
+    if (!p) return;
+    clearTimeout(VAO._redT);
+    if (fallo) { p.textContent = '📡 Sin conexión con el servidor'; p.style.background = '#c62828'; p.style.color = '#fff'; p.style.display = 'block'; VAO._redT = setTimeout(function () { if (!VAO._pend) p.style.display = 'none'; }, 6000); return; }
+    if (VAO._pend > 0) { VAO._redT = setTimeout(function () { p.textContent = '⏳ Conectando con el servidor…'; p.style.background = '#fff8e1'; p.style.color = '#7a5a00'; p.style.display = 'block'; }, 350); }
+    else p.style.display = 'none';
+  };
+  VAO.cargando = function (texto) { return '<div class="vao-tarjeta vao-centro" role="status"><div class="vao-grande" style="animation:vaoGira 1.2s linear infinite;display:inline-block">⏳</div><p>' + VAO.esc(texto || 'Cargando…') + '</p></div>'; };
+  VAO.sinTildes = function (t) { return String(t == null ? '' : t).normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase(); };
   VAO.sinConexion = 'Sin conexión: no se registró nada nuevo. Revisá internet y volvé a intentar (no se duplica).';
 
   VAO.toast = function (msg, tipo) {
@@ -58,8 +76,12 @@
       '<div class="vao-comercio" id="vaoComercio">' + VAO.esc(PREFIJO) + '</div><button class="vao-apps-btn oculto" id="vaoAppsBtn" aria-label="Otras aplicaciones" title="Otras aplicaciones">☰</button>';
     document.title = opts.titulo + ' · VAO POS';
     var bloqueo = document.getElementById('vaoBloqueo'), cont = document.getElementById('vaoContenido');
+    // v045.6: si una pantalla no tiene los contenedores estándar, se crean (antes: error y la pantalla seguía sin control de sesión)
+    if (!bloqueo) { bloqueo = document.createElement('div'); bloqueo.id = 'vaoBloqueo'; bloqueo.className = 'oculto'; document.body.insertBefore(bloqueo, document.body.firstChild); }
+    if (!cont) { cont = document.querySelector('main') || document.createElement('div'); }
     var mostrar = function (html) { bloqueo.innerHTML = html; bloqueo.classList.remove('oculto'); cont.classList.add('oculto'); };
     if (!PREFIJO || !VAO.token()) { mostrar('<div class="vao-tarjeta vao-centro"><div class="vao-grande">🔒</div><h2>Entrá desde el POS</h2><p>Esta herramienta usa la misma sesión del POS. Abrí el POS, poné tu PIN y volvé a tocar el botón.</p><a class="vao-btn primario" href="' + VAO.urlPos() + '">Ir al POS</a></div>'); return Promise.resolve(null); }
+    mostrar(VAO.cargando('Conectando con VAO… verificando tu sesión'));   // v045.5: nunca una pantalla en blanco mientras responde el servidor
     return VAO.api('getConfig', { modoConsulta: true }).then(function (r) {
       if (!r || r.error) { VAO.sesionVencida(r && r.error); return null; }
       VAO.config = r.config || {}; VAO.prestaciones = r.prestaciones || null; VAO.soloLectura = !!(VAO.config.modoConsulta);
@@ -128,16 +150,39 @@
 
 
   // Productos del comercio (una vez por pantalla) y buscador común
-  VAO.productos = function () { if (VAO._prods) return Promise.resolve(VAO._prods); return VAO.api('getProductos', {}).then(function (r) { VAO._prods = (r && r.productos) || []; return VAO._prods; }); };
+  // v045.5: la lista se pide una vez; si falla o llega con error NO se guarda vacía (antes quedaba "Sin resultados" para siempre).
+  VAO.productos = function () {
+    if (VAO._prods) return Promise.resolve(VAO._prods);
+    if (VAO._prodsP) return VAO._prodsP;
+    VAO._prodsEstado = 'cargando';
+    VAO._prodsP = VAO.api('getProductos', {}).then(function (r) {
+      VAO._prodsP = null;
+      if (!r || r.error || !Array.isArray(r.productos)) { VAO._prodsEstado = 'error'; VAO._prodsError = (r && r.error) || 'No se pudieron cargar los productos.'; throw new Error(VAO._prodsError); }
+      VAO._prods = r.productos; VAO._prodsEstado = 'ok'; return VAO._prods;
+    }, function (e) { VAO._prodsP = null; VAO._prodsEstado = 'error'; VAO._prodsError = VAO.sinConexion; throw e; });
+    return VAO._prodsP;
+  };
+  // v045.5: el buscador funciona desde el primer momento (muestra «Cargando productos…» y busca solo cuando llegan),
+  // ignora tildes y mayúsculas (AZÚCAR = azucar) y ofrece Reintentar si la carga falló.
   VAO.buscador = function (input, caja, alElegir, extra) {
     input = typeof input === 'string' ? document.getElementById(input) : input; caja = typeof caja === 'string' ? document.getElementById(caja) : caja;
-    input.addEventListener('input', function () {
-      var q = input.value.trim().toUpperCase(); if (q.length < 2) { caja.classList.add('oculto'); return; }
-      var pal = q.split(/\s+/), r = (VAO._prods || []).filter(function (p) { var t = (p.name + ' ' + p.codigo).toUpperCase(); return pal.every(function (w) { return t.indexOf(w) !== -1; }); }).slice(0, 12);
-      caja.innerHTML = r.length ? r.map(function (p) { return '<button type="button" data-id="' + p.id + '"><span>' + VAO.esc(p.name) + '</span><small>' + (extra ? extra(p) : 'stock ' + p.stock) + '</small></button>'; }).join('') : '<div style="padding:10px;color:var(--suave)">Sin resultados</div>';
+    var aviso = function (html) { caja.innerHTML = '<div style="padding:10px;color:var(--suave)">' + html + '</div>'; caja.classList.remove('oculto'); };
+    var buscar = function () {
+      var q = VAO.sinTildes(input.value.trim()); if (q.length < 2) { caja.classList.add('oculto'); return; }
+      if (!VAO._prods) {
+        if (VAO._prodsEstado === 'error') {
+          aviso('❌ ' + VAO.esc(VAO._prodsError || 'No se pudieron cargar los productos.') + ' <button type="button" class="vao-btn chico" id="vaoReintentarProd">Reintentar</button>');
+          var rb = document.getElementById('vaoReintentarProd'); if (rb) rb.onclick = function () { aviso('⏳ Cargando productos…'); VAO.productos().then(buscar, buscar); };
+        } else { aviso('⏳ Cargando productos…'); VAO.productos().then(buscar, buscar); }
+        return;
+      }
+      var pal = q.split(/\s+/), r = VAO._prods.filter(function (p) { var t = VAO.sinTildes(p.name + ' ' + p.codigo); return pal.every(function (w) { return t.indexOf(w) !== -1; }); }).slice(0, 12);
+      caja.innerHTML = r.length ? r.map(function (p) { return '<button type="button" data-id="' + p.id + '"><span>' + VAO.esc(p.name) + '</span><small>' + (extra ? extra(p) : 'stock ' + p.stock) + '</small></button>'; }).join('') : '<div style="padding:10px;color:var(--suave)">Sin resultados para «' + VAO.esc(input.value.trim()) + '» (' + VAO._prods.length + ' productos cargados)</div>';
       caja.classList.remove('oculto');
       caja.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { var p = VAO._prods.filter(function (x) { return String(x.id) === b.dataset.id; })[0]; input.value = ''; caja.classList.add('oculto'); alElegir(p); }); });
-    });
+    };
+    input.addEventListener('input', buscar);
+    if (input.value.trim().length >= 2) buscar();   // lo que se escribió mientras cargaba la pantalla no se pierde
   };
 
   // Pestañas simples: botones [data-tab] y paneles [data-panel]

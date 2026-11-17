@@ -135,7 +135,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--blanco); color:var(--t
 </div>
 
 <script>
-const APP_VERSION = 8; // V8: con un día elegido, 🏦 Caja del día por medio según el servidor (separa el cobro mixto en cada medio e incluye cobros de fiados)
+const APP_VERSION = 10; // V10: aviso si la carga tarda, reintentar y mensaje claro cuando todavía no hay ventas · V9 (servidor v045.4): ventas del cobro avanzado con su medio real (getVentas.pagosPorVenta): totales por medio, filtro y ticket con cada pago. V8: con un día elegido, 🏦 Caja del día por medio según el servidor (separa el cobro mixto en cada medio e incluye cobros de fiados)
 const API_URL = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
 // Paso 11: reportes.html no tenía prefijo ni token propios — por eso
 // getVentas se llamaba sin prefijo y siempre traía las ventas de "NE"
@@ -161,6 +161,7 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto'
 const DIAS_SEM = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
 let todasVentas = [];
+let pagosPorVenta = {};   // V9: detalle de PAGOS por VentaId (solo ventas del cobro avanzado; las viejas no lo tienen)
 let mesActual = new Date().getMonth();
 let anioActual = new Date().getFullYear();
 let diasSeleccionados = new Set();
@@ -172,27 +173,35 @@ async function init() {
             '<div class="loading" style="color:var(--rojo);">❌ Sesión no encontrada. Volvé a entrar desde el POS.</div>';
         return;
     }
+    // V10 (v045.5): si tarda, se avisa (la planilla puede demorar con muchas ventas); nunca queda una pantalla quieta sin explicación.
+    const _lento = setTimeout(() => { const l = document.querySelector('#appContent .loading div:last-child'); if (l) l.textContent = 'Cargando ventas… la planilla está tardando, esperá unos segundos más.'; }, 6000);
     try {
         const url = API_URL + '?action=getVentas&prefijo=' + PREFIJO + '&data=' + encodeURIComponent(JSON.stringify({ token: _tokenActual() }));
         const r = await fetch(url, { redirect:'follow' });
         const data = await r.json();
+        clearTimeout(_lento);
         if (data.error) {
             document.getElementById('appContent').innerHTML =
                 '<div class="loading" style="color:var(--rojo);">❌ ' + data.error + '</div>';
             return;
         }
         todasVentas = data.ventas || [];
+        pagosPorVenta = data.pagosPorVenta || {};
         diasSeleccionados.add(_fechaLocalISO(new Date()));
         renderApp();
+        if (!todasVentas.length) document.getElementById('appContent').insertAdjacentHTML('afterbegin',
+            '<div style="margin:12px;padding:12px;border-radius:12px;background:#e3f2fd;color:#0d47a1;font-weight:700;">📭 Todavía no hay ventas registradas. Cuando cobres desde el POS van a aparecer acá.</div>');
     } catch(e) {
+        clearTimeout(_lento);
         document.getElementById('appContent').innerHTML =
-            '<div class="loading" style="color:var(--rojo);">❌ Error al cargar. Verificá la conexión.</div>';
+            '<div class="loading" style="color:var(--rojo);">❌ No se pudieron cargar las ventas. Verificá la conexión.<br><button onclick="location.reload()" style="margin-top:10px;padding:8px 16px;border:none;border-radius:10px;background:#1565c0;color:#fff;font-weight:800;">Reintentar</button></div>';
     }
 }
 
 function getMetodosDisponibles() {
     const set = new Set();
     todasVentas.forEach(v => {
+        if (Array.isArray(v.medios) && v.medios.length) { v.medios.forEach(m => set.add(m)); return; }   // V9: medios reales
         if (v.metodo.includes('+')) {
             v.metodo.split('+').forEach(m => { const c = m.replace(/\(.*\)/,'').trim(); if(c) set.add(c); });
         } else { set.add(v.metodo); }
@@ -202,7 +211,7 @@ function getMetodosDisponibles() {
 
 function filtrarVentas(ventas) {
     if (metodosActivos.has('TODOS')) return ventas;
-    return ventas.filter(v => Array.from(metodosActivos).some(m => v.metodo.includes(m)));
+    return ventas.filter(v => Array.from(metodosActivos).some(m => (Array.isArray(v.medios) ? v.medios.includes(m) : v.metodo.includes(m))));   // V9
 }
 
 function ventasDelMes() {
@@ -217,11 +226,23 @@ function ventasSeleccionadas() {
     return filtrarVentas(todasVentas.filter(v => dias.includes(v.fecha)));
 }
 
+// V9: etiqueta de un pago (USD y CLP son monedas del EFECTIVO, no medios aparte)
+function _medioPago(p) { return p.tipo === 'FIADO' ? 'FIADO' : (p.medio === 'EFECTIVO' && p.moneda && p.moneda !== 'ARS' ? 'EFECTIVO ' + p.moneda : p.medio); }
 function calcularTotales(ventas) {
     const metodos = {};
     let total = 0;
+    const yaSumada = new Set();
     ventas.forEach(v => {
         const t = parseFloat(v.total) || 0;
+        const det = v.ventaId && pagosPorVenta[v.ventaId];
+        if (det) {                                  // V9: la venta se reparte por lo que pagó cada medio (parte "venta" de cada pago)
+            total += t;
+            if (!yaSumada.has(v.ventaId)) {
+                yaSumada.add(v.ventaId);
+                det.forEach(p => { const a = parseFloat(p.aventa) || 0; if (a > 0) { const k = _medioPago(p); metodos[k] = (metodos[k] || 0) + a; } });
+            }
+            return;
+        }
         if (v.metodo.includes('+')) {
             const match = v.metodo.match(/([A-Z\s]+)\+([A-Z\s]+)\s*\(\$?([\d.]+)\+\$?([\d.]+)\)/i);
             if (match) {
@@ -450,7 +471,7 @@ function _detalleItemsHTML(vDia) {
         const v0 = g.filas[0];
         const n = g.filas.length;
         return '<div class="venta-item venta-ticket" onclick="abrirTicket(' + idx + ')"><span>' + _esc(v0.hora) + ' · 🧾 ' + n +
-               (n === 1 ? ' producto' : ' productos') + ' <span class="tk-meta">· ' + _esc(v0.metodo) + '</span>' +
+               (n === 1 ? ' producto' : ' productos') + ' <span class="tk-meta">· ' + _esc(v0.medioDetalle || v0.metodo) + '</span>' +
                '<span class="tk-ver">Ver ›</span></span><span>' + fmt(g.total) + '</span></div>';
     }).join('');
 }
@@ -474,11 +495,27 @@ function abrirTicket(idx) {
             '<div class="tk-head"><div><div class="tk-titulo">🧾 Ticket</div><div class="tk-id">' + _esc(g.ventaId) + '</div></div>' +
             '<button class="tk-cerrar" onclick="cerrarTicket()" aria-label="Cerrar">✕</button></div>' +
             '<div class="tk-dato">📅 ' + _esc(d + '/' + m + '/' + a) + ' · 🕐 ' + _esc(v0.hora) + '</div>' +
-            '<div class="tk-dato">💳 ' + _esc(v0.metodo) + '</div>' +
+            '<div class="tk-dato">💳 ' + _esc(v0.medioDetalle || v0.metodo) + '</div>' + _pagosTicketHTML(g.ventaId) +
             filasHTML +
             '<div class="tk-total"><span>Total</span><span>' + fmt(g.total) + '</span></div>' +
         '</div>';
     document.body.appendChild(bg);
+}
+
+// V9: cada pago de la venta, con su moneda y cotización; el vuelto siempre en pesos.
+function _pagosTicketHTML(vid) {
+    const det = pagosPorVenta[vid];
+    if (!det || !det.length) return '';
+    return '<div class="tk-dato" style="display:block;">' + det.map(p => {
+        const imp = parseFloat(p.importeARS) || 0;
+        let txt;
+        if (p.tipo === 'VUELTO') txt = '↩️ Vuelto (efectivo pesos): ' + fmt(Math.abs(imp));
+        else if (p.tipo === 'FIADO') txt = '🧾 Fiado: ' + fmt(imp);
+        else if (p.moneda && p.moneda !== 'ARS') txt = '💵 ' + _medioPago(p) + ': ' + p.montoMoneda + ' ' + p.moneda + ' × ' + p.cotizacion + ' = ' + fmt(imp);
+        else txt = '💳 ' + _medioPago(p) + ': ' + fmt(imp);
+        if ((parseFloat(p.adeuda) || 0) > 0) txt += ' (' + fmt(p.adeuda) + ' a deuda)';
+        return '<div>' + _esc(txt) + '</div>';
+    }).join('') + '</div>';
 }
 
 function cerrarTicket() {

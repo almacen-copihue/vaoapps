@@ -962,13 +962,21 @@ details.ctr-com[open] > summary { border-bottom:1px solid #EEF2F6; }
 <div class="toast" id="toast"></div>
 
 <script>
-const APP_VERSION = 22; // V22.5: el Cotizador figura en P2 Gestión (no como complemento) · V22.4: cobro «como en un cuaderno» (casilla «aceptó los Términos de uso» si no hay contrato) y 🏠 comercio interno de VAO en Vigencia y pagos · V22.3: «Complemento opcional» (antes «Complemento P3»); el candado de pagos explica qué falta en STAGING y en Producción · V22.2 (v044.2): complementos «para P1, P2, P3 PRO» (antes los códigos internos); fila «Precio mensual» (dice «/ lanzamiento» solo si hay alguno); la cotización la carga cada comercio (VAO también puede, como soporte) · V22 (v044.1): planes P1 · P2 · P3 PRO integrados (activación en un paso con vista previa, cambio de plan a P3 con el pago), complementos opcionales aparte, botonera de cada comercio desde la matriz central y aviso de combinaciones contradictorias · V21 (v043): 📋 Planes y contrataciones — P1/P2/P3, prestaciones por comercio (catálogo/contratado/habilitado/suspendido), complementos, precios, historial y elecciones pendientes // V20: 💱 Cobro por comercio (cobro avanzado prender/apagar, cotizaciones USD/CLP, cobros sin terminar) y uso de la planilla
+const APP_VERSION = 23; // V23 (servidor v045.4): la etiqueta de abajo distingue App · Servidor (getInfo) · Entorno; tocándola se ve el historial de versiones del servidor · V22.5: el Cotizador figura en P2 Gestión (no como complemento) · V22.4: cobro «como en un cuaderno» (casilla «aceptó los Términos de uso» si no hay contrato) y 🏠 comercio interno de VAO en Vigencia y pagos · V22.3: «Complemento opcional» (antes «Complemento P3»); el candado de pagos explica qué falta en STAGING y en Producción · V22.2 (v044.2): complementos «para P1, P2, P3 PRO» (antes los códigos internos); fila «Precio mensual» (dice «/ lanzamiento» solo si hay alguno); la cotización la carga cada comercio (VAO también puede, como soporte) · V22 (v044.1): planes P1 · P2 · P3 PRO integrados (activación en un paso con vista previa, cambio de plan a P3 con el pago), complementos opcionales aparte, botonera de cada comercio desde la matriz central y aviso de combinaciones contradictorias · V21 (v043): 📋 Planes y contrataciones — P1/P2/P3, prestaciones por comercio (catálogo/contratado/habilitado/suspendido), complementos, precios, historial y elecciones pendientes // V20: 💱 Cobro por comercio (cobro avanzado prender/apagar, cotizaciones USD/CLP, cobros sin terminar) y uso de la planilla
 document.addEventListener('DOMContentLoaded', function(){
     var tag = document.createElement('span');
     tag.id = 'version-tag';
     tag.style.cssText = 'position:fixed;right:10px;bottom:8px;font-size:11px;color:#8a95a1;z-index:9999;';
-    tag.textContent = 'v' + APP_VERSION;
+    tag.textContent = 'App v' + APP_VERSION + ' · Servidor …';
     document.body.appendChild(tag);
+    // V23: versión REAL del servidor y entorno (getInfo responde sin sesión y no devuelve datos privados)
+    fetch(API_URL + '?action=getInfo', { redirect: 'follow' }).then(function (r) { return r.json(); }).then(function (i) {
+        var ent = String(i.entorno || (i.sistema && i.sistema.entorno) || '?').toUpperCase();
+        tag.textContent = 'App v' + APP_VERSION + ' · Servidor ' + (i.version || '?') + ' · ' + ent + (i.planillaActiva && !/correcta/i.test(i.planillaActiva) ? ' ⚠️ ' + i.planillaActiva : '');
+        tag.style.color = ent === 'STAGING' ? '#e65100' : '#8a95a1';
+        tag.style.cursor = 'pointer'; tag.title = 'Ver historial de versiones del servidor';
+        tag.onclick = function () { alert((i.historial || []).map(function (h) { return h.version + ' · ' + h.fecha + ' · ' + h.entorno + '\n' + h.descripcion; }).join('\n\n') || 'Sin historial'); };
+    }).catch(function () { tag.textContent = 'App v' + APP_VERSION + ' · Servidor sin respuesta'; });
 });
 const API_URL = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
 const LS_TOKEN = 'vao_admin_token';

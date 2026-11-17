@@ -194,7 +194,7 @@
 <script src="vao-comun.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════
-   stock.html v1.4 — Dashboard de inventario · VAO POS
+   stock.html v1.5 — Dashboard de inventario · VAO POS (servidor v045.6)
    Lee: INVENTARIO_XX (stock actual) + VENTAS_XX (últimos 7 días)
    Acción servidor: getStockCritico (v045.3)
    ═══════════════════════════════════════════════════════════ */
@@ -322,58 +322,48 @@ function setFiltro(f) {
   _render_();
 }
 
-/* ── Entrada ── */
-document.addEventListener('DOMContentLoaded', async () => {
-  /* Intentar VAO.iniciar si hay sesión real; si no, igual mostrar la demo */
-  const _arrancar_ = () => {
-    /* Intentar servidor real; si falla o no hay sesión → datos de demostración */
-    if (typeof VAO !== 'undefined' && VAO.api) {
-      VAO.api('getStockCritico', {})
-        .then(resp => {
-          if (resp && resp.success && Array.isArray(resp.productos) && resp.productos.length > 0) {
-            _productos = resp.productos;
-            document.getElementById('avisoDemo').style.display = 'none';   // ocultar aviso demo
-          } else {
-            // servidor responde pero sin datos (plan P1, sin inventario, etc.)
-            const motivo = (resp && resp.error) ? resp.error : 'Sin datos en el servidor.';
-            document.getElementById('avisoDemo').innerHTML = '⚠️ <span>' + motivo + ' · Mostrando datos de prueba · <strong>v1.4</strong></span>';
-            _productos = _datosDemo_();
-          }
-          _renderResumen_();
-          _render_();
-        })
-        .catch(() => {
-          _productos = _datosDemo_();
-          _renderResumen_();
-          _render_();
-        });
+/* ── Entrada ── v1.5 (servidor v045.6)
+   · Antes: si el servidor fallaba o rechazaba, se mostraban productos INVENTADOS (datos de prueba) como si fueran del comercio,
+     y se pedía el módulo 'stock', que no existe. Ahora: módulo real (pack2_editor_stock, P2 Gestión), se espera el permiso,
+     y ante un error se avisa con Reintentar. Los datos de demostración solo se ven con ?demo=1 en la dirección. */
+function _cargarStock_() {
+  const aviso = document.getElementById('avisoDemo');
+  aviso.style.display = ''; aviso.innerHTML = '⏳ <span>Cargando el stock y las ventas de los últimos 7 días…</span>';
+  return VAO.api('getStockCritico', {}).then(resp => {
+    if (resp && resp.success && Array.isArray(resp.productos)) {
+      _productos = resp.productos;
+      if (_productos.length) aviso.style.display = 'none';
+      else aviso.innerHTML = '📭 <span>Todavía no hay productos en tu inventario. Cargalos con 📦 Ingresar en el POS.</span>';
     } else {
-      _productos = _datosDemo_();
-      _renderResumen_();
-      _render_();
+      _productos = [];
+      aviso.innerHTML = '❌ <span>' + VAO.esc((resp && resp.error) || 'No se pudo leer el stock.') + '</span> <button class="vao-btn chico" onclick="_cargarStock_()">Reintentar</button>';
     }
-  };
-
-  if (typeof VAO !== 'undefined' && VAO.iniciar) {
-    try {
-      const ok = await Promise.race([
-        VAO.iniciar({ modulo: 'stock', titulo: 'Stock', icono: '📦', grupo: 'P2', version: '1.4' }),
-        new Promise(r => setTimeout(() => r('timeout'), 3000))
-      ]);
-      _arrancar_();
-    } catch(e) { _arrancar_(); }
-  } else {
-    _arrancar_();
+    _renderResumen_(); _render_();
+  }).catch(() => {
+    _productos = []; _renderResumen_(); _render_();
+    aviso.style.display = ''; aviso.innerHTML = '📡 <span>' + VAO.esc(VAO.sinConexion) + '</span> <button class="vao-btn chico" onclick="_cargarStock_()">Reintentar</button>';
+  });
+}
+document.addEventListener('DOMContentLoaded', async () => {
+  if (/[?&]demo=1\b/.test(location.search)) {   // solo demostración explícita (nunca en una sesión real)
+    document.getElementById('avisoDemo').innerHTML = '🧪 <span>DEMOSTRACIÓN: productos de ejemplo, no son de tu comercio · <strong>v1.5</strong></span>';
+    _productos = _datosDemo_(); _renderResumen_(); _render_(); return;
   }
+  const ok = await VAO.iniciar({ modulo: 'pack2_editor_stock', titulo: 'Stock', icono: '📦', grupo: 'P2', version: '1.5' });
+  if (!ok) return;   // sin sesión o sin el plan: VAO.iniciar ya muestra el motivo
+  _cargarStock_();
 });
 </script>
 
-<!-- cabecera la inyecta VAO.iniciar -->
-<main class="vao">
+<!-- v1.5: estructura estándar de VAO (cabecera, aviso de bloqueo/plan y contenido) -->
+<header id="vaoCabecera"></header>
+<div id="vaoBloqueo" class="oculto"></div>
+<main class="vao oculto" id="vaoContenido">
+  <div id="vaoAviso" class="oculto"></div>
 
-  <!-- Aviso demo -->
+  <!-- Estado de la carga (cargando / error / sin productos) -->
   <div class="stock-demo-aviso" id="avisoDemo">
-    🧪 <span>Datos de prueba — sin sesión activa · <strong>v1.4</strong></span>
+    ⏳ <span>Cargando…</span>
   </div>
 
   <!-- Resumen global -->

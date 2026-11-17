@@ -103,8 +103,11 @@ VAO.iniciar({ modulo: 'extra_retiro_local', titulo: 'Salida del local', icono: '
   $('filtro').innerHTML += Object.keys(MOTIVOS).map(k => '<option value="' + k + '">' + MOTIVOS[k] + '</option>').join('');
   $('filtro').addEventListener('change', pintarHistorial);
   pintarMotivos();
-  try { await VAO.productos(); } catch (e) { VAO.msg('msg', VAO.sinConexion, 'error'); }
+  // v2 (v045.5): el buscador se conecta ANTES de cargar los productos (antes lo escrito mientras cargaba se perdía y no aparecía nada)
   VAO.buscador('buscar', 'resultados', p => { PROD = p; OP = null; pintarElegido(); $('cantidad').focus(); });
+  $('buscar').placeholder = '⏳ Cargando productos…';
+  try { await VAO.productos(); $('buscar').placeholder = 'Escribí parte del nombre (' + VAO._prods.length + ' productos)'; }
+  catch (e) { $('buscar').placeholder = 'Escribí parte del nombre'; VAO.msg('msg', '❌ No se pudieron cargar los productos: ' + (VAO._prodsError || VAO.sinConexion) + ' Al buscar vas a poder reintentar.', 'error'); }
   $('btnRegistrar').addEventListener('click', registrar);
 });
 </script>

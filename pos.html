@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>[STAGING] SmartPOS · VAO Sistemas</title>
+<title>SmartPOS · VAO Sistemas</title>
 <!-- V33: app instalable (PWA). Íconos con el logo nuevo de VAO. -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0D47A1">
@@ -461,7 +461,12 @@ body.carrito-on .fab-cot { display: none !important; }
     body .total-bar { padding: 5px 12px; }   /* «body» para ganarle a las reglas generales que están más abajo */
     body .total-label { font-size: .62rem; } body .total-monto { font-size: 1.3rem; line-height: 1.1; }
     body .btn-cobrar { padding: 8px 20px; font-size: .95rem; }
+    /* V43.42 (celular): «Siguiente →» con borde que late, para no tener que pensar cuál es el próximo paso */
+    body .btn-cobrar.siguiente { border: 3px solid #fff; animation: vaoSiguiente 1.1s ease-in-out infinite; }
 }
+@keyframes vaoSiguiente { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,.95), 0 0 0 0 rgba(240,125,58,.8); border-color: #fff; }
+                          50% { box-shadow: 0 0 0 4px rgba(255,255,255,.35), 0 0 14px 6px rgba(240,125,58,.55); border-color: #FFD54F; } }
+@media (prefers-reduced-motion: reduce) { body .btn-cobrar.siguiente { animation: none; border-color: #FFD54F; } }
 .btn-cuenta.p3pro { background: linear-gradient(135deg, #8A5A00, #D4A017 60%, #F3D27A); color: #241800; }
 @media (max-width: 599px) {
     .planes-pos.plegable .tarjeta-plan .tp-cab { cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -793,6 +798,40 @@ body.carrito-on .fab-cot { display: none !important; }
     padding: 0 20px 14px;
     flex-wrap: wrap;
 }
+/* V43.31: COBRO ÚNICO */
+.cb-titulo { padding:4px 20px 0; font-size:0.78rem; font-weight:900; color:#555; text-transform:uppercase; letter-spacing:0.5px; }
+.metodos-pago.modo-agregar { gap:4px; flex-wrap:nowrap; padding-bottom:8px; }
+.metodos-pago.modo-agregar .btn-metodo { border-style:dashed; border-color:#90caf9; min-width:0; padding:7px 2px; font-size:0.66rem; line-height:1.15; border-radius:10px; color:#1565c0; }
+#panelMixto .mx-resumen { position:sticky; top:0; z-index:3; background:#fff; padding:4px 0 6px; display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+#panelMixto .mx-resumen > div { margin-bottom:0; padding:7px 8px; flex-direction:column; align-items:flex-start; gap:2px; border-left-width:0; }
+#panelMixto .mx-resumen .mx-val { font-size:1.02rem; } #panelMixto .mx-resumen .mx-etiq { font-size:0.66rem; }
+#panelMixto .mx-resumen .mx-bloque-exacto, #panelMixto .mx-resumen .mx-nota-cent, #panelMixto .mx-resumen .mx-aviso-cot { grid-column:1/-1; }
+.cb-panel { padding:0 20px 10px; }
+.cb-label { display:block; font-size:0.8rem; font-weight:800; color:#444; margin-bottom:6px; } .cb-label small { font-weight:600; color:#888; }
+.cb-pagacon { display:flex; align-items:center; gap:6px; background:#fff; border:2px solid #90caf9; border-radius:14px; padding:4px 12px; }
+.cb-pagacon span { font-size:1.4rem; font-weight:900; color:#1565c0; }
+.cb-pagacon input { flex:1; min-width:0; border:none; outline:none; font-size:1.5rem; font-weight:900; padding:6px 0; background:transparent; }
+.cb-rapidos { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+.cb-rapidos button { flex:1 1 auto; padding:8px 10px; border-radius:10px; border:1.5px solid #cfd8dc; background:#fafafa; font-weight:800; cursor:pointer; }
+.cb-combinar-box { padding:0 20px 12px; }
+.cb-combinar { width:100%; padding:11px; border-radius:12px; border:2px dashed #1565c0; background:#f5faff; color:#1565c0; font-weight:900; font-size:0.92rem; cursor:pointer; }
+.cb-combinar-sub { font-size:0.74rem; color:#777; text-align:center; margin-top:4px; }
+.cb-mx-cab { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-weight:900; color:#0d47a1; }
+.cb-link { border:none; background:none; color:#1565c0; font-weight:800; font-size:0.8rem; cursor:pointer; text-decoration:underline; padding:4px; }
+.cb-ayuda { font-size:0.78rem; color:#37474f; background:#eceff1; border-radius:10px; padding:8px 10px; margin-bottom:8px; line-height:1.35; }
+.mx-linea2 { border:1.5px solid #e0e0e0; border-radius:14px; padding:8px 10px; margin-bottom:8px; background:#fff; }
+.mx-l-top { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.mx-l-medio { font-weight:900; font-size:0.9rem; flex:1; }
+.mx-l-mon { display:flex; gap:4px; }
+.mx-l-mon button { border:1.5px solid #cfd8dc; background:#fafafa; border-radius:8px; padding:4px 8px; font-size:0.75rem; font-weight:900; cursor:pointer; }
+.mx-l-mon button.on { background:#1565c0; color:#fff; border-color:#1565c0; }
+.mx-l-quitar { border:none; background:#ffebee; color:#c62828; border-radius:8px; padding:6px 9px; font-weight:900; cursor:pointer; }
+.mx-l-monto { display:flex; align-items:center; gap:6px; margin-top:6px; }
+.mx-l-monto span { font-weight:900; color:#1565c0; min-width:34px; }
+.mx-l-monto input { flex:1; min-width:0; padding:9px 8px; border:1.5px solid #90caf9; border-radius:10px; font-size:1.1rem; font-weight:800; }
+.mx-l-eq { font-size:0.78rem; color:#455a64; margin-top:4px; }
+.mx-nota-cent { font-size:0.76rem; color:#455a64; background:#fffde7; border-radius:10px; padding:7px 10px; margin-bottom:6px; line-height:1.35; }
+.cb-mas { margin-bottom:8px; } .cb-mas summary { font-size:0.8rem; font-weight:800; color:#1565c0; cursor:pointer; padding:4px 0; }
 .mx-linea { display:flex; gap:6px; margin-bottom:6px; align-items:center; }
 .mx-linea select, .mx-linea input { padding:9px 6px; border:1.5px solid #e0e0e0; border-radius:10px; font-size:0.9rem; min-width:0; background:#fff; }
 .mx-linea select { flex:1.3; } .mx-linea input { flex:1; }
@@ -960,30 +999,38 @@ body.carrito-on .fab-cot { display: none !important; }
 .pin-reloj { width:20px; height:20px; border:3px solid rgba(255,255,255,0.35); border-top-color:#fff; border-radius:50%; animation:pinGira .8s linear infinite; flex-shrink:0; }
 @keyframes pinGira { to { transform: rotate(360deg); } }
 #avisoVersion { position:fixed; left:50%; top:14px; transform:translateX(-50%); z-index:6000; background:#2CCB6F; color:#0E1A12; font-weight:800; font-size:0.9rem; padding:10px 16px; border-radius:999px; box-shadow:0 6px 18px rgba(0,0,0,.25); max-width:92vw; text-align:center; }
+/* V43.32 (v045.7): PAGO MIXTO estilo Copihue — mismas clases, colores y tamaños que seba21 v568 */
+.pm-medio-card { border:1.5px solid #ddd; border-radius:12px; background:#fafafa; overflow:hidden; }
+.pm-medio-card.pm-abierto { border-color:#8bc9a0; background:#fff; }
+.pm-medio-header { display:flex; justify-content:space-between; align-items:center; padding:12px 14px; cursor:pointer; transition:background 0.15s; }
+.pm-medio-card.pm-abierto .pm-medio-header { background:#eaf7ee; }
+.pm-medio-nombre { font-size:0.92rem; font-weight:800; color:#333; display:flex; align-items:center; gap:8px; }
+.pm-medio-icono { font-size:1.8rem; line-height:1; }
+.pm-medio-sub { display:block; font-size:0.68rem; font-weight:600; color:#999; }
+.pm-medio-estado { font-size:0.85rem; font-weight:700; color:#999; text-align:right; display:flex; flex-direction:column; align-items:flex-end; line-height:1.25; }
+.pm-medio-estado.pm-cargado { color:#2e7d32; }
+.pm-medio-monto-principal { color:#2e7d32; font-size:1.18rem; font-weight:900; }
+.pm-medio-monto-secundario { color:#999; font-size:0.72rem; font-weight:600; }
+.pm-medio-flecha { color:#888; font-size:0.75rem; transition:transform 0.15s; }
+.pm-medio-card.pm-abierto .pm-medio-flecha { transform:rotate(180deg); color:#2e7d32; }
+.pm-medio-form { display:none; padding:0 14px 14px; }
+.pm-medio-card.pm-abierto .pm-medio-form { display:block; }
+.pm-medio-pregunta { font-size:0.72rem; color:#666; text-transform:uppercase; font-weight:800; margin-bottom:6px; }
+.pm-medio-input { width:100%; padding:12px 14px; border:1.5px solid #ccc; border-radius:10px; font-size:1.05rem; box-sizing:border-box; margin-bottom:8px; }
+.pm-medio-btn-agregar { width:100%; padding:13px; border:none; border-radius:10px; background:#333; color:#fff; font-weight:800; font-size:0.9rem; cursor:pointer; letter-spacing:0.3px; }
+.pm-medio-equivalente { font-size:0.78rem; color:#555; font-weight:700; margin-top:6px; }
+.pm-medio-fiado-input { width:100%; padding:10px 12px; border:1.5px solid #ccc; border-radius:10px; font-size:0.9rem; box-sizing:border-box; margin-bottom:8px; }
+.pm-medio-card.pm-apagado { filter:grayscale(1); opacity:0.45; }
+.pm-congelado .pm-medio-header { cursor:default; }
+.pm-drop { position:absolute; left:0; right:0; top:100%; background:#fff; border:1.5px solid #ddd; border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,0.12); z-index:100; max-height:200px; overflow-y:auto; margin-top:2px; }
+.pm-drop div { padding:10px 14px; cursor:pointer; border-bottom:1px solid #f0f0f0; display:flex; justify-content:space-between; align-items:center; }
+.pm-drop div span:first-child { font-weight:600; font-size:0.95rem; } .pm-drop div span:last-child { color:#888; font-size:0.78rem; }
+#cbMedios.pm-inactivo { opacity:0.4; pointer-events:none; }
+.btn-metodo.dc-bloqueado { filter:grayscale(1); opacity:0.45; }
+.btn-ok-confirm.dc-espera { background:#aaa !important; }
 </style>
 </head>
 <body>
-<!-- STAGING-ONLY:INICIO -->
-<style>
-@keyframes vaoStgPulso {
-    0%, 94%, 100% { transform: scale(1); }
-    96% { transform: scale(1.12); box-shadow: 0 0 0 6px rgba(255,120,0,.35); }
-    98% { transform: scale(1); }
-}
-#vaoStagingBadge { animation: vaoStgPulso 30s ease-in-out infinite; transform-origin: left bottom; }
-@media (prefers-reduced-motion: reduce) { #vaoStagingBadge { animation: none; } }
-</style>
-<div id="vaoStagingBadge" style="position:fixed;left:6px;bottom:84px;z-index:99999;padding:3px 8px;border-radius:10px;background:rgba(255,120,0,0.88);color:#fff;font:600 11px/1.3 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.25);">🧪 STAGING · sistema de pruebas</div>
-<script>
-(function () { // mantener [STAGING] en el título aunque el POS lo reemplace
-    var P = '[STAGING] ';
-    function f() { if (document.title.indexOf(P) !== 0) document.title = P + document.title; }
-    f();
-    var t = document.querySelector('title');
-    if (t) new MutationObserver(f).observe(t, { childList: true, characterData: true, subtree: true });
-})();
-</script>
-<!-- STAGING-ONLY:FIN -->
 
 <!-- OVERLAY PIN -->
 <div id="overlayPin" style="position:fixed;inset:0;z-index:5000;background:linear-gradient(135deg,#0A2472,#1E88E5);
@@ -1229,44 +1276,116 @@ body.carrito-on .fab-cot { display: none !important; }
         <button type="button" class="btn-corregir-v438" onclick="corregirVentaV438()">✏️ <span class="txt-corregir">Corregir la venta (cantidades, precios, quitar)</span></button>
         <div class="confirm-total" id="confirmTotal">$0</div>
 
-        <!-- MÉTODOS DE PAGO -->
-        <div class="metodos-pago">
+        <!-- V43.31: COBRO ÚNICO — un solo módulo: arranca simple (un medio) y se amplía en la misma pantalla -->
+        <div class="cb-titulo" id="cbTitulo">¿Cómo paga?</div>
+        <div class="metodos-pago" id="cbMedios">
             <button class="btn-metodo activo" id="metodo-efectivo" onclick="seleccionarMetodo('efectivo')">💵 Efectivo</button>
             <button class="btn-metodo" id="metodo-qr" style="display:none;">📱 QR MP</button>
             <button class="btn-metodo" id="metodo-transferencia" onclick="seleccionarMetodo('transferencia')">🏦 Transferencia</button>
-            <button class="btn-metodo" id="metodo-debito" onclick="seleccionarMetodo('debito')">💳 Débito</button>
-            <button class="btn-metodo" id="metodo-qr_posnet" onclick="seleccionarMetodo('qr_posnet')">💳 QR / Posnet</button>
+            <button class="btn-metodo" id="metodo-debito" onclick="seleccionarMetodo('debito')">💳 Tarjeta / Posnet</button>   <!-- V43.32: débito, crédito o QR del aparato (se registra DEBITO) -->
+            <button class="btn-metodo" id="metodo-qr_posnet" style="display:none;" onclick="seleccionarMetodo('qr_posnet')">💳 QR / Posnet</button>   <!-- V43.32: unificado en «Tarjeta / Posnet» (se conserva oculto por compatibilidad) -->
             <button class="btn-metodo" id="metodo-fiado" onclick="seleccionarMetodo('fiado')">🧾 Fiado</button>
-            <button class="btn-metodo" id="metodo-mixto" style="display:none;" onclick="seleccionarMetodo('mixto')">🔀 Mixto</button>
+            <button class="btn-metodo" id="metodo-mixto" style="display:none;" onclick="seleccionarMetodo('mixto')">🔀 Mixto</button>   <!-- V43.31: oculto siempre (compatibilidad); se entra con «Combinar» -->
         </div>
 
-        <!-- V39: PANEL MIXTO (cobro avanzado; el servidor calcula todo y lo vuelve a controlar) -->
-        <div id="panelMixto" style="display:none;padding:0 20px 14px;">
-            <div id="mxLineas"></div>
-            <button type="button" class="mx-agregar" id="mxBtnAgregar" onclick="mxAgregarLinea()">＋ Agregar pago</button>
-            <div class="mx-resumen" id="mxResumen"></div>
-            <!-- v045.3: opciones como toggles visuales -->
-            <div style="display:flex;gap:8px;margin-bottom:8px;">
-              <label class="mx-toggle" id="lblFiar"><input type="checkbox" id="mxFiar" onchange="mxOpcion('fiar')"> 🧾 Fiar lo que falta</label>
-              <label class="mx-toggle" id="lblDeuda"><input type="checkbox" id="mxDeuda" onchange="mxOpcion('deuda')"> 💙 Cobrar deuda</label>
+        <!-- V43.31: efectivo con un solo medio — calculadora de vuelto (solo ayuda en pantalla: no se registra ni cambia la venta) -->
+        <div id="panelEfectivo" class="cb-panel" style="display:none;">
+            <label class="cb-label" for="cbPagaCon">¿Con cuánto paga? <small>opcional, para calcular el vuelto</small></label>
+            <div class="cb-pagacon"><span>$</span><input id="cbPagaCon" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0" oninput="cbPagaConCambio()"></div>
+            <div class="cb-rapidos" id="cbRapidos"></div>
+            <div id="cbVueltoSimple"></div>
+        </div>
+        <!-- V43.32 (v045.7): PAGO MIXTO estilo Copihue (seba21 v568) — 2 recuadros + tarjetas por medio. El servidor calcula y controla todo. -->
+        <div id="pmToggleWrap" onclick="togglePagoMixto()" style="display:none;margin:8px 20px 4px;background:linear-gradient(135deg,#5e35b1,#7e57c2);border-radius:14px;padding:12px 16px;align-items:center;gap:10px;cursor:pointer;box-shadow:0 2px 8px rgba(94,53,177,0.3);">
+            <span style="font-size:1.5rem;">💱</span>
+            <div style="flex:1;">
+                <div id="pmToggleLink" style="font-size:0.85rem;font-weight:900;color:white;">PAGO MIXTO • ABONO + FIADO + $CL + $US ETC</div>
             </div>
-            <div id="mxClienteBox" style="display:none;">
-                <input type="text" class="form-input" id="mxCliente" placeholder="Nombre del cliente" style="margin-bottom:6px;" oninput="mxCambio()">
-                <input type="tel" class="form-input" id="mxTelefono" placeholder="Teléfono (opcional)" style="margin-bottom:6px;" oninput="mxCambio()">
-                <div id="mxDeudaBox" style="display:none;">
-                    <select class="form-input" id="mxDeudaModo" style="margin-bottom:6px;" onchange="mxCambio()">
-                        <option value="VUELTO">El vuelto va a la deuda</option>
-                        <option value="SUMAR">Pagar un monto de la deuda</option>
-                    </select>
-                    <input type="number" class="form-input" id="mxDeudaMonto" placeholder="Monto a la deuda (vacío = toda)" min="0" style="display:none;" oninput="mxCambio()">
+            <span id="pmToggleFlecha" style="font-size:1.1rem;color:rgba(255,255,255,0.6);">›</span>
+        </div>
+        <div id="panelMixto" style="display:none;margin:8px 20px 0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-size:0.85rem;font-weight:900;color:#333;">💱 Pago mixto</span>
+                <span id="pmCerrar" onclick="togglePagoMixto()" style="font-size:0.75rem;color:#888;cursor:pointer;">✕ cerrar</span>
+            </div>
+            <!-- Izquierda = la venta (a pagar / pagado) · derecha = lo recibido (recibido / falta-vuelto). Geometría fija. -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+                <div style="background:#fff;border:2px solid #333;border-radius:14px;padding:10px;text-align:center;">
+                    <div style="font-size:0.6rem;color:#666;text-transform:uppercase;font-weight:800;letter-spacing:0.3px;">Total a pagar</div>
+                    <div id="pmTotal" style="font-size:1.3rem;font-weight:900;color:#1a1a1a;line-height:1.15;margin-bottom:8px;">$0</div>
+                    <div style="border-top:1px solid #eee;padding-top:7px;">
+                        <div style="font-size:0.6rem;color:#2e7d32;text-transform:uppercase;font-weight:800;">Pagado</div>
+                        <div id="pmPagado" style="font-size:1.15rem;font-weight:900;color:#2e7d32;">$0</div>
+                    </div>
+                </div>
+                <div style="background:#fff;border:2px solid #333;border-radius:14px;padding:10px;text-align:center;">
+                    <div style="font-size:0.6rem;color:#666;text-transform:uppercase;font-weight:800;letter-spacing:0.3px;">Total recibido</div>
+                    <div id="pmTotalRecibido" style="font-size:1.3rem;font-weight:900;color:#1a1a1a;line-height:1.15;margin-bottom:8px;">$0</div>
+                    <div id="pmFaltaBox" style="border-top:1px solid #eee;padding-top:7px;">
+                        <div id="pmFaltaLabel" style="font-size:0.6rem;color:#c62828;text-transform:uppercase;font-weight:800;">Falta</div>
+                        <div id="pmFaltaValor" style="font-size:1.15rem;font-weight:900;color:#c62828;">$0</div>
+                    </div>
                 </div>
             </div>
-            <div class="mx-previa" id="mxPrevia"></div>
+            <div id="mxNotas"></div>
+            <!-- VUELTO → DEUDA: solo con vuelto y sin fiado en esta venta (no se paga una deuda con otro fiado) -->
+            <div id="pmVueltoDeuda" style="display:none;margin-bottom:8px;">
+                <button type="button" id="pmVdBtn" onclick="_vdAbrir()" style="width:100%;padding:11px 14px;border:1.5px solid #e65100;background:#fff3e0;color:#e65100;font-weight:800;font-size:0.9rem;border-radius:12px;cursor:pointer;text-align:left;">💵 Aplicar vuelto a deuda</button>
+                <div id="pmVdPanel" style="display:none;margin-top:8px;padding:10px;border:1.5px solid #ffcc80;border-radius:12px;background:#fffaf3;">
+                    <div style="position:relative;">
+                        <input id="pmVdCliente" type="text" placeholder="👤 Cliente con deuda (nombre o teléfono)" autocomplete="off" oninput="_cliFiltrar('pmVdCliente','pmVdDrop',_vdElegir)" onkeydown="if(event.key==='Enter'){event.preventDefault();_vdElegir(this.value,'');}" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:0.95rem;">
+                        <div id="pmVdDrop" class="pm-drop" style="display:none;"></div>
+                    </div>
+                    <div id="pmVdMsg" style="font-size:0.8rem;color:#666;margin-top:6px;"></div>
+                    <div id="pmVdLista" style="margin-top:6px;"></div>
+                    <div id="pmVdMontoBox" style="display:none;margin-top:6px;">
+                        <div class="pm-medio-pregunta">¿Cuánto del vuelto va a la deuda?</div>
+                        <input id="pmVdMonto" class="pm-medio-input" type="number" inputmode="decimal" placeholder="Monto" oninput="_vdMontoCambio()">
+                    </div>
+                    <div id="pmVdResumen" style="font-size:0.85rem;font-weight:700;color:#e65100;margin-top:6px;"></div>
+                    <button type="button" onclick="_vdQuitar()" style="margin-top:8px;padding:6px 10px;border:1px solid #bbb;background:#fff;color:#555;border-radius:8px;font-size:0.8rem;cursor:pointer;">✕ No aplicar a deuda</button>
+                </div>
+            </div>
+            <!-- MEDIOS — orden fijo, ninguno se mueve -->
+            <div id="pmMedios" style="display:flex;flex-direction:column;gap:8px;"></div>
+            <div id="pmErrorMsg" style="display:none;font-size:0.8rem;color:#c62828;font-weight:700;margin-top:8px;padding:8px 10px;background:#ffebee;border-radius:10px;"></div>
         </div>
+
+        <!-- COBRAR DEUDA DEL CLIENTE — aparte del mixto: se suma a esta compra y se cobra todo junto (con deuda sumada no se puede fiar) -->
+        <div id="dcWrap" style="display:none;">
+            <div id="dcCard" onclick="_dcToggle()" style="margin:8px 20px 4px;background:linear-gradient(135deg,#ef6c00,#fb8c00);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+                <span style="font-size:1.5rem;">💰</span>
+                <div style="flex:1;">
+                    <div style="font-size:0.85rem;font-weight:900;color:white;">Cobrar deuda del cliente</div>
+                    <div style="font-size:0.72rem;color:rgba(255,255,255,0.85);">Sumala a esta compra y cobrá todo junto</div>
+                </div>
+                <span id="dcFlecha" style="font-size:1.1rem;color:rgba(255,255,255,0.7);">›</span>
+            </div>
+            <div id="dcPanel" style="display:none;margin:6px 20px 0;padding:10px;border:1.5px solid #ffcc80;border-radius:12px;background:#fffaf3;">
+                <div style="position:relative;">
+                    <input id="dcCliente" type="text" placeholder="👤 Cliente con deuda (nombre o teléfono)" autocomplete="off" oninput="_cliFiltrar('dcCliente','dcDrop',_dcElegir)" onkeydown="if(event.key==='Enter'){event.preventDefault();_dcElegir(this.value,'');}" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #ddd;border-radius:10px;font-size:0.95rem;">
+                    <div id="dcDrop" class="pm-drop" style="display:none;"></div>
+                </div>
+                <div id="dcMsg" style="font-size:0.8rem;color:#666;margin-top:6px;"></div>
+                <div id="dcLista" style="margin-top:6px;"></div>
+                <div id="dcMontoBox" style="display:none;margin-top:6px;">
+                    <div class="pm-medio-pregunta">¿Cuánto cobrás de la deuda?</div>
+                    <input id="dcMonto" class="pm-medio-input" type="number" inputmode="decimal" placeholder="Monto" oninput="_dcRenderResumen()" onkeydown="if(event.key==='Enter'){event.preventDefault();_dcSumar();}">
+                </div>
+                <div id="dcResumen" style="font-size:0.85rem;font-weight:700;color:#e65100;margin-top:6px;"></div>
+                <button type="button" id="dcSumarBtn" onclick="_dcSumar()" style="display:none;width:100%;margin-top:8px;padding:11px;border:none;border-radius:10px;background:#e65100;color:white;font-weight:800;font-size:0.9rem;cursor:pointer;">➕ Sumar al cobro</button>
+                <button type="button" id="dcCerrarBtn" onclick="_dcQuitar()" style="width:100%;margin-top:8px;padding:10px;border:1.5px solid #bbb;border-radius:10px;background:#fff;color:#555;font-weight:700;font-size:0.9rem;cursor:pointer;">✕ Cerrar y no cobrar deuda</button>
+            </div>
+            <div id="dcBloque" style="display:none;margin:8px 20px 0;padding:10px 12px;border:2px solid #e65100;border-radius:12px;background:#fff3e0;"></div>
+        </div>
+        <div style="padding:0 20px;"><div class="mx-previa" id="mxPrevia"></div></div>
 
         <!-- PANEL FIADO -->
         <div id="panelFiado" style="display:none;padding:0 20px 14px;">
-            <input type="text" class="form-input" id="fiadoCliente" placeholder="Nombre del cliente" style="margin-bottom:8px;">
+            <div style="position:relative;">   <!-- V43.34: busca el cliente mientras escribís (misma lista que Clientes / Fiados, como Copihue) -->
+                <input type="text" class="form-input" id="fiadoCliente" placeholder="👤 Nombre del cliente" autocomplete="off" style="margin-bottom:8px;" oninput="if(!this.readOnly)_cliFiltrar('fiadoCliente','fiadoDrop',_fiadoElegir)">
+                <div id="fiadoDrop" class="pm-drop" style="display:none;"></div>
+            </div>
             <input type="tel" class="form-input" id="fiadoTelefono" placeholder="Teléfono (opcional)">
             <!-- V38: aviso si el cliente ya debe (solo informa, no bloquea) -->
             <div id="fiadoDeudaAviso" style="display:none;margin-top:8px;padding:8px 10px;border-radius:10px;background:#fff3e0;border:1px solid #ffb74d;color:#e65100;font-size:0.85rem;font-weight:700;line-height:1.3;"></div>
@@ -1311,7 +1430,7 @@ body.carrito-on .fab-cot { display: none !important; }
 
         <!-- TICKET WA (post-venta) -->
         <div id="btnTicketWA" style="display:none;padding:0 20px 16px;">
-            <button onclick="enviarTicketWA()"
+            <button id="btnTicketWAb" onclick="enviarTicketWA()"
                     style="width:100%;padding:12px;border:none;border-radius:50px;
                            background:linear-gradient(135deg,#25D366,#128C7E);
                            color:white;font-size:0.95rem;font-weight:900;cursor:pointer;">
@@ -1514,9 +1633,9 @@ if (!/^[A-Z0-9]{2,10}$/.test(PREFIJO)) {
 }
 
 // ========== CONFIG ==========
-const API_URL  = 'https://script.google.com/macros/s/AKfycbzlfo16ivECUH-qUkjIllj636bK9uE9GuFBxaddKK3KQT06xnrv1BObwlvFQ_3WvY_f/exec';
-const APP_VERSION_TXT = '43.29';   // V43.29: Stock en P2 — fallback a botonesPorPack si la matriz del servidor no conoce la app   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
-const APP_VERSION = 43; // V43.18: 🗑 vaciar flotante (celular); 🔄 Actualizar en la botonera P1 (base) con aviso; volver del Cotizador sin recargar todo · V43.17: computadora — catálogo y venta lado a lado (el catálogo usa todo el alto) y herramientas en una franja compacta · V43.8: celular «carrito al tocar» — el catálogo ocupa la pantalla; 🛒 (con cantidad) en la barra de Cobrar abre la venta para corregir; 🔍 y 🔄 flotantes; «✏️ Corregir la venta» en Confirmar · V43.7: «Venta actual · Limpiar» solo aparece con productos en el carrito; 📣 comparte el afiche nuevo (og-vao-pos-2.jpg) · V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
+const API_URL  = 'https://script.google.com/macros/s/AKfycbzuRgk0h-gd5OXdZ3Q2Dw2Kudx8V7jY6ZwhuWvfg8JYfbU1mr2SU_K3zuFriRDRyUAU9A/exec';
+const APP_VERSION_TXT = '43.44';   // V43.44: celular — paso 1 «Cobrar →» (acción principal), paso 2 «Siguiente →» con borde que late · V43.43: un solo aviso verde al registrar (el cartel de avance; sin el aviso viejo encima) · V43.42: celular — el botón de la barra dice «Siguiente →» y late (borde) mientras hay productos · V43.41: avance real del cobro con segundos y reintento automático sin duplicar; panel técnico con ?diag=1 · V43.40: el botón del ticket muestra «Preparando… calculando la deuda» y se pone verde cuando está listo · V43.39: la lista de clientes se abre hacia arriba si abajo la tapan el teclado o los botones · V43.38: «Revisando si ya debe» recién al elegir el cliente (no mientras se escribe) · V43.37: el Fiado común no deja confirmar mientras revisa si el cliente ya debe · V43.36: el ticket del Fiado común muestra la deuda total del cliente · V43.35: el buscador de clientes funciona desde la primera letra aunque la lista todavía esté llegando · V43.34: el Fiado común busca el cliente mientras escribís (como Copihue) · V43.33: ticket de WhatsApp estilo Copihue (cómo pagó, vuelto a la deuda, estado de la deuda con números del servidor) · V43.32: PAGO MIXTO estilo Copihue · V43.31: COBRO ÚNICO (un medio o combinado en la misma pantalla, cuenta en centavos igual al servidor, resumen con monedas y equivalentes) + siempre arranca en P1 (pedido V43.30, no estaba en este respaldo) · V43.28: botón Stock en P2 (stock.html) + config.pack2_editor_stock   // lo que se ve en el encabezado (para saber qué versión cargó el celular)
+const APP_VERSION = 43; // V43.32 (v045.7): PAGO MIXTO estilo Copihue — dos recuadros (a pagar/pagado · recibido/falta-vuelto), tarjetas por medio con «¿Cuánto recibís?», Enter/AGREGAR y ✕ por ingreso; «Tarjeta / Posnet» unifica débito, crédito y QR; «Cobrar deuda del cliente» aparte del mixto y «Aplicar vuelto a deuda» dentro; una deuda no se paga con otro fiado · V43.18: 🗑 vaciar flotante (celular); 🔄 Actualizar en la botonera P1 (base) con aviso; volver del Cotizador sin recargar todo · V43.17: computadora — catálogo y venta lado a lado (el catálogo usa todo el alto) y herramientas en una franja compacta · V43.8: celular «carrito al tocar» — el catálogo ocupa la pantalla; 🛒 (con cantidad) en la barra de Cobrar abre la venta para corregir; 🔍 y 🔄 flotantes; «✏️ Corregir la venta» en Confirmar · V43.7: «Venta actual · Limpiar» solo aparece con productos en el carrito; 📣 comparte el afiche nuevo (og-vao-pos-2.jpg) · V43.6: celular — mini botones P1 · P2 · P3 · ➕ (tocar abre/cierra sus herramientas; arranca cerrado), Mi plan / Salir / ✨ en el encabezado y barra de Cobrar más baja · V43.5: Mi plan igual que planes.html v5.5 (cada tarjeta con sus herramientas y «Incluye ✔ Todo P1 · ✔ Todo P2») · V43.4: con la prueba vencida o en modo consulta, ↩️ Anular queda bloqueado como Ingresar y Ajustar; «Pagar mi plan» → «Elegir mi plan» (el pago lo confirma VAO) · V43.3: «✨ P3 PRO» abre su propia ventana (precio, las 7 herramientas que suma con su explicación, Pedir por WhatsApp y Comparar planes) · V43.2: botones ocultos por el comercio (P2/P3, Mis datos → ⚙️ Ajustes) y cotización propia con fecha (aviso a los 7 días) · en el celular las tarjetas se pliegan (una abierta, las demás en una línea con sus íconos; se recuerda cuál) · pastilla dorada «✨ P3 PRO» que abre Mi plan para quien no tiene P3 · V43.1: «Mi plan» con tarjetas (P2 abraza a P1, P3 abraza a P2; P2 recomendado; tu plan marcado) · V43 (v044.1): botonera desde la MATRIZ CENTRAL de aplicaciones del servidor (un botón por aplicación y su destino); Clientes abre clientes.html (antes Fiados), Mis datos abre misdatos.html e Inventario abre inventario.html (antes los dos abrían la misma ventana); tarjeta P3 PRO (paquete completo) y tarjeta ➕ Complementos (Cobro mixto, Monedas, Juego); Mi plan con P1/P2/P3 PRO y lo que suma cada uno · V42 (v044): la tarjeta P3 muestra cada complemento contratado (cotización, compras, salidas, finanzas, mis deudas, egresos, juego, voz) y abre su pantalla; P2 suma ↩️ Anular venta; 💳 Mi plan coherente (nombres del servidor, sin «Pagar» si el pago en línea está apagado: se pide a VAO) · V41 (v043): las funciones se muestran en TARJETAS por plan — P1 · Esencial, P2 · Gestión y P3 · Complementos — cada una con título, descripción y sus botones; solo las contratadas (sin tarjetas vacías ni botones bloqueados); en celular se apilan · V40 (v043): la barra se arma por plan — P1 Esencial (Ingresar, Hoy, Fiados) y P2 Gestión (Ajustar, Reportes) en grupos; se ve solo lo contratado y habilitado; 🔀 Mixto solo con el complemento Cobro avanzado; ✔️ Revisar inventario solo con P2; 💳 Mi plan muestra tu plan, complementos y vencimiento y permite pedir cambios por WhatsApp · V39: 🔀 Mixto (solo si VAO prende el cobro avanzado): varios medios, monedas, vuelto, fiar lo que falta o cobrar deuda, con Revisar antes de cobrar y reintento sin duplicar; Hoy muestra la caja del servidor (todos los equipos); Mis datos → ✔️ Revisar inventario (solo lectura) · V38: al fiar avisa si el cliente ya debe (solo lectura, no bloquea) · V37: sin 🏠 en el encabezado (cerraba la sesión); Salir pide confirmación; '¿Perdiste o te robaron el celular?' en la pantalla del PIN · V36: PIN oculto ●●●●●● con 👁️; 📣 Compartir con el afiche (menú del celular: elegís WhatsApp Business); PIN: cierra el teclado y muestra ⏳ Verificando visible arriba; aviso único de versión nueva · V35: 📣 comparte planes.html?v=N (WhatsApp guarda la vista previa vieja de un link ya enviado) · V34: botón 💬 Soporte por WhatsApp a VAO Sistemas (encabezado y pantalla del PIN) · V33: app instalable (manifest + service worker sin copias) y recuerda el último comercio · V32: el Historial se abre SOLO (cierra Mis datos antes; en algunos celulares quedaba tapado) · V31: 🕵️ Historial de cambios (solo lectura, backend v040.4) · V30: búsqueda por TODAS las palabras
 const HOY_KEY    = 'vao_ventas_' + PREFIJO + '_' + new Date().toISOString().slice(0, 10);
 const CARRITO_KEY= 'vao_carrito_' + PREFIJO;
 
@@ -1612,7 +1731,7 @@ function _plegablesV432_() {
     mt.querySelectorAll('button').forEach(b => b.onclick = () => { const ab = document.querySelector('#planesPos .tarjeta-plan:not(.plegada)'); _abrirTarjetaV432_(ab && ab.id === b.dataset.t ? '' : b.dataset.t, true); });
     let abierta = null; try { abierta = localStorage.getItem(_claveTarjetaV432_()); } catch (e) {}
     const celu = window.matchMedia && window.matchMedia('(max-width: 599px)').matches;
-    if (!vis.some(t => t.id === abierta)) abierta = vis.length ? vis[0].id : null;   // V43.23: siempre abierta en P1
+    abierta = vis.length ? vis[0].id : null;   // V43.31 (pedido V43.30): el POS SIEMPRE arranca con P1 abierta (no se usa la tarjeta guardada) · V43.23
     _abrirTarjetaV432_(abierta, false);
     const apps = _appsV43_(), p3 = document.getElementById('btnVerP3');
     const verP3 = (PRESTACIONES_ACTUAL && PRESTACIONES_ACTUAL.planesP1P2P3 && apps && !apps.some(a => a.grupo === 'P3' && a.habilitada));
@@ -1697,11 +1816,7 @@ function _aplicarAppsV43_(botones) {
     const hab = {}, ocu = _ocultosV432_(); apps.forEach(a => { hab[a.id] = a.habilitada === true && ocu.indexOf(a.id) === -1; });   // V43.2: lo que el comercio ocultó en Mis datos → Ajustes (no cambia el permiso)
     Object.keys(BOTON_APP_V43_).forEach(id => {
         const b = document.getElementById(id); if (!b) return;
-        const appKey = BOTON_APP_V43_[id];
-        // Si la matriz del servidor no conoce esta app todavía, cae al permiso de botonesPorPack (compatibilidad hacia adelante)
-        const enMatriz = apps.some(a => a.id === appKey);
-        const permiso = enMatriz ? hab[appKey] === true : (botones[id] === true);
-        const ok = permiso && (id !== 'btnAnularP2' || !(CONFIG_ACTUAL && CONFIG_ACTUAL.modoConsulta)) &&
+        const ok = hab[BOTON_APP_V43_[id]] === true && (id !== 'btnAnularP2' || !(CONFIG_ACTUAL && CONFIG_ACTUAL.modoConsulta)) &&
                    (id !== 'btnCobroAvanzado' || _cobroAvanzadoV41_({})) && (id !== 'btnCotizaciones' || (_cobroAvanzadoV41_({}) && _hayCotizacionV41_()));
         b.style.display = ok ? '' : 'none';
     });
@@ -2602,12 +2717,22 @@ function _carritoContadorV438_() {
     if (!ventaActual.length && document.body.classList.contains('carrito-on')) toggleCarritoV438(false);
     document.body.classList.toggle('hay-venta', ventaActual.length > 0);   // V43.15: muestra 🗑 vaciar en la barra (celular)
     _refrescarListaV4310_();   // V43.10: globitos al día sin mover la lista (después de 1,5 s sin tocar, los elegidos suben arriba)
+    _btnSiguienteV4342_();
 }
+// V43.44 (celular): el primer paso dice la ACCIÓN PRINCIPAL («Cobrar →»); los pasos que siguen dicen «Siguiente →» con el borde
+// que late. Mismos 3 pasos de siempre (1 Productos → 2 Revisar → 3 Pago). En la computadora sigue «Cobrar →».
+function _btnSiguienteV4342_() {
+    const bc = document.getElementById('btnCobrar'); if (!bc) return;
+    const celu = _celuV438_(), enRevisar = celu && document.body.classList.contains('carrito-on') && ventaActual.length > 0;
+    bc.textContent = enRevisar ? 'Siguiente →' : 'Cobrar →';
+    bc.classList.toggle('siguiente', enRevisar);
+}
+window.addEventListener('resize', () => { try { _btnSiguienteV4342_(); } catch (e) {} });
 function toggleCarritoV438(abrir) {
     const on = abrir === undefined ? !document.body.classList.contains('carrito-on') : !!abrir;
     if (on && !ventaActual.length) { mostrarToast('🛒 Todavía no hay productos en la venta', 'naranja'); return; }
     document.body.classList.toggle('carrito-on', on);
-    const bc = document.getElementById('btnCobrar'); if (bc) bc.textContent = on ? 'Elegir pago →' : 'Cobrar →';   // V43.9
+    _btnSiguienteV4342_();   // V43.42 (antes: «Elegir pago →» / «Cobrar →»)
 }
 // V43.9 (celular) — 3 pasos: 1 Productos (lista con globitos) → 2 Revisar (carrito, sin pago) → 3 Pago (cómo paga y confirmar)
 function cobrarV439() {
@@ -2885,12 +3010,14 @@ function limpiarVenta() {
         localStorage.removeItem(_ventaEnCursoKey());
         ventaActual = [];
         guardarCarrito(); renderVenta();
+        cbReset();   // V43.32
         mostrarToast('🗑 Venta en curso descartada', 'rojo');
         return;
     }
     if (ventaActual.length && !confirm('¿Limpiar la venta actual?')) return;
     ventaActual = [];
     _borrarBorrador('fiado'); // V22: limpiar también descarta el cliente del fiado escrito
+    cbReset();   // V43.32: también lo cargado en el pago mixto y la deuda sumada
     guardarCarrito(); renderVenta();
 }
 
@@ -2909,7 +3036,17 @@ function abrirConfirm() {
     const _uV439 = ventaActual.reduce((s, i) => s + Number(i.qty || 0), 0);   // V43.9: en el celular la lista ya se revisó en el paso 2
     document.getElementById('confirmResumenV439').textContent = '🛒 ' + (Number.isInteger(_uV439) ? _uV439 : _uV439.toFixed(1)) + (_uV439 === 1 ? ' unidad' : ' unidades') + ' · ' + ventaActual.length + (ventaActual.length === 1 ? ' producto' : ' productos');
     const enCurso = _leerVentaEnCurso();
-    seleccionarMetodo(enCurso ? enCurso.metodoPago : 'efectivo');
+    // V43.32: lo cargado en el pago mixto o la deuda sumada sobreviven a cerrar la ventana para agregar productos (Copihue v453)
+    let _met432 = 'efectivo';
+    if (enCurso) {
+        _met432 = enCurso.simple || enCurso.metodoPago;
+        const dOp = enCurso.op && enCurso.op.deuda;
+        if (enCurso.simple && dOp) _dc = { cliente: dOp.cliente, telefono: dOp.telefono || '', deuda: 0, fiados: [], monto: Number(dOp.monto) || 0, activo: true };
+    } else if (metodoPagoActual === 'mixto' && _mxLineas.length) _met432 = 'mixto';
+    else if (_dcMonto() > 0) _met432 = metodoPagoActual === 'fiado' ? 'efectivo' : metodoPagoActual;
+    else cbReset();
+    { const _b = document.getElementById('btnOkConfirm'); if (_b && !enCurso) { _b.disabled = false; _b.textContent = '✅ Confirmar'; } const _p = document.getElementById('mxPrevia'); if (_p && !enCurso) { _p.className = 'mx-previa'; _p.textContent = ''; } }   // V43.32: cada apertura arranca con el botón listo
+    _cbCambiandoModo = true; try { seleccionarMetodo(_met432); } finally { _cbCambiandoModo = false; }
     // V13: un fiado en curso muestra su cliente/teléfono guardados, de solo lectura.
     const inCliente = document.getElementById('fiadoCliente');
     const inTelefono = document.getElementById('fiadoTelefono');
@@ -2938,11 +3075,16 @@ function cerrarConfirm() {
     document.getElementById('panelQR').style.display = 'none';
     document.getElementById('panelQRMP').style.display = 'none';
     document.getElementById('panelQRTransf').style.display = 'none';
+    const pc = document.getElementById('cbPagaCon'); if (pc) pc.value = '';   // V43.31
 }
 
 function seleccionarMetodo(metodo) {
     const enCurso = _leerVentaEnCurso();
-    if (enCurso && metodo !== enCurso.metodoPago) {
+    // V43.32: con el pago mixto abierto los medios de arriba no se usan (se cierra con «✕ cerrar»)
+    if (metodoPagoActual === 'mixto' && metodo !== 'mixto' && !enCurso && !_cbCambiandoModo) return;
+    // V43.32: no se paga una deuda con otro fiado (Copihue v553/v558)
+    if (metodo === 'fiado' && !enCurso && (_dcMonto() > 0 || _dcLeyendoSinSumar())) { _pmAviso('⛔ Fiado no disponible', 'No se puede usar Fiado con una deuda cargada. ' + PM_NO_REFINANCIA, '#c62828'); return; }
+    if (enCurso && metodo !== (enCurso.simple || enCurso.metodoPago)) {
         mostrarToast('⚠️ Venta enviada sin confirmar: no se puede cambiar el método', 'rojo');
         return;
     }
@@ -2955,10 +3097,11 @@ function seleccionarMetodo(metodo) {
     const panelMP = document.getElementById('panelQRMP');
     const panelTransf = document.getElementById('panelQRTransf');
     const panelFiado = document.getElementById('panelFiado');
-    const total = ventaActual.reduce((s, i) => s + i.price * i.qty, 0);
+    const total = _cbACobrar();   // V43.32: con deuda sumada, el QR / la transferencia cobran compra + deuda
     document.getElementById('panelMixto').style.display = metodo === 'mixto' ? 'block' : 'none'; // V39
+    _cbPintarModo(metodo);   // V43.31
     if (metodo === 'mixto') { panelQR.style.display = 'none'; panelFiado.style.display = 'none'; mxAbrir(); return; }
-    _mxRevisado = null; const _bOk = document.getElementById('btnOkConfirm'); if (_bOk && _bOk.textContent.indexOf('Confirmado') === -1 && !_bOk.disabled) _bOk.textContent = '✅ Confirmar';
+    _mxRevisado = null; const _bOk = document.getElementById('btnOkConfirm'); if (_bOk && _bOk.textContent.indexOf('Confirmado') === -1 && !_bOk.disabled) _bOk.textContent = _dcMonto() > 0 ? '🔎 Revisar cobro' : '✅ Confirmar';   // V43.32: con deuda sumada primero se revisa
     if (metodo === 'qr') {
         panelQR.style.display = 'block';
         panelMP.style.display = 'block';
@@ -2986,7 +3129,9 @@ function seleccionarMetodo(metodo) {
         panelMP.style.display = 'none';
         panelTransf.style.display = 'none';
         panelFiado.style.display = 'block';
+        _cliCargar();   // V43.34: lista de clientes para buscar mientras se escribe
         consultarDeudaFiado(); // V38
+        _btnFiadoEspera(false);   // V43.37: sin cliente el botón dice «Escribí el cliente»
     } else {
         panelQR.style.display = 'none';
         panelMP.style.display = 'none';
@@ -3098,6 +3243,8 @@ async function confirmarVenta() {
     } else {
         if (metodoPagoActual === 'fiado') { return confirmarVentaFiado(); }
         if (metodoPagoActual === 'mixto') { return confirmarVentaMixto(); } // V39
+        if (_dcLeyendoSinSumar()) { _pmAviso('⚠️ Deuda leída sin sumar', 'Tenés una deuda leída sin sumar al cobro. Tocá «Sumar … al cobro» o cerrá la tarjeta naranja para poder cobrar.', '#e65100'); return; }   // V43.32
+        if (_dcMonto() > 0) { return confirmarVentaMixto(); }   // V43.32: compra + deuda sumada = un cobro del servidor (revisar → confirmar)
         // VALIDACIÓN FINAL antes de confirmar
         const sinStock = ventaActual.filter(item => {
             const p = productos.find(pr => pr.id === item.id);
@@ -3122,6 +3269,7 @@ async function confirmarVenta() {
 
     btn.disabled = true;
     btn.textContent = '⏳ Procesando...';
+    _cbProg('⏳ Procesando: registrando ' + (enCurso.metodoPago === 'fiado' ? 'el fiado' : 'la venta') + ' en la planilla…');   // V43.41: avance real con segundos
     const total = ventaActual.reduce((s, i) => s + i.price * i.qty, 0);
     const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
     let resp = null;
@@ -3138,6 +3286,7 @@ async function confirmarVenta() {
         resp = null;
         console.warn('Sin conexión:', e);
     }
+    _cbProgFinVenta(resp, 'Venta registrada');   // V43.41
 
     if (resp && resp.success === false && !resp.error) {
         // V12: respuesta DEFINITIVA sin venta (todo bloqueado): el backend no
@@ -3212,7 +3361,7 @@ async function confirmarVenta() {
     localStorage.removeItem(CARRITO_KEY);
     renderVenta();
     if (listaTodosAbierta) renderListaTodos();
-    document.getElementById('btnTicketWA').style.display = 'block';
+    document.getElementById('btnTicketWA').style.display = 'block'; _tkBoton();
     btn.textContent = '✅ Confirmado';
     if (parcial) {
         alert(
@@ -3222,7 +3371,7 @@ async function confirmarVenta() {
             'Cobrá solo ese total.'
         );
     } else {
-        mostrarToast('✅ Venta registrada', 'verde');
+        // V43.43: el «✅ Venta registrada» ya lo muestra el cartel de avance de arriba (no se duplica)
     }
 }
 
@@ -3243,6 +3392,19 @@ async function confirmarVentaFiado() {
             mostrarToast('❌ Ingresá el nombre del cliente', 'rojo');
             return;
         }
+        // V43.37: antes de fiar se termina de ver si el cliente ya debe. Si debe y el aviso recién apareció, se frena una vez para que se lea.
+        const _clv = _claveFiado();
+        if (_clv !== _deudaFiadoClave || _deudaFiadoProm) {
+            clearTimeout(window._tFiadoDeuda);
+            await consultarDeudaFiado();
+            const _av = document.getElementById('fiadoDeudaAviso');
+            if (_av && _av.style.display === 'block' && /ya debe/.test(_av.textContent) && _deudaFiadoVista !== _clv) {
+                _deudaFiadoVista = _clv;
+                mostrarToast('⚠️ Revisá la deuda del cliente y tocá Confirmar de nuevo para fiar.', 'naranja');
+                return;
+            }
+        }
+        _deudaFiadoVista = _clv;
 
         const sinStock = ventaActual.filter(item => {
             const p = productos.find(pr => pr.id === item.id);
@@ -3263,6 +3425,7 @@ async function confirmarVentaFiado() {
     const btn = document.getElementById('btnOkConfirm');
     btn.disabled = true;
     btn.textContent = '⏳ Procesando...';
+    _cbProg('⏳ Procesando: registrando ' + (enCurso.metodoPago === 'fiado' ? 'el fiado' : 'la venta') + ' en la planilla…');   // V43.41: avance real con segundos
     const total = ventaActual.reduce((s, i) => s + i.price * i.qty, 0);
     const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
     let resp = null;
@@ -3279,6 +3442,7 @@ async function confirmarVentaFiado() {
         resp = null;
         console.warn('Sin conexión:', e);
     }
+    _cbProgFinVenta(resp, 'Fiado registrado');   // V43.41
 
     if (!resp) {
         // Resultado incierto: la operación SE CONSERVA.
@@ -3291,7 +3455,7 @@ async function confirmarVentaFiado() {
     if (resp.success === true) {
         localStorage.removeItem(_ventaEnCursoKey());
         _borrarBorrador('fiado'); // V22
-        window._ultimaVenta = { items: [...ventaActual], total, hora, metodo: 'fiado' };
+        window._ultimaVenta = { items: [...ventaActual], total, hora, metodo: 'fiado', cobro: _tkCobro({ pagos: [], fiado: { cliente: enCurso.cliente, telefono: enCurso.telefono || '' } }, { fiado: total }) };   // V43.36: el ticket del fiado muestra el estado de la deuda (Copihue v533)
         guardarVentaDia({ items: [...ventaActual], total, hora, metodoPago: 'fiado' });
         if (resp.yaExistia) {
             // El catálogo pudo haberse recargado ya con el stock descontado.
@@ -3306,9 +3470,9 @@ async function confirmarVentaFiado() {
         localStorage.removeItem(CARRITO_KEY);
         renderVenta();
         if (listaTodosAbierta) renderListaTodos();
-        document.getElementById('btnTicketWA').style.display = 'block';
+        document.getElementById('btnTicketWA').style.display = 'block'; _tkBoton();
         btn.textContent = '✅ Confirmado';
-        mostrarToast('✅ Venta fiada registrada', 'verde');
+        // V43.43: el «✅ Fiado registrado» ya lo muestra el cartel de avance de arriba (no se duplica)
         return;
     }
 
@@ -3358,17 +3522,105 @@ async function confirmarVentaFiado() {
     }
 }
 
+// =================== V43.32: TICKET POR WHATSAPP ESTILO COPIHUE (seba21 v451 · v533 · v538 · v540 · v564 · v565) ===================
+// El ticket dice CÓMO pagó (cada medio con su monto; monedas con su equivalente), el vuelto y, si hubo deuda o fiado,
+// el estado de la deuda del cliente con los números del SERVIDOR (se consulta después de cobrar; nunca se inventa).
+const TK_MEDIO = { EFECTIVO: 'Efectivo', DEBITO: 'Tarjeta / Posnet', QR_POSNET: 'Tarjeta / Posnet', TRANSFERENCIA: 'Transferencia', FIADO: 'Fiado', QR: 'QR MP' };
+function _tkHora(h) {   // «09:27 a. m.» / «9:27 p. m.» → «09:27» / «21:27» (como Copihue)
+    const m = /(\d{1,2}):(\d{2})\s*([ap])?/i.exec(String(h || '')); if (!m) return String(h || '');
+    let H = Number(m[1]); if (m[3]) { const pm = /p/i.test(m[3]); if (pm && H < 12) H += 12; if (!pm && H === 12) H = 0; }
+    return String(H).padStart(2, '0') + ':' + m[2];
+}
+function _tkDia(f) { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(f || '')); return m ? m[3] + '/' + m[2] + '/' + m[1] : String(f || '').slice(0, 10); }
+function _tkFmt(n) { return '$' + Number(n || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 }); }
+// Se arma al confirmar (antes de limpiar la pantalla). La deuda se consulta al servidor en segundo plano.
+function _tkCobro(op, rs) {
+    const c = { ingresos: (rs.ingresos || []).map(i => ({ medio: i.medio, monto: i.monto, importe: i.importe })), vuelto: Number(rs.vuelto) || 0,
+                deuda: Number(rs.deuda) || 0, fiado: Number(rs.fiado) || 0, abonos: rs.abonos || [], cliente: null, fechas: {} };
+    ((_vd && _vd.fiados) || (_dc && _dc.fiados) || []).forEach(f => { c.fechas[String(f.idFiado)] = f.fecha; });   // fecha de los fiados que quedan saldados (el servidor ya no los lista)
+    if (!c.ingresos.length) c.ingresos = (op.pagos || []).map(p => ({ medio: p.medio + (p.moneda && p.moneda !== 'ARS' ? ' ' + p.moneda : ''), monto: p.monto, importe: p.moneda && p.moneda !== 'ARS' ? null : p.monto }));
+    const quien = (op.deuda && op.deuda.cliente) ? op.deuda : (op.fiado && op.fiado.cliente ? op.fiado : null);
+    if (quien && (c.deuda > 0 || c.fiado > 0)) {
+        c.cliente = { nombre: quien.cliente, telefono: quien.telefono || '', modo: op.deuda ? (op.deuda.modo === 'VUELTO' ? 'vuelto' : 'cobro') : 'fiado', estado: 'cargando' };
+        // V43.40: el botón del ticket muestra la espera y se pone verde solo cuando la deuda llegó (o avisa si no llegó)
+        const plazo = setTimeout(() => { if (c.cliente.estado === 'cargando') { c.cliente.estado = 'error'; c.cliente.motivo = 'el servidor tardó demasiado'; _tkBoton(); } }, 25000);
+        _llamarAPI('getDeudaCliente', { token: _tokenActual(), cliente: quien.cliente, telefono: quien.telefono || '' }).then(r => {
+            if (c.cliente.estado !== 'cargando') return;
+            if (r && r.success) { c.cliente.estado = 'listo'; c.cliente.actual = Number(r.deuda) || 0; c.cliente.fiados = r.fiados || []; if (r.cliente) c.cliente.nombre = r.cliente; }
+            else { c.cliente.estado = 'error'; c.cliente.motivo = (r && r.error) || 'sin respuesta'; }
+        }).catch(() => { if (c.cliente.estado === 'cargando') { c.cliente.estado = 'error'; c.cliente.motivo = 'sin conexión'; } }).finally(() => { clearTimeout(plazo); setTimeout(_tkBoton, 0); });
+    }
+    return c;
+}
+function _tkMedioLinea(i) {
+    const partes = String(i.medio || '').split(' '), base = partes[0], mon = partes[1];
+    let nombre = TK_MEDIO[base] || base; if (mon) nombre += ' ' + mon;
+    return '• ' + nombre + ': ' + (mon ? Number(i.monto).toLocaleString('es-AR') + ' ' + mon + (i.importe != null ? ' (≈' + _tkFmt(i.importe) + ')' : '') : _tkFmt(i.importe != null ? i.importe : i.monto));
+}
+// Texto del ticket (función pura: se prueba sola). Devuelve { texto } o { esperar: 'mensaje' }.
+function _tkTexto(v, negocio, ahora) {
+    const d = ahora || new Date();
+    const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'], meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const fecha = dias[d.getDay()] + ' ' + d.getDate() + ' ' + meses[d.getMonth()];
+    const lineas = v.items.map(i => { const n = i.name.length > 28 ? i.name.substring(0, 28) + '...' : i.name; return i.qty + 'x ' + n + ' ' + _tkFmt(i.price * i.qty); }).join('\n');
+    let pago = { efectivo: 'Efectivo', qr: 'QR MP', transferencia: 'Transferencia', debito: 'Tarjeta / Posnet', qr_posnet: 'Tarjeta / Posnet', fiado: 'Fiado', mixto: 'Mixto' }[v.metodo] || v.metodo;
+    let bloque = '';
+    const c = v.cobro;
+    if (c) {
+        // Cada medio con su monto real (nunca solo «Mixto», que no le dice nada al cliente)
+        pago = c.ingresos.map(_tkMedioLinea).join('\n');
+        if (c.fiado > 0) pago += (pago ? '\n' : '') + '• Fiado: ' + _tkFmt(c.fiado);
+        const cl = c.cliente;
+        if (cl && cl.estado === 'cargando') return { esperar: '⏳ Calculando la deuda del cliente… tocá de nuevo en unos segundos' };
+        const conDeuda = cl && cl.estado === 'listo';
+        if (c.deuda > 0 && cl && cl.modo === 'vuelto') pago += '\nVuelto aplicado a la deuda: ' + _tkFmt(c.deuda);   // «Vuelto: $X» a secas se leía como plata en mano (v564)
+        if (c.vuelto > 0) pago += '\n' + (c.deuda > 0 && cl && cl.modo === 'vuelto' ? '💶 Vuelto en efectivo: ' : 'Vuelto: ') + _tkFmt(c.vuelto);
+        if (conDeuda && c.deuda > 0) {
+            const anterior = Math.round((cl.actual + c.deuda) * 100) / 100;
+            const det = (c.abonos || []).map(a => {
+                const f = (cl.fiados || []).find(x => String(x.idFiado) === String(a.idFiado)), resta = f ? Number(f.saldo) : 0, antes = Math.round((resta + Number(a.importe)) * 100) / 100;
+                return ((f && f.fecha) || (c.fechas || {})[String(a.idFiado)] ? 'Compra del ' + _tkDia((f && f.fecha) || c.fechas[String(a.idFiado)]) : 'Compra') + ' · ' + _tkFmt(a.importe) + ' de ' + _tkFmt(antes) + ' ' + (resta > 0 ? '📋 Abonado (resta ' + _tkFmt(resta) + ')' : '✅ Saldado');
+            });
+            bloque = '\n\n📌 *Deuda anterior: ' + _tkFmt(anterior) + '*\n' +
+                (cl.modo === 'cobro' ? '💵 *Abono a la deuda: ' : '💵 *Abono (vuelto): ') + _tkFmt(c.deuda) + '*\n' +
+                (cl.actual > 0 ? '📋' : '✅') + ' *Deuda actualizada: ' + _tkFmt(cl.actual) + '*' +
+                (det.length ? '\n\nDetalle:\n' + det.join('\n') : '');
+        } else if (conDeuda && c.fiado > 0) {
+            const previa = Math.max(0, Math.round((cl.actual - c.fiado) * 100) / 100), n = (cl.fiados || []).length - 1;
+            bloque = '\n\n📌 *ESTADO DE TU DEUDA*\n' + (previa > 0 ? 'Deuda anterior: ' + _tkFmt(previa) + '\n' : '') +
+                'Fiado de esta compra: ' + _tkFmt(c.fiado) + '\n💰 *TOTAL PENDIENTE: ' + _tkFmt(cl.actual) + '*' +
+                (previa > 0 && n > 0 ? '\n(' + n + (n === 1 ? ' compra pendiente' : ' compras pendientes') + ' + esta compra)' : '');
+        }
+    }
+    const texto = '🛒 *' + negocio + '*\n📅 Fecha: ' + fecha + '\n🕐 Hora: ' + _tkHora(v.hora) + ' hs\n\n' + lineas + '\n─────────────────\n*💰 Total: ' + _tkFmt(v.total) + '*\n' + pago + bloque + '\n¡Gracias por tu compra! 🙏';
+    return { texto: texto };
+}
+// V43.40: el botón «Enviar ticket» dice en qué está: gris mientras calcula la deuda, verde cuando está listo, ámbar si sale sin ese dato.
+function _tkBoton() {
+    const b = document.getElementById('btnTicketWAb'); if (!b) return;
+    const v = window._ultimaVenta, cl = v && v.cobro && v.cobro.cliente;
+    if (cl && cl.estado === 'cargando') {
+        b.disabled = true; b.style.background = '#9e9e9e'; b.style.cursor = 'wait';
+        if (!cl.t0) cl.t0 = Date.now();
+        const sg = Math.round((Date.now() - cl.t0) / 1000);
+        b.innerHTML = '⏳ Preparando el ticket…<br><small style="font-weight:700;">Calculando la deuda de ' + _escH(cl.nombre) + (sg >= 1 ? ' (' + sg + ' s)' : '') + '</small>';
+        clearTimeout(window._tkBotonT); window._tkBotonT = setTimeout(_tkBoton, 1000);   // V43.41: cuenta los segundos
+    } else if (cl && cl.estado === 'error') {
+        b.disabled = false; b.style.background = '#ef8a00'; b.style.cursor = 'pointer';
+        b.innerHTML = '📲 Enviar ticket (sin la deuda)<br><small style="font-weight:700;">No se pudo confirmar la deuda: ' + _escH(cl.motivo || '') + '</small>';
+    } else {
+        b.disabled = false; b.style.background = 'linear-gradient(135deg,#25D366,#128C7E)'; b.style.cursor = 'pointer';
+        b.innerHTML = '📲 Enviar ticket al cliente' + (cl && cl.estado === 'listo' ? '<br><small style="font-weight:700;">✅ Con la deuda actualizada: ' + _tkFmt(cl.actual) + '</small>' : '');
+    }
+}
 function enviarTicketWA() {
     var v = window._ultimaVenta;
     if (!v) return;
-    var fecha = new Date().toLocaleDateString('es-AR', { weekday:'short', day:'2-digit', month:'2-digit' });
-    var metodoLabel = { efectivo:'Efectivo', qr:'QR MP', transferencia:'Transferencia', debito:'Débito', qr_posnet:'QR / Posnet', fiado:'Fiado', mixto:'Mixto' }[v.metodo] || v.metodo;
-    var lineas = v.items.map(function(i) {
-        var nombre = i.name.length > 28 ? i.name.substring(0,28)+'...' : i.name;
-        return i.qty+'x '+nombre+' $'+(i.price*i.qty).toLocaleString('es-AR');
-    }).join('\n');
-    var mensaje = '📦 *' + (document.getElementById('headerTitulo').textContent || PREFIJO) + '*\n📅 '+fecha+' - '+v.hora+'\n\n'+lineas+'\n'+'--------------------------------\n'+'*Total: $'+v.total.toLocaleString('es-AR')+'* - '+metodoLabel+'\n\n¡Gracias por tu compra! 🙏';
-    abrirWhatsAppVAO('', mensaje);   // V43.16
+    var r = _tkTexto(v, (document.getElementById('headerTitulo').textContent || PREFIJO).trim());
+    if (r.esperar) { mostrarToast(r.esperar, 'naranja'); return; }
+    var cl = v.cobro && v.cobro.cliente;
+    if (cl && cl.estado === 'error') mostrarToast('⚠️ No se pudo confirmar la deuda del cliente (' + cl.motivo + '): el ticket sale sin ese dato.', 'naranja');
+    abrirWhatsAppVAO(cl && cl.telefono ? cl.telefono : '', r.texto);   // con cliente de deuda/fiado: va a su número (Copihue)
 }
 
 // ========== HISTORIAL DÍA ==========
@@ -3426,134 +3678,650 @@ async function mostrarCajaServidor() {
 }
 function _escH(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
-// =================== V39: COBRO MIXTO ===================
-// Cada parte entra como un medio de pago normal (nunca como texto). El servidor calcula y controla todo:
-// Revisar (previsualizarCobro, no escribe) → Confirmar (cobrar, con el mismo número de operación).
-let _mxLineas = [], _mxRevisado = null;
-const MX_MEDIOS = [['EFECTIVO', '💵 Efectivo'], ['DEBITO', '💳 Débito'], ['QR_POSNET', '💳 QR / Posnet'], ['TRANSFERENCIA', '🏦 Transferencia']];
+// =================== V43.32 (v045.7): PAGO MIXTO ESTILO COPIHUE ===================
+// Réplica visual y operativa del pago mixto de Copihue (seba21 v568: _PM_MEDIOS_DEF, _pmRenderMedios,
+// _pmAgregarDesdeCard, _pmRenderResumen, «Cobrar deuda del cliente»). Las cuentas y el registro los sigue
+// haciendo el SERVIDOR (MotorCobro): Revisar (previsualizarCobro, no escribe) → Confirmar (cobrar, mismo número).
+// Reglas: el vuelto sale solo del efectivo · el fiado no supera lo que falta · NO se paga una deuda con otro fiado.
+let _mxLineas = [], _mxRevisado = null, _pmSeq = 1;
+let _vd = null;   // vuelto → deuda (mixto): { cliente, telefono, deuda, fiados, monto }
+let _dc = null;   // deuda sumada a la compra: { cliente, telefono, deuda, fiados, monto, activo }
+let _cliCache = null, _cliCacheTs = 0;
+const MX_MEDIOS = [['EFECTIVO', '💵 Efectivo'], ['DEBITO', '💳 Tarjeta / Posnet'], ['QR_POSNET', '💳 Tarjeta / Posnet'], ['TRANSFERENCIA', '🏦 Transferencia']];
+// Orden fijo (Copihue). «Tarjeta / Posnet» = débito, crédito o QR del aparato (se registra como DEBITO, válido en todos los planes).
+const PM_MEDIOS_DEF = [
+    { medio: 'EFECTIVO',      moneda: 'ARS', emoji: '💵', nombre: 'EFECTIVO' },
+    { medio: 'EFECTIVO',      moneda: 'CLP', emoji: '🇨🇱', nombre: 'PESOS CHILENOS' },
+    { medio: 'EFECTIVO',      moneda: 'USD', emoji: '🇺🇸', nombre: 'DÓLARES' },
+    { medio: 'DEBITO',        moneda: 'ARS', emoji: '💳', nombre: 'TARJETA / POSNET', sub: 'débito, crédito o QR' },
+    { medio: 'TRANSFERENCIA', moneda: 'ARS', emoji: '📱', nombre: 'TRANSFERENCIA' },
+    { medio: 'FIADO',         moneda: 'ARS', emoji: '🧾', nombre: 'FIADO' }
+];
+const PM_TOPE_CTS = 5000000000;   // $50.000.000 — control de cordura (igual que Copihue y el servidor)
 function mxMostrarBoton() {
     const b = document.getElementById('metodo-mixto');
-    if (b) b.style.display = (COBRO_ACTUAL && COBRO_ACTUAL.avanzado && !(CONFIG_ACTUAL && CONFIG_ACTUAL.modoConsulta)) ? '' : 'none';
-    if (CONFIG_ACTUAL) generarToolbarSegunPacks(CONFIG_ACTUAL); // V41: la tarjeta P3 sigue al complemento
+    if (b) b.style.display = 'none';
+    _cbPintarModo(metodoPagoActual);
+    if (CONFIG_ACTUAL) generarToolbarSegunPacks(CONFIG_ACTUAL);
 }
 function _mxFmt(n) { return '$' + Number(n || 0).toLocaleString('es-AR', { maximumFractionDigits: 2 }); }
 function _mxTotal() { return ventaActual.reduce((s, i) => s + i.price * i.qty, 0); }
+function _pmCot() { return (COBRO_ACTUAL && COBRO_ACTUAL.cot) || {}; }
+function _pmIdx(l) { return PM_MEDIOS_DEF.findIndex(m => m.medio === (l.medio === 'QR_POSNET' ? 'DEBITO' : l.medio) && m.moneda === (l.moneda || 'ARS')); }
+function _pmFiadoLinea() { return _mxLineas.find(l => l.medio === 'FIADO') || null; }
+function _cbSimbolo(l) { return l.medio === 'EFECTIVO' && l.moneda === 'USD' ? 'US$' : (l.medio === 'EFECTIVO' && l.moneda === 'CLP' ? 'CLP' : '$'); }
+// Misma aritmética que el servidor (MotorCobro.calcularPlan): centavos de la moneda × cotización, redondeado a centavos de peso.
+function _cbEqCts(l, cot) {
+    const c = Math.round((Number(l.monto) || 0) * 100); if (!(c > 0)) return 0;
+    if (l.medio !== 'EFECTIVO' || !l.moneda || l.moneda === 'ARS') return c;
+    const k = Number(cot[l.moneda]); return k > 0 ? Math.round(c * k) : NaN;
+}
+function _cbCalcular() {
+    const cot = _pmCot(), eq = _mxLineas.map(l => _cbEqCts(l, cot));
+    const totalCts = ventaActual.reduce((s, i) => s + Math.round(Number(i.price) * 100) * Number(i.qty), 0);
+    return { eq: eq, totalCts: totalCts, pagadoCts: eq.reduce((s, x) => s + (isNaN(x) ? 0 : x), 0), sinCot: eq.some(x => isNaN(x)) };
+}
+function _cbAvanzado() { return !!(COBRO_ACTUAL && COBRO_ACTUAL.avanzado && !(CONFIG_ACTUAL && CONFIG_ACTUAL.modoConsulta)); }
+function _pmAbierto() { return metodoPagoActual === 'mixto'; }
+function _pmCongelado() { const e = _leerVentaEnCurso(); return !!(e && e.metodoPago === 'mixto'); }
+function _pmError(t) { const e = document.getElementById('pmErrorMsg'); if (!e) return; if (t) { e.textContent = t; e.style.display = 'block'; } else e.style.display = 'none'; }
+
+// ---------- Aviso grande y legible (Copihue v558: el toast chico se cortaba) ----------
+function _pmAviso(titulo, texto, color) {
+    let ov = document.getElementById('pmAvisoOv'); if (ov) ov.remove();
+    ov = document.createElement('div'); ov.id = 'pmAvisoOv';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:6500;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;';
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#fff;border-radius:16px;padding:20px;max-width:360px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.35);border-top:6px solid ' + color + ';';
+    box.innerHTML = '<div class="avT" style="font-weight:900;font-size:1.15rem;margin-bottom:10px;"></div><div class="avX" style="font-size:1rem;line-height:1.4;color:#333;"></div>' +
+        '<button type="button" id="pmAvisoOk" style="width:100%;margin-top:16px;padding:13px;border:none;border-radius:10px;background:' + color + ';color:#fff;font-weight:800;font-size:1rem;">Entendido</button>';
+    box.querySelector('.avT').style.color = color; box.querySelector('.avT').textContent = titulo; box.querySelector('.avX').textContent = texto;
+    ov.appendChild(box); document.body.appendChild(ov);
+    document.getElementById('pmAvisoOk').onclick = () => ov.remove();
+}
+const PM_NO_REFINANCIA = 'Una deuda no se paga con otro fiado. Quitá la deuda o elegí otro medio.';
+
+// ---------- Abrir / cerrar el pago mixto (botón violeta) ----------
+function togglePagoMixto() {
+    if (_pmCongelado()) return;
+    if (_pmAbierto()) { _pmLimpiar(); _cbCambiandoModo = true; try { seleccionarMetodo('efectivo'); } finally { _cbCambiandoModo = false; } return; }   // «✕ cerrar» descarta lo cargado
+    if (_dcMonto() > 0) { _pmAviso('⚠️ Hay una deuda sumada', 'Quitá la deuda sumada para usar pago mixto (el mixto ya permite aplicar el vuelto a la deuda).', '#e65100'); return; }
+    if (_dc) _dcQuitar();   // tarjeta naranja abierta sin sumar: se descarta
+    _pmLimpiar();
+    _cbCambiandoModo = true; try { seleccionarMetodo('mixto'); } finally { _cbCambiandoModo = false; }
+}
+function _pmLimpiar() {
+    _mxLineas = []; _mxRevisado = null; _vd = null;
+    _pmError(''); _vdResetUI();
+    const p = document.getElementById('mxPrevia'); if (p) { p.className = 'mx-previa'; p.textContent = ''; }
+}
 function mxAbrir() {
     const enCurso = _leerVentaEnCurso();
-    if (enCurso && enCurso.metodoPago === 'mixto' && enCurso.op) {
-        _mxLineas = (enCurso.op.pagos || []).map(p => ({ medio: p.medio, moneda: p.moneda || 'ARS', monto: p.monto }));
-        document.getElementById('mxFiar').checked = !!enCurso.op.fiado;
-        document.getElementById('mxDeuda').checked = !!enCurso.op.deuda;
-        const c = enCurso.op.fiado || enCurso.op.deuda || {};
-        document.getElementById('mxCliente').value = c.cliente || ''; document.getElementById('mxTelefono').value = c.telefono || '';
-        if (enCurso.op.deuda) { document.getElementById('mxDeudaModo').value = enCurso.op.deuda.modo || 'VUELTO'; document.getElementById('mxDeudaMonto').value = enCurso.op.deuda.monto || ''; }
-    } else if (!_mxLineas.length) {
-        _mxLineas = [{ medio: 'EFECTIVO', moneda: 'ARS', monto: '' }];
+    if (enCurso && enCurso.metodoPago === 'mixto' && enCurso.op && !enCurso.simple) {
+        // Cobro enviado sin confirmar: se muestra tal cual se envió, congelado.
+        const op = enCurso.op, esp = op.esperado || {};
+        _mxLineas = (op.pagos || []).map(p => ({ _id: _pmSeq++, medio: p.medio, moneda: p.moneda || 'ARS', monto: Number(p.monto) }));
+        if (op.fiado) _mxLineas.push({ _id: _pmSeq++, medio: 'FIADO', moneda: 'ARS', monto: Number(esp.fiado) || 0, cliente: op.fiado.cliente, telefono: op.fiado.telefono || '' });
+        _vd = op.deuda && op.deuda.modo === 'VUELTO' ? { cliente: op.deuda.cliente, telefono: op.deuda.telefono || '', deuda: 0, fiados: [], monto: Number(op.deuda.monto) || 0 } : null;
     }
-    _mxRevisado = null; mxRender(!!(enCurso && enCurso.metodoPago === 'mixto'));
+    _mxRevisado = null;
+    _pmRenderMedios(); mxRender(_pmCongelado());
 }
-function mxAgregarLinea() { if (_leerVentaEnCurso()) return; _mxLineas.push({ medio: 'DEBITO', moneda: 'ARS', monto: '' }); mxRender(false); }
-function mxQuitar(i) { if (_leerVentaEnCurso()) return; _mxLineas.splice(i, 1); if (!_mxLineas.length) _mxLineas.push({ medio: 'EFECTIVO', moneda: 'ARS', monto: '' }); mxRender(false); }
-function mxSet(i, campo, valor) { if (_leerVentaEnCurso()) return; _mxLineas[i][campo] = valor; if (campo === 'medio' && valor !== 'EFECTIVO') _mxLineas[i].moneda = 'ARS'; if (campo !== 'monto') mxRender(false); else mxCambio(); }
-function mxOpcion(cual) {
-    if (_leerVentaEnCurso()) return;
-    if (cual === 'fiar' && document.getElementById('mxFiar').checked) document.getElementById('mxDeuda').checked = false;
-    if (cual === 'deuda' && document.getElementById('mxDeuda').checked) document.getElementById('mxFiar').checked = false;
+// Arma las tarjetas una vez; de ahí en más solo cambia su contenido (nunca se reordenan).
+function _pmRenderMedios() {
+    const cont = document.getElementById('pmMedios'); if (!cont) return;
+    const cot = _pmCot();
+    cont.innerHTML = PM_MEDIOS_DEF.map((m, i) => {
+        const ext = m.moneda !== 'ARS', fiado = m.medio === 'FIADO';
+        const oculto = ext && !(Number(cot[m.moneda]) > 0) && !_mxLineas.some(l => _pmIdx(l) === i);   // sin cotización cargada: el comercio no usa esa moneda
+        return '<div class="pm-medio-card" id="pmCard' + i + '"' + (oculto ? ' style="display:none;"' : '') + '>' +
+            '<div class="pm-medio-header" onclick="_pmToggleMedioCard(' + i + ')">' +
+                '<span class="pm-medio-nombre"><span class="pm-medio-icono">' + m.emoji + '</span><span>' + m.nombre + (m.sub ? '<span class="pm-medio-sub">' + m.sub + '</span>' : '') + '</span></span>' +
+                '<span style="display:flex;align-items:center;gap:8px;"><span class="pm-medio-estado" id="pmEstado' + i + '">Tocar</span><span class="pm-medio-flecha">▾</span></span>' +
+            '</div>' +
+            '<div class="pm-medio-form"><div id="pmDetalle' + i + '"></div>' +
+            (fiado ? '<div style="position:relative;"><input class="pm-medio-fiado-input" id="pmFiadoCliente' + i + '" type="text" placeholder="👤 Nombre del cliente" autocomplete="off" oninput="_cliFiltrar(\'pmFiadoCliente' + i + '\',\'pmFiadoDrop' + i + '\',function(n,t){_pmElegirFiado(' + i + ',n,t);})"><div id="pmFiadoDrop' + i + '" class="pm-drop" style="display:none;"></div></div>' +
+                     '<input class="pm-medio-fiado-input" id="pmFiadoTelefono' + i + '" type="tel" placeholder="📱 Teléfono (opcional)">' : '') +
+            '<div class="pm-medio-pregunta">¿Cuánto recibís?</div>' +
+            '<input class="pm-medio-input" id="pmInput' + i + '" type="number" inputmode="decimal" placeholder="Monto" onkeydown="if(event.key===\'Enter\'){event.preventDefault();_pmAgregarDesdeCard(' + i + ');}"' + (ext ? ' oninput="_pmPreview(' + i + ')"' : ' oninput="_pmResetBoton(' + i + ')"') + '>' +
+            (ext ? '<div class="pm-medio-equivalente" id="pmEquiv' + i + '" style="display:none;"></div>' : '') +
+            '<button type="button" class="pm-medio-btn-agregar" id="pmBtnAgregar' + i + '" onclick="_pmAgregarDesdeCard(' + i + ')" style="margin-top:8px;">AGREGAR</button>' +
+            '</div></div>';
+    }).join('');
+}
+function _pmToggleMedioCard(idx) {
+    if (_pmCongelado()) return;
+    const card = document.getElementById('pmCard' + idx), def = PM_MEDIOS_DEF[idx];
+    const yaAbierta = card.classList.contains('pm-abierto');
+    document.querySelectorAll('.pm-medio-card').forEach(c => c.classList.remove('pm-abierto'));
+    _pmError('');
+    if (yaAbierta) return;   // tocar de nuevo la misma tarjeta la cierra
+    if (def.medio === 'FIADO' && _vd) { _pmAviso('⛔ Fiado no disponible', 'Estás aplicando el vuelto a una deuda. ' + PM_NO_REFINANCIA, '#c62828'); return; }
+    card.classList.add('pm-abierto');
+    const input = document.getElementById('pmInput' + idx);
+    input.value = ''; _pmResetBoton(idx); _pmRenderDetalleCard(idx);
+    if (def.medio === 'FIADO') {
+        const c = _cbCalcular(), falta = c.totalCts - c.pagadoCts;
+        input.value = falta > 0 ? falta / 100 : '';   // el fiado arranca con lo que falta (Copihue)
+        _cliCargar();
+        setTimeout(() => { const n = document.getElementById('pmFiadoCliente' + idx); (n && !n.value ? n : input).focus(); }, 50);
+        return;
+    }
+    if (def.moneda !== 'ARS') _pmPreview(idx);
+    setTimeout(() => input.focus(), 50);
+}
+function _pmRenderDetalleCard(idx) {
+    const cont = document.getElementById('pmDetalle' + idx); if (!cont) return;
+    const congelado = _pmCongelado();
+    const ent = _mxLineas.filter(l => _pmIdx(l) === idx);
+    if (!ent.length) { cont.innerHTML = ''; return; }
+    cont.innerHTML = '<div style="margin-bottom:10px;">' + ent.map(l => {
+        const txt = (l.moneda === 'ARS' ? _mxFmt(l.monto) : Number(l.monto).toLocaleString('es-AR') + ' ' + l.moneda) + (l.cliente ? ' — ' + _escH(l.cliente) : '');
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #eee;">' +
+            '<span style="font-size:0.88rem;color:#444;">' + txt + '</span>' +
+            (congelado ? '' : '<span role="button" aria-label="Quitar este ingreso" onclick="event.stopPropagation();_pmQuitarIngreso(' + l._id + ')" style="color:#c62828;font-size:1rem;cursor:pointer;padding:2px 10px;">✕</span>') + '</div>';
+    }).join('') + (ent.length > 1 ? '<div style="font-size:0.7rem;color:#999;margin-top:4px;">' + ent.length + ' ingresos</div>' : '') + '</div>';
+}
+function _pmQuitarIngreso(id) {
+    if (_pmCongelado()) return;
+    const l = _mxLineas.find(x => x._id === id); if (!l) return;
+    _mxLineas = _mxLineas.filter(x => x._id !== id);
+    _pmError(''); mxRender(false);
+}
+// Muestra «cantidad × cotización = equivalente en pesos» — siempre multiplicar, nunca dividir.
+function _pmPreview(idx) {
+    const def = PM_MEDIOS_DEF[idx], el = document.getElementById('pmEquiv' + idx); if (!el) return;
+    const k = Number(_pmCot()[def.moneda]);
+    if (!(k > 0)) { el.textContent = '⚠️ No hay cotización de ' + def.moneda + ' cargada'; el.style.display = 'block'; return; }
+    const monto = Number(document.getElementById('pmInput' + idx).value) || 0;
+    const eq = _cbEqCts({ medio: 'EFECTIVO', moneda: def.moneda, monto: monto }, _pmCot());
+    el.textContent = monto.toLocaleString('es-AR') + ' ' + def.moneda + ' × ' + _mxFmt(k) + ' = ' + _mxFmt(eq / 100) + ' ARS';
+    el.style.display = 'block';
+    _pmResetBoton(idx);
+}
+function _pmResetBoton(idx) { const b = document.getElementById('pmBtnAgregar' + idx); if (b) { b.textContent = 'AGREGAR'; b.dataset.forzar = ''; } }
+function _pmElegirFiado(idx, nombre, tel) {
+    document.getElementById('pmFiadoCliente' + idx).value = nombre;
+    document.getElementById('pmFiadoDrop' + idx).style.display = 'none';
+    if (tel) document.getElementById('pmFiadoTelefono' + idx).value = tel;
+    document.getElementById('pmInput' + idx).focus();
+}
+function _pmAgregarDesdeCard(idx) {
+    if (_pmCongelado()) return;
+    const def = PM_MEDIOS_DEF[idx], input = document.getElementById('pmInput' + idx), btn = document.getElementById('pmBtnAgregar' + idx);
+    _pmError('');
+    const recibido = Number(input.value);
+    if (!(recibido > 0)) { _pmError('⚠️ Ingresá un monto'); return; }
+    const linea = { _id: 0, medio: def.medio, moneda: def.moneda, monto: Math.round(recibido * 100) / 100 };
+    const c = _cbCalcular(), faltaAntes = Math.max(0, c.totalCts - c.pagadoCts);
+    const eq = def.medio === 'FIADO' ? Math.round(recibido * 100) : _cbEqCts(linea, _pmCot());
+    if (def.moneda !== 'ARS') {
+        if (isNaN(eq)) { _pmError('⚠️ No hay cotización de ' + def.moneda + ' cargada. Cargala en Cotización o cobrá en pesos.'); return; }
+        if (eq > PM_TOPE_CTS) { _pmError('⚠️ Ese monto en ' + def.moneda + ' da ' + _mxFmt(eq / 100) + ': algo no cierra (¿la cotización está bien?). No se agregó.'); return; }
+        if (def.moneda === 'USD' && c.pagadoCts + eq > c.totalCts) {
+            const lim = faltaAntes * (1 + ((COBRO_ACTUAL && COBRO_ACTUAL.limiteSobrepagoPct) || 20) / 100);
+            if (eq > lim && btn.dataset.forzar !== String(recibido)) {
+                _pmError('⚠️ Ese USD deja un vuelto grande (≈' + _mxFmt((c.pagadoCts + eq - c.totalCts) / 100) + '). Tocá «Agregar de todas formas» si querés continuar igual.');
+                btn.textContent = '⚠️ Agregar de todas formas'; btn.dataset.forzar = String(recibido); return;
+            }
+        }
+    } else if (def.medio === 'DEBITO' || def.medio === 'TRANSFERENCIA') {
+        // Regla del servidor: tarjeta y transferencia no pueden pasarse de lo que se cobra (el vuelto sale solo del efectivo).
+        if (eq > faltaAntes) { _pmError('⚠️ ' + (def.medio === 'DEBITO' ? 'Tarjeta / Posnet' : 'Transferencia') + ' no puede pasarse de lo que falta (' + _mxFmt(faltaAntes / 100) + '): el vuelto sale solo del efectivo.'); return; }
+    } else if (def.medio === 'FIADO') {
+        if (_vd) { _pmAviso('⛔ Fiado no disponible', PM_NO_REFINANCIA, '#c62828'); return; }
+        if (_pmFiadoLinea()) { _pmError('⚠️ Ya hay un fiado cargado. Tocá ✕ para corregirlo.'); return; }
+        if (eq > faltaAntes) { _pmError('⚠️ El fiado no puede superar lo que falta (' + _mxFmt(faltaAntes / 100) + ')'); return; }
+        const cli = (document.getElementById('pmFiadoCliente' + idx).value || '').trim();
+        if (!cli) { _pmError('⚠️ Ingresá el nombre del cliente para el fiado'); return; }
+        linea.cliente = cli; linea.telefono = (document.getElementById('pmFiadoTelefono' + idx).value || '').trim();
+        document.getElementById('pmFiadoCliente' + idx).value = ''; document.getElementById('pmFiadoTelefono' + idx).value = '';
+        document.getElementById('pmFiadoDrop' + idx).style.display = 'none';
+    }
+    linea._id = _pmSeq++;
+    _mxLineas.push(linea);
+    input.value = ''; _pmResetBoton(idx);
+    const eqEl = document.getElementById('pmEquiv' + idx); if (eqEl) eqEl.style.display = 'none';
+    document.getElementById('pmCard' + idx).classList.remove('pm-abierto');
     mxRender(false);
 }
+// El importe de cada medio va en VERDE y en PESOS (para sumar la columna de memoria); la moneda física, chica y gris debajo.
+function _pmActualizarEstadoMedio(idx) {
+    const def = PM_MEDIOS_DEF[idx], el = document.getElementById('pmEstado' + idx); if (!el) return;
+    const ent = _mxLineas.filter(l => _pmIdx(l) === idx), cot = _pmCot();
+    if (!ent.length) { el.textContent = 'Tocar'; el.classList.remove('pm-cargado'); return; }
+    const eq = ent.reduce((s, l) => s + (l.medio === 'FIADO' ? Math.round(l.monto * 100) : (_cbEqCts(l, cot) || 0)), 0);
+    const rec = ent.reduce((s, l) => s + Number(l.monto), 0);
+    el.innerHTML = '<span class="pm-medio-monto-principal">' + _mxFmt(eq / 100) + '</span>' +
+        (def.moneda !== 'ARS' ? '<span class="pm-medio-monto-secundario">' + rec.toLocaleString('es-AR') + ' ' + def.moneda + '</span>' : '');
+    el.classList.add('pm-cargado');
+}
 function mxRender(congelado) {
-    const monedas = ['ARS'].concat(Object.keys((COBRO_ACTUAL && COBRO_ACTUAL.cot) || {}));
-    document.getElementById('mxLineas').innerHTML = _mxLineas.map((l, i) =>
-        '<div class="mx-linea">' +
-        '<select ' + (congelado ? 'disabled ' : '') + 'onchange="mxSet(' + i + ',\'medio\',this.value)">' + MX_MEDIOS.map(m => '<option value="' + m[0] + '"' + (m[0] === l.medio ? ' selected' : '') + '>' + m[1] + '</option>').join('') + '</select>' +
-        (l.medio === 'EFECTIVO' && monedas.length > 1 ? '<select style="flex:0.7" ' + (congelado ? 'disabled ' : '') + 'onchange="mxSet(' + i + ',\'moneda\',this.value)">' + monedas.map(m => '<option' + (m === l.moneda ? ' selected' : '') + '>' + m + '</option>').join('') + '</select>' : '') +
-        '<input type="number" inputmode="decimal" min="0" step="0.01" placeholder="Monto" value="' + (l.monto === '' ? '' : Number(l.monto)) + '" ' + (congelado ? 'readonly ' : '') + 'oninput="mxSet(' + i + ',\'monto\',this.value)">' +
-        (congelado ? '' : '<button type="button" onclick="mxQuitar(' + i + ')" aria-label="Quitar">✕</button>') + '</div>').join('');
-    document.getElementById('mxBtnAgregar').style.display = congelado ? 'none' : '';
-    const fiar = document.getElementById('mxFiar').checked, deuda = document.getElementById('mxDeuda').checked;
-    document.getElementById('mxClienteBox').style.display = (fiar || deuda) ? 'block' : 'none';
-    document.getElementById('mxDeudaBox').style.display = deuda ? 'block' : 'none';
-    document.getElementById('mxDeudaMonto').style.display = (deuda && document.getElementById('mxDeudaModo').value === 'SUMAR') ? '' : 'none';
-    ['mxFiar', 'mxDeuda', 'mxCliente', 'mxTelefono', 'mxDeudaModo', 'mxDeudaMonto'].forEach(id => { document.getElementById(id).disabled = congelado; });
+    const cont = document.getElementById('pmMedios'); if (!cont) return;
+    if (!cont.children.length) _pmRenderMedios();
+    cont.classList.toggle('pm-congelado', !!congelado);
+    if (congelado) document.querySelectorAll('.pm-medio-card').forEach(c => c.classList.remove('pm-abierto'));
+    PM_MEDIOS_DEF.forEach((d, i) => {
+        _pmActualizarEstadoMedio(i); _pmRenderDetalleCard(i);
+        const card = document.getElementById('pmCard' + i);
+        if (card && d.medio === 'FIADO') card.classList.toggle('pm-apagado', !!_vd);   // con vuelto a deuda no se fía
+    });
+    const ce = document.getElementById('pmCerrar'); if (ce) ce.style.display = congelado ? 'none' : '';
     mxCambio();
 }
+function _pmRenderResumen() {
+    const c = _cbCalcular(), total = c.totalCts, bruto = c.pagadoCts;
+    const pagado = Math.min(bruto, total), falta = Math.max(0, total - bruto), vuelto = Math.max(0, bruto - total);
+    document.getElementById('pmTotal').textContent = _mxFmt(total / 100);
+    document.getElementById('pmPagado').textContent = _mxFmt(pagado / 100);
+    document.getElementById('pmTotalRecibido').textContent = _mxFmt(bruto / 100);
+    // Mismo casillero: FALTA (rojo) mientras falta plata, VUELTO (naranja) cuando sobra — solo cambian texto y color.
+    const lb = document.getElementById('pmFaltaLabel'), vl = document.getElementById('pmFaltaValor');
+    const col = vuelto > 0 ? '#e65100' : '#c62828';
+    lb.style.color = col; vl.style.color = col;
+    lb.textContent = vuelto > 0 ? 'Vuelto' : 'Falta';
+    vl.textContent = _mxFmt((vuelto > 0 ? vuelto : falta) / 100);
+    return { c: c, falta: falta, vuelto: vuelto };
+}
 function mxCambio() {
-    // Cuenta orientativa en pantalla; la que vale es la del servidor (Revisar).
-    const cot = (COBRO_ACTUAL && COBRO_ACTUAL.cot) || {};
-    let pagado = 0, sinCot = false;
-    _mxLineas.forEach(l => { const m = Number(l.monto) || 0; if (l.moneda && l.moneda !== 'ARS') { if (cot[l.moneda]) pagado += m * cot[l.moneda]; else sinCot = true; } else pagado += m; });
-    const total = _mxTotal(), dif = Math.round((pagado - total) * 100) / 100;
-    // v045.3: resumen visual estilo seba21 — bloques separados con color
-    let html = '';
-    html += '<div class="mx-bloque-total"><span class="mx-etiq">Total</span><span class="mx-val">' + _mxFmt(total) + '</span></div>';
-    if (pagado > 0) html += '<div class="mx-bloque-pagado"><span class="mx-etiq">Pagado</span><span class="mx-val">' + _mxFmt(pagado) + '</span></div>';
-    if (dif < 0) {
-        html += '<div class="mx-bloque-falta"><span class="mx-etiq">❌ Falta</span><span class="mx-val">' + _mxFmt(-dif) + '</span></div>';
-    } else if (dif > 0) {
-        html += '<div class="mx-bloque-vuelto"><span class="mx-etiq">✅ Vuelto</span><span class="mx-val">' + _mxFmt(dif) + '</span></div>';
-    } else if (pagado > 0) {
-        html += '<div class="mx-bloque-exacto"><span>✅ Monto exacto — sin vuelto</span></div>';
-    }
-    if (sinCot) html += '<div class="mx-aviso-cot">⚠️ Hay una moneda sin cotización.</div>';
+    const r = _pmRenderResumen(), c = r.c, congelado = _pmCongelado();
+    // Vuelto → deuda: solo con vuelto y sin fiado en esta venta
+    const vdBox = document.getElementById('pmVueltoDeuda');
+    const puedeVd = r.vuelto > 0 && !_pmFiadoLinea();
+    if (!puedeVd && _vd && !congelado) _vdQuitar(true);
+    vdBox.style.display = (puedeVd || _vd) ? 'block' : 'none';
+    if (_vd) _vdRenderResumen();
+    let notas = '';
+    if (c.sinCot) notas += '<div class="mx-aviso-cot">⚠️ Hay una moneda sin cotización.</div>';
+    if (r.vuelto > 0 && r.vuelto % 100 !== 0 && _mxLineas.some(l => l.medio === 'EFECTIVO' && l.moneda && l.moneda !== 'ARS'))
+        notas += '<div class="mx-nota-cent">ℹ️ El vuelto tiene centavos porque los ' + [...new Set(_mxLineas.filter(l => l.medio === 'EFECTIVO' && l.moneda !== 'ARS').map(l => l.moneda))].join(' y ') + ' se convierten a pesos con tu cotización. Queda registrado exacto (' + _mxFmt(r.vuelto / 100) + '); cuánto entregás en mano lo decidís vos.</div>';
     const avisoCot = _mxAvisoCotV432_();
-    if (avisoCot) html += '<div class="mx-aviso-cot">' + avisoCot.replace(/<br><small>/g,'').replace(/<\/small>/g,'') + '</div>';
-    document.getElementById('mxResumen').innerHTML = html;
-    if (!_leerVentaEnCurso()) {
+    if (avisoCot) notas += '<div class="mx-aviso-cot">' + avisoCot.split('<br><small>').filter(Boolean).map(t => t.replace(/<\/small>/g, '')).join('<br>') + '</div>';
+    document.getElementById('mxNotas').innerHTML = notas;
+    if (!congelado) {
         _mxRevisado = null;
         const p = document.getElementById('mxPrevia'); p.className = 'mx-previa'; p.textContent = '';
-        const b = document.getElementById('btnOkConfirm'); if (b && !b.disabled) b.textContent = '🔎 Revisar cobro';
+        _pmBoton(r);
     }
 }
+function _pmBoton(r) {
+    const b = document.getElementById('btnOkConfirm');
+    if (!b || /Procesando|Revisando|Confirmado/.test(b.textContent)) return;
+    if (!_mxLineas.length) { b.disabled = true; b.textContent = 'Cargá cuánto paga'; }
+    else if (r.falta > 0) { b.disabled = true; b.textContent = 'Falta ' + _mxFmt(r.falta / 100); }
+    else { b.disabled = false; b.textContent = '🔎 Revisar cobro'; }
+}
+
+// ---------- Clientes (autocompletado, misma lista que Clientes/Fiados; si falla, se escribe a mano) ----------
+let _cliCargando = false;
+function _cliCargar() {   // V43.34: se actualiza cada vez que se abre (un cliente nuevo de recién tiene que aparecer); mientras, sirve la lista anterior
+    if (_cliCargando || (_cliCache && Date.now() - _cliCacheTs < 15000)) return;
+    _cliCargando = true;
+    _llamarAPI('getClientes', { token: _tokenActual() }).then(r => { if (r && Array.isArray(r.clientes)) { _cliCache = r.clientes.filter(c => c.activo !== false); _cliCacheTs = Date.now(); } }).catch(() => {}).finally(() => {
+        _cliCargando = false;
+        if (!_cliCache) _cliCache = [];   // no llegó (sin conexión o sin permiso): se escribe a mano; se reintenta la próxima vez que se abra
+        // V43.35: si el vendedor ya estaba escribiendo cuando llegó la lista, se muestran las coincidencias sin esperar otra tecla
+        const p = _cliPend; _cliPend = null;
+        if (p) { const el = document.getElementById(p[0]); if (el && el.value.trim()) _cliFiltrar(p[0], p[1], p[2]); else { const d = document.getElementById(p[1]); if (d) d.style.display = 'none'; } }
+    });
+}
+let _cliPend = null;
+// V43.38b: en el celular el teclado y los botones de abajo tapaban la lista. Si abajo no entra, la lista se abre HACIA ARRIBA
+// del campo (sobre las tarjetas violeta y naranja), con el alto que haya. Nunca queda debajo de Cancelar/Confirmar ni del teclado.
+function _cliUbicarLista(idInput, drop) {
+    try {
+        const inp = document.getElementById(idInput), r = inp.getBoundingClientRect();
+        const vv = window.visualViewport, altoVisible = vv ? vv.height + vv.offsetTop : window.innerHeight;
+        const acc = document.querySelector('#modalConfirm.open .confirm-acciones');
+        const piso = Math.min(altoVisible, acc ? acc.getBoundingClientRect().top : altoVisible);
+        const cab = document.querySelector('#modalConfirm .modal-header'), techo = cab ? cab.getBoundingClientRect().bottom : 0;
+        const abajo = piso - r.bottom - 8, arriba = r.top - techo - 8;
+        if (abajo >= 160 || abajo >= arriba) { drop.style.top = '100%'; drop.style.bottom = 'auto'; drop.style.marginTop = '2px'; drop.style.marginBottom = '0'; drop.style.maxHeight = Math.max(120, Math.min(220, abajo)) + 'px'; }
+        else { drop.style.top = 'auto'; drop.style.bottom = '100%'; drop.style.marginTop = '0'; drop.style.marginBottom = '2px'; drop.style.maxHeight = Math.max(120, Math.min(260, arriba)) + 'px'; }
+    } catch (e) {}
+}
+function _cliNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim(); }
+function _cliFiltrar(idInput, idDrop, alElegir) {
+    const drop = document.getElementById(idDrop), q = (document.getElementById(idInput).value || '').trim(), lista = _cliCache || [];
+    if (!q) { drop.style.display = 'none'; _cliPend = null; return; }
+    if (!_cliCache) {   // V43.35: la lista todavía no llegó (primera vez): se avisa y se filtra sola al llegar
+        _cliPend = [idInput, idDrop, alElegir]; _cliCargar();
+        drop.innerHTML = '<div style="color:#888;cursor:default;"><span>⏳ Buscando clientes…</span><span></span></div>'; drop.style.display = 'block'; _cliUbicarLista(idInput, drop); return;
+    }
+    if (_cliCargando) _cliPend = [idInput, idDrop, alElegir];   // se está actualizando: al llegar se vuelve a filtrar
+    if (!lista.length) { drop.style.display = 'none'; return; }
+    const ts = _cliNorm(q).split(' ').filter(Boolean), qTel = q.replace(/\D/g, '');
+    const m = lista.filter(c => (qTel.length >= 4 && String(c.telefono || '').replace(/\D/g, '').includes(qTel)) || ts.every(t => _cliNorm(c.nombre).includes(t))).slice(0, 8);
+    if (!m.length) { drop.style.display = 'none'; return; }
+    drop.innerHTML = '';
+    m.forEach(c => { const d = document.createElement('div'); d.innerHTML = '<span></span><span></span>'; d.children[0].textContent = c.nombre; d.children[1].textContent = c.telefono || '—'; d.onclick = () => { drop.style.display = 'none'; alElegir(c.nombre, c.telefono || ''); }; drop.appendChild(d); });
+    drop.style.display = 'block';
+    _cliUbicarLista(idInput, drop);
+}
+async function _deudaDe(nombre, tel) {
+    let r = null; try { r = await _llamarAPI('getDeudaCliente', { token: _tokenActual(), cliente: nombre, telefono: tel }); } catch (e) { r = null; }
+    if (!r) return { error: '⚠️ Sin conexión: no se pudo consultar la deuda. No se suma nada.' };
+    if (!r.success) return { error: '⚠️ ' + (r.error || 'No se pudo consultar la deuda.') };
+    if (!(r.deuda > 0)) return { error: 'ℹ️ ' + nombre + ' no tiene deuda pendiente.' };
+    return { cliente: r.cliente || nombre, telefono: tel, deuda: Number(r.deuda), fiados: r.fiados || [] };
+}
+function _fiadosHtml(fiados) {
+    return (fiados || []).map(f => '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f3e3c9;font-size:0.82rem;"><span>Fiado' + (f.fecha ? ' del ' + _escH(_tkDia(f.fecha)) : '') + '</span><b>debe ' + _mxFmt(f.saldo) + '</b></div>').join('') +
+        ((fiados || []).length > 1 ? '<div style="font-size:0.72rem;color:#8d6e63;margin-top:3px;">Se descuenta del fiado más viejo al más nuevo.</div>' : '');
+}
+
+// ---------- VUELTO → DEUDA (dentro del mixto; deuda modo VUELTO del servidor) ----------
+function _vdAbrir() {
+    if (_pmCongelado()) return;
+    if (_pmFiadoLinea()) { _pmAviso('⛔ No disponible', 'Esta venta tiene fiado. ' + PM_NO_REFINANCIA, '#c62828'); return; }
+    const p = document.getElementById('pmVdPanel'), abrir = p.style.display === 'none';
+    p.style.display = abrir ? 'block' : 'none';
+    if (abrir) { _cliCargar(); setTimeout(() => document.getElementById('pmVdCliente').focus(), 50); }
+}
+async function _vdElegir(nombre, tel) {
+    nombre = String(nombre || '').trim(); if (!nombre) return;
+    const msg = document.getElementById('pmVdMsg');
+    document.getElementById('pmVdCliente').value = nombre; document.getElementById('pmVdDrop').style.display = 'none';
+    document.getElementById('pmVdLista').innerHTML = ''; document.getElementById('pmVdMontoBox').style.display = 'none';
+    _vd = null; mxRender(false);
+    msg.textContent = '⏳ Buscando deudas de ' + nombre + '…';
+    const d = await _deudaDe(nombre, tel);
+    if (d.error) { msg.textContent = d.error; return; }
+    if (_pmFiadoLinea()) { msg.textContent = ''; _pmAviso('⛔ No disponible', PM_NO_REFINANCIA, '#c62828'); return; }
+    msg.textContent = '';
+    const r = _pmRenderResumen();
+    _vd = { cliente: d.cliente, telefono: d.telefono, deuda: d.deuda, fiados: d.fiados, monto: Math.min(r.vuelto / 100, d.deuda) };
+    document.getElementById('pmVdCliente').value = d.cliente;
+    document.getElementById('pmVdLista').innerHTML = _fiadosHtml(d.fiados);
+    document.getElementById('pmVdMontoBox').style.display = 'block';
+    document.getElementById('pmVdMonto').value = _vd.monto;
+    mxRender(false);
+}
+function _vdMontoCambio() { if (!_vd) return; _vd.monto = Math.max(0, Number(document.getElementById('pmVdMonto').value) || 0); _vdRenderResumen(); _mxRevisado = null; const p = document.getElementById('mxPrevia'); p.className = 'mx-previa'; p.textContent = ''; _pmBoton(_pmRenderResumen()); }
+function _vdRenderResumen() {
+    const el = document.getElementById('pmVdResumen'), btn = document.getElementById('pmVdBtn'); if (!el) return;
+    if (!_vd) { el.textContent = ''; if (btn) btn.textContent = '💵 Aplicar vuelto a deuda'; return; }
+    const r = _pmRenderResumen(), ap = Math.min(_vd.monto, r.vuelto / 100, _vd.deuda || Infinity);
+    el.textContent = _vd.deuda ? 'A la deuda de ' + _vd.cliente + ': ' + _mxFmt(ap) + ' (debe ' + _mxFmt(_vd.deuda) + ') · Vuelto en mano: ' + _mxFmt(r.vuelto / 100 - ap) : 'Vuelto a la deuda de ' + _vd.cliente;
+    if (btn) btn.textContent = '💵 Vuelto a la deuda de ' + _vd.cliente + ' ✔';
+}
+function _vdResetUI() {
+    ['pmVdLista', 'pmVdMsg', 'pmVdResumen'].forEach(id => { const e = document.getElementById(id); if (e) { if (id === 'pmVdLista') e.innerHTML = ''; else e.textContent = ''; } });
+    const c = document.getElementById('pmVdCliente'); if (c) c.value = '';
+    const p = document.getElementById('pmVdPanel'); if (p) p.style.display = 'none';
+    const mb = document.getElementById('pmVdMontoBox'); if (mb) mb.style.display = 'none';
+    const b = document.getElementById('pmVdBtn'); if (b) b.textContent = '💵 Aplicar vuelto a deuda';
+}
+function _vdQuitar(silencioso) { _vd = null; _vdResetUI(); if (!silencioso) mxRender(false); }
+
+// ---------- COBRAR DEUDA DEL CLIENTE (tarjeta naranja, aparte del mixto; deuda modo SUMAR) ----------
+function _dcMonto() { return (_dc && _dc.activo) ? Number(_dc.monto) || 0 : 0; }
+function _dcLeyendoSinSumar() { const p = document.getElementById('dcPanel'); return !!(p && p.style.display === 'block' && _dc && !_dc.activo && _dc.monto > 0); }
+function _dcToggle() {
+    if (_leerVentaEnCurso()) return;
+    if (_pmAbierto()) { _pmAviso('⚠️ Pago mixto abierto', 'Cerrá el pago mixto para sumar una deuda (el mixto ya permite aplicar el vuelto a la deuda).', '#e65100'); return; }
+    if (metodoPagoActual === 'fiado') { _cbCambiandoModo = true; try { seleccionarMetodo('efectivo'); } finally { _cbCambiandoModo = false; } }   // con deuda no se fía (Copihue: pasa a efectivo)
+    if (_dc && _dc.activo) return;   // ya sumada: se quita con «✕ quitar deuda»
+    const p = document.getElementById('dcPanel'), abrir = p.style.display === 'none';
+    p.style.display = abrir ? 'block' : 'none';
+    document.getElementById('dcFlecha').textContent = abrir ? '⌄' : '›';
+    if (abrir) { _cliCargar(); setTimeout(() => document.getElementById('dcCliente').focus(), 50); } else if (!(_dc && _dc.activo)) _dc = null;
+    _dcGris();
+}
+async function _dcElegir(nombre, tel) {
+    nombre = String(nombre || '').trim(); if (!nombre) return;
+    const msg = document.getElementById('dcMsg');
+    document.getElementById('dcCliente').value = nombre; document.getElementById('dcDrop').style.display = 'none';
+    document.getElementById('dcLista').innerHTML = ''; document.getElementById('dcMontoBox').style.display = 'none';
+    document.getElementById('dcResumen').textContent = ''; document.getElementById('dcSumarBtn').style.display = 'none';
+    _dc = null; _dcGris();
+    msg.textContent = '⏳ Buscando deudas de ' + nombre + '…';
+    const d = await _deudaDe(nombre, tel);
+    if (d.error) { msg.textContent = d.error; return; }
+    msg.textContent = '';
+    _dc = { cliente: d.cliente, telefono: d.telefono, deuda: d.deuda, fiados: d.fiados, monto: d.deuda, activo: false };   // por defecto: la deuda COMPLETA
+    document.getElementById('dcCliente').value = d.cliente;
+    document.getElementById('dcLista').innerHTML = _fiadosHtml(d.fiados);
+    document.getElementById('dcMontoBox').style.display = 'block';
+    document.getElementById('dcMonto').value = d.deuda;
+    _dcRenderResumen();
+}
+function _dcRenderResumen() {
+    if (!_dc) return;
+    let m = Number(document.getElementById('dcMonto').value) || 0; if (m < 0) m = 0;
+    const el = document.getElementById('dcResumen'), b = document.getElementById('dcSumarBtn');
+    if (m > _dc.deuda) { el.textContent = '⚠️ No puede superar lo que debe (' + _mxFmt(_dc.deuda) + ')'; b.style.display = 'none'; _dc.monto = 0; _dcGris(); return; }
+    _dc.monto = m;
+    el.textContent = 'Cobrás ' + _mxFmt(m) + ' de la deuda de ' + _mxFmt(_dc.deuda) + ' · Quedaría: ' + _mxFmt(_dc.deuda - m);
+    b.style.display = m > 0 ? 'block' : 'none'; b.textContent = '➕ Sumar ' + _mxFmt(m) + ' al cobro';
+    _dcGris();
+}
+function _dcSumar() {
+    if (_pmAbierto()) { _pmAviso('⛔ Pago mixto abierto', 'No se puede sumar la deuda con el pago mixto abierto: usá «Aplicar vuelto a deuda» o cerrá el pago mixto.', '#c62828'); return; }
+    if (!_dc || !(_dc.monto > 0)) return;
+    _dc.activo = true;
+    document.getElementById('dcPanel').style.display = 'none'; document.getElementById('dcFlecha').textContent = '›';
+    _cbCambiandoModo = true; try { seleccionarMetodo(metodoPagoActual === 'fiado' ? 'efectivo' : metodoPagoActual); } finally { _cbCambiandoModo = false; }   // refresca QR/vuelto con el total nuevo
+    _dcRefrescar();
+}
+function _dcQuitar() {
+    _dc = null; _dcResetUI();
+    if (!_leerVentaEnCurso()) { _cbCambiandoModo = true; try { seleccionarMetodo(metodoPagoActual); } finally { _cbCambiandoModo = false; } }
+}
+function _dcResetUI() {
+    ['dcLista', 'dcMsg', 'dcResumen'].forEach(id => { const e = document.getElementById(id); if (e) { if (id === 'dcLista') e.innerHTML = ''; else e.textContent = ''; } });
+    const c = document.getElementById('dcCliente'); if (c) c.value = '';
+    ['dcDrop', 'dcPanel', 'dcSumarBtn', 'dcMontoBox'].forEach(id => { const e = document.getElementById(id); if (e) e.style.display = 'none'; });
+    const fl = document.getElementById('dcFlecha'); if (fl) fl.textContent = '›';
+    const bl = document.getElementById('dcBloque'); if (bl) { bl.style.display = 'none'; bl.innerHTML = ''; }
+    _dcGris();
+}
+function _dcRefrescar() {
+    const bl = document.getElementById('dcBloque'); if (!bl) return;
+    const m = _dcMonto(); _dcGris();
+    if (!m) { bl.style.display = 'none'; bl.innerHTML = ''; return; }
+    const venta = _mxTotal(), enCurso = _leerVentaEnCurso();
+    bl.style.display = 'block';
+    bl.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;font-size:0.85rem;font-weight:800;color:#e65100;"><span class="dcNom"></span><span>+' + _mxFmt(m) + '</span></div>' +
+        '<div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#666;margin-top:2px;"><span>Compra</span><span>' + _mxFmt(venta) + '</span></div>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;font-size:1.15rem;font-weight:900;color:#1b5e20;margin-top:4px;border-top:1px dashed #e65100;padding-top:4px;"><span>TOTAL A COBRAR</span><span>' + _mxFmt(_cbACobrar()) + '</span></div>' +
+        (enCurso ? '' : '<div style="text-align:right;margin-top:4px;"><button type="button" onclick="_dcQuitar()" style="background:none;border:none;color:#999;font-size:0.75rem;text-decoration:underline;cursor:pointer;">✕ quitar deuda</button></div>');
+    bl.querySelector('.dcNom').textContent = '💰 Deuda de ' + _dc.cliente;
+}
+// Con deuda sumada (o leída sin sumar) Fiado queda apagado; leyendo sin sumar, el cobro queda en espera.
+function _dcGris() {
+    const fb = document.getElementById('metodo-fiado'); if (fb) fb.classList.toggle('dc-bloqueado', _dcMonto() > 0 || _dcLeyendoSinSumar());
+    const ok = document.getElementById('btnOkConfirm'); if (ok) ok.classList.toggle('dc-espera', _dcLeyendoSinSumar());
+}
+// Lo que se cobra con un solo medio: la compra + la deuda sumada (centavos exactos).
+function _cbACobrar() { return (Math.round(_mxTotal() * 100) + Math.round(_dcMonto() * 100)) / 100; }
+
+// V43.34: elegir un cliente de la lista en el Fiado común (completa el teléfono y avisa si ya debe)
+function _fiadoElegir(nombre, tel) {
+    const c = document.getElementById('fiadoCliente'), t = document.getElementById('fiadoTelefono');
+    c.value = nombre; if (tel) t.value = tel;
+    document.getElementById('fiadoDrop').style.display = 'none';
+    _guardarBorrador('fiado', { cliente: c.value, telefono: t.value });
+    consultarDeudaFiado();
+}
+// =================== V43.41: AVANCE REAL DEL COBRO (Copihue v541 · v560) ===================
+// El botón y un cartelito arriba dicen en qué paso está el cobro y cuántos segundos lleva. Solo informa: no cambia ningún registro.
+let CB_REINTENTOS = [0, 3000, 6000, 10000], CB_TOPE_MS = 45000;   // espera antes de cada intento del mismo cobro
+let _cbP = null;
+function _cbPill(txt, color) {
+    let p = document.getElementById('cbPill');
+    if (!p) { p = document.createElement('div'); p.id = 'cbPill'; p.setAttribute('role', 'status');
+        p.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:7200;max-width:calc(100% - 24px);padding:9px 14px;border-radius:14px;color:#fff;font-weight:800;font-size:0.85rem;line-height:1.3;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.25);display:none;';
+        document.body.appendChild(p); }
+    if (!txt) { p.style.display = 'none'; return; }
+    p.textContent = txt; p.style.background = color || '#e65100'; p.style.display = 'block';
+}
+function _cbProg(texto, color) {
+    const ahora = Date.now();
+    if (!_cbP) _cbP = { t0: ahora, tick: setInterval(_cbProgPintar, 1000) };
+    _cbP.texto = texto; _cbP.color = color || '#e65100'; _cbP.tf = ahora;
+    _cbProgPintar(); _diag('paso: ' + texto);
+}
+function _cbProgPintar() {
+    if (!_cbP) return;
+    const s = Math.round((Date.now() - _cbP.tf) / 1000), txt = _cbP.texto + (s >= 1 ? ' (' + s + ' s)' : '');
+    const b = document.getElementById('btnOkConfirm'); if (b && b.disabled) b.textContent = txt;
+    _cbPill(txt, _cbP.color);
+}
+function _cbProgFin(final, color, ms) {
+    if (_cbP) { clearInterval(_cbP.tick); _diag('fin: ' + (final || 'sin terminar') + ' · ' + Math.round((Date.now() - _cbP.t0) / 100) / 10 + ' s en total'); _cbP = null; }
+    clearTimeout(window._cbPillT);
+    if (final) { _cbPill(final, color || '#2e7d32'); window._cbPillT = setTimeout(() => _cbPill(''), ms || 6000); } else _cbPill('');
+}
+function _cbProgFinVenta(resp, que) {
+    if (resp && resp.success) _cbProgFin('✅ ' + que + (resp.yaExistia ? ' (ya estaba: no se duplicó)' : ''), '#2e7d32', 5000);
+    else { _cbProgFin(''); _diag(que + ': ' + (resp ? (resp.error || 'sin éxito') : 'sin respuesta')); }
+}
+// Panel técnico (como el dbgAbonoVd de Copihue): solo con ?diag=1 en la dirección. Muestra cada llamada al servidor y cuánto tardó.
+const DIAG_ON = /[?&]diag=1\b/.test(location.search);
+function _diagToggle() {
+    const p = document.getElementById('diagPanel'); if (!p) return;
+    const abrir = p.style.maxHeight !== '45vh', filas = Array.from(p.children).slice(1);
+    p.style.maxHeight = abrir ? '45vh' : '2.9em'; p.style.overflow = abrir ? 'auto' : 'hidden';
+    filas.forEach((x, i) => { x.style.display = abrir || i === filas.length - 1 ? '' : 'none'; });
+    p.scrollTop = p.scrollHeight;
+}
+function _diag(t) {
+    if (!DIAG_ON) return;
+    let p = document.getElementById('diagPanel');
+    if (!p) { p = document.createElement('div'); p.id = 'diagPanel';
+        // plegado: se ve la última línea arriba de todo y no tapa los botones; tocando 🔧 se despliega
+        p.style.cssText = 'position:fixed;left:6px;right:6px;top:64px;z-index:7100;max-height:2.9em;overflow:hidden;background:rgba(0,0,0,.85);color:#b9f6ca;font:11px/1.35 monospace;padding:4px 8px;border-radius:8px;white-space:pre-wrap;';
+        p.innerHTML = '<div style="color:#fff;font-weight:bold;position:sticky;top:0;background:#000;"><span style="cursor:pointer;" onclick="_diagToggle()">🔧 Diagnóstico (tocar para ver todo)</span> <span style="float:right;cursor:pointer;" onclick="navigator.clipboard&&navigator.clipboard.writeText(this.parentNode.parentNode.innerText)">📋 copiar</span></div>';
+        document.body.appendChild(p); }
+    const d = document.createElement('div'); d.textContent = new Date().toLocaleTimeString('es-AR', { hour12: false }) + ' · ' + t;
+    if (p.style.maxHeight !== '45vh') Array.from(p.children).slice(1).forEach(x => { x.style.display = 'none'; });   // plegado: solo la última línea
+    p.appendChild(d); p.scrollTop = p.scrollHeight;
+}
+if (DIAG_ON) {   // cada llamada al servidor queda anotada con su duración y resultado
+    const _llamarAPIOriginal = _llamarAPI;
+    _llamarAPI = async function (action, payload) {
+        const t = performance.now(); _diag('→ ' + action);
+        try { const r = await _llamarAPIOriginal(action, payload); _diag('← ' + action + ' ' + Math.round(performance.now() - t) + ' ms · ' + (r && r.success === false ? '❌ ' + (r.error || '') : (r && r.ocupado ? 'ocupado' : 'ok')) + (r && r.yaExistia ? ' (ya existía)' : '')); return r; }
+        catch (e) { _diag('← ' + action + ' ' + Math.round(performance.now() - t) + ' ms · SIN RESPUESTA: ' + (e && e.message || e)); throw e; }
+    };
+}
+// =================== COBRO CON UN SOLO MEDIO ===================
+let _cbCambiandoModo = false;
+const CB_MEDIO = { efectivo: 'EFECTIVO', debito: 'DEBITO', qr_posnet: 'QR_POSNET', transferencia: 'TRANSFERENCIA' };
+const CB_METODO = { EFECTIVO: 'efectivo', DEBITO: 'debito', QR_POSNET: 'qr_posnet', TRANSFERENCIA: 'transferencia' };
+function _cbPintarModo(metodo) {
+    const mixto = metodo === 'mixto', enCurso = _leerVentaEnCurso(), av = _cbAvanzado();
+    const t = document.getElementById('cbTitulo'); if (t) t.textContent = '¿Cómo paga?';
+    const m = document.getElementById('cbMedios'); if (m) { m.classList.toggle('pm-inactivo', mixto); m.classList.remove('modo-agregar'); }
+    const pe = document.getElementById('panelEfectivo'); if (pe) pe.style.display = metodo === 'efectivo' && !enCurso ? 'block' : 'none';
+    const tg = document.getElementById('pmToggleWrap'); if (tg) tg.style.display = (av && !(enCurso && !mixto)) || mixto ? 'flex' : 'none';
+    const fl = document.getElementById('pmToggleFlecha'); if (fl) fl.textContent = mixto ? '⌄' : '›';
+    const dw = document.getElementById('dcWrap'); if (dw) dw.style.display = (av && !mixto && !enCurso) || _dcMonto() > 0 ? 'block' : 'none';
+    const dcCard = document.getElementById('dcCard'); if (dcCard) dcCard.style.display = enCurso ? 'none' : 'flex';
+    _dcRefrescar();
+    if (metodo === 'efectivo') cbPagaConCambio();
+    else if (!mixto && !enCurso) { const b = document.getElementById('btnOkConfirm'); if (b && !/Procesando|Confirmado/.test(b.textContent)) { b.disabled = false; b.textContent = _dcMonto() > 0 ? '🔎 Revisar cobro' : '✅ Confirmar'; } }
+}
+function cbReset() {
+    _mxLineas = []; _mxRevisado = null; _vd = null; _dc = null; metodoPagoActual = 'efectivo';
+    _vdResetUI(); _dcResetUI(); _pmError('');
+    const pc = document.getElementById('cbPagaCon'); if (pc) pc.value = '';
+}
+// Efectivo con un solo medio: ayuda para el vuelto. Sin deuda no se envía al servidor (la venta se registra igual que siempre);
+// con deuda sumada, lo que paga se manda al servidor para que calcule el vuelto.
+function cbPagaConCambio() {
+    const total = _cbACobrar(), totCts = Math.round(total * 100), pc = Number(document.getElementById('cbPagaCon').value) || 0, pcCts = Math.round(pc * 100);
+    const billetes = [500, 1000, 2000, 5000, 10000, 20000], rap = [total];
+    billetes.forEach(b => { const r = Math.ceil(total / b) * b; if (r > total && rap.indexOf(r) === -1 && rap.length < 4) rap.push(r); });
+    document.getElementById('cbRapidos').innerHTML = rap.map((v, i) => '<button type="button" onclick="document.getElementById(\'cbPagaCon\').value=' + v + ';cbPagaConCambio()">' + (i === 0 ? 'Justo ' : '') + _mxFmt(v) + '</button>').join('');
+    let h = '';
+    if (pcCts > totCts) h = '<div class="mx-bloque-vuelto"><span class="mx-etiq">✅ Vuelto</span><span class="mx-val">' + _mxFmt((pcCts - totCts) / 100) + '</span></div>';
+    else if (pcCts > 0 && pcCts === totCts) h = '<div class="mx-bloque-exacto"><span>✅ Justo — sin vuelto</span></div>';
+    else if (pcCts > 0) h = '<div class="mx-bloque-falta"><span class="mx-etiq">❌ Falta</span><span class="mx-val">' + _mxFmt((totCts - pcCts) / 100) + '</span></div>' +
+        (_cbAvanzado() && !(_dcMonto() > 0) ? '<button type="button" class="cb-combinar" onclick="cbCombinar()">💱 Completar con pago mixto</button>'
+                       : '<div class="mx-nota-cent">Con un solo medio el pago tiene que cubrir el total' + (_dcMonto() > 0 ? ' (compra + deuda).' : '. Para combinar medios hace falta el complemento Cobro mixto.') + '</div>');
+    document.getElementById('cbVueltoSimple').innerHTML = h;
+    const b = document.getElementById('btnOkConfirm');
+    if (b && !_leerVentaEnCurso() && metodoPagoActual === 'efectivo' && !/Procesando|Confirmado/.test(b.textContent)) {
+        b.disabled = pcCts > 0 && pcCts < totCts;
+        b.textContent = b.disabled ? 'Falta ' + _mxFmt((totCts - pcCts) / 100) : (_dcMonto() > 0 ? '🔎 Revisar cobro' : '✅ Confirmar');
+    }
+    if (_dcMonto() > 0) { _mxRevisado = null; const p = document.getElementById('mxPrevia'); if (p && !_leerVentaEnCurso()) { p.className = 'mx-previa'; p.textContent = ''; } }
+}
+// «Completar con pago mixto»: lo que paga en efectivo queda cargado en la tarjeta EFECTIVO.
+function cbCombinar() {
+    if (_leerVentaEnCurso() || _dcMonto() > 0) return;
+    const pc = Number(document.getElementById('cbPagaCon').value) || 0;
+    togglePagoMixto();
+    if (pc > 0 && _pmAbierto()) { _mxLineas.push({ _id: _pmSeq++, medio: 'EFECTIVO', moneda: 'ARS', monto: pc }); mxRender(false); }
+}
+
 // V43.2: en el cobro con moneda extranjera, recordar que la cotización es la del comercio y si hace más de 7 días que no se cambia.
 function _mxAvisoCotV432_() {
-    const cot = (COBRO_ACTUAL && COBRO_ACTUAL.cot) || {}, f = (COBRO_ACTUAL && COBRO_ACTUAL.fechas) || {};
-    const usadas = [...new Set(_mxLineas.filter(l => l.moneda && l.moneda !== 'ARS' && cot[l.moneda]).map(l => l.moneda))];
+    const cot = _pmCot(), f = (COBRO_ACTUAL && COBRO_ACTUAL.fechas) || {};
+    const usadas = [...new Set(_mxLineas.filter(l => l.medio === 'EFECTIVO' && l.moneda && l.moneda !== 'ARS' && cot[l.moneda]).map(l => l.moneda))];
     return usadas.map(k => '<br><small>1 ' + k + ' = ' + _mxFmt(cot[k]) + ' (tu cotización' + (f[k] && f[k].fecha ? ' del ' + f[k].fecha : '') + ')' +
         (f[k] && f[k].revisar ? ' · <b style="color:#B26A00">⚠️ hace ' + (f[k].dias === null ? 'tiempo' : f[k].dias + ' días') + ' que no la cambiás: revisá la oficial</b>' : '') + '</small>').join('');
 }
+// La operación que se manda al servidor. Mixto: las tarjetas (el fiado va aparte). Un medio + deuda sumada: un solo pago.
 function _mxArmarOp(opId) {
-    const op = { opId: opId, items: ventaActual.map(i => ({ id: i.id, codigo: i.codigo || '', name: i.name, qty: i.qty, precioVenta: i.price, precioModificado: i.precioModificado || false, precioOriginal: i.precioOriginal || 0 })),
-                 pagos: _mxLineas.filter(l => Number(l.monto) > 0).map(l => ({ medio: l.medio, moneda: l.medio === 'EFECTIVO' ? (l.moneda || 'ARS') : 'ARS', monto: Number(l.monto) })) };
-    const cli = document.getElementById('mxCliente').value.trim(), tel = document.getElementById('mxTelefono').value.trim();
-    if (document.getElementById('mxFiar').checked) op.fiado = { cliente: cli, telefono: tel };
-    if (document.getElementById('mxDeuda').checked) {
-        op.deuda = { cliente: cli, telefono: tel, modo: document.getElementById('mxDeudaModo').value };
-        const md = document.getElementById('mxDeudaMonto').value; if (op.deuda.modo === 'SUMAR' && md !== '') op.deuda.monto = Number(md);
+    const op = { opId: opId, items: ventaActual.map(i => ({ id: i.id, codigo: i.codigo || '', name: i.name, qty: i.qty, precioVenta: i.price, precioModificado: i.precioModificado || false, precioOriginal: i.precioOriginal || 0 })), pagos: [] };
+    if (_pmAbierto()) {
+        op.pagos = _mxLineas.filter(l => l.medio !== 'FIADO' && Number(l.monto) > 0).map(l => ({ medio: l.medio, moneda: l.medio === 'EFECTIVO' ? (l.moneda || 'ARS') : 'ARS', monto: Number(l.monto) }));
+        const fl = _pmFiadoLinea(); if (fl) op.fiado = { cliente: fl.cliente, telefono: fl.telefono || '' };
+        if (_vd) op.deuda = { cliente: _vd.cliente, telefono: _vd.telefono || '', modo: 'VUELTO', monto: Number(_vd.monto) || 0 };
+    } else if (_dcMonto() > 0) {
+        const need = _cbACobrar(), pc = Number(document.getElementById('cbPagaCon').value) || 0;
+        const monto = metodoPagoActual === 'efectivo' && pc > need ? pc : need;
+        op.pagos = [{ medio: CB_MEDIO[metodoPagoActual] || 'EFECTIVO', moneda: 'ARS', monto: monto }];
+        op.deuda = { cliente: _dc.cliente, telefono: _dc.telefono || '', modo: 'SUMAR', monto: _dcMonto() };
     }
     return op;
 }
-// v045.3: previa visual con bloques de color (texto plano queda como fallback)
-function _mxPrevia(texto, tipo) { const p = document.getElementById('mxPrevia'); p.className = 'mx-previa ' + tipo; p.textContent = texto; }
+// Previa del servidor con bloques de color (texto plano queda para errores)
+function _mxPrevia(texto, tipo) { const p = document.getElementById('mxPrevia'); p.className = 'mx-previa ' + tipo; p.textContent = texto; try { p.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {} }
 function _mxPreviaRev(e, ingresos, avisos) {
-    // Muestra la revisión del servidor con bloques visuales claros
     const p = document.getElementById('mxPrevia');
     p.className = 'mx-previa ok';
-    let h = '<div style="font-size:0.78rem;font-weight:900;color:#1b5e20;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">✔ Revisión — todavía no se cobró nada</div>';
-    // Medios de pago
+    let h = '<div style="font-size:0.78rem;font-weight:900;color:#1b5e20;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">' + (ingresos && ingresos.length ? '✔ Revisá antes de confirmar — todavía no se cobró nada' : '✔ Resultado') + '</div>';
     if (ingresos && ingresos.length) {
+        const nom = m => (MX_MEDIOS.find(x => x[0] === m) || [m, m])[1];
         ingresos.forEach(i => {
-            h += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #c8e6c9;font-size:0.88rem;">' +
-                 '<span>💰 ' + i.medio + (i.moneda && i.moneda !== 'ARS' ? ' <small style="opacity:0.7">(' + i.moneda + ')</small>' : '') + '</span>' +
-                 '<b>' + _mxFmt(i.importe) + '</b></div>';
+            const ext = i.moneda && i.moneda !== 'ARS';
+            h += '<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #c8e6c9;font-size:0.88rem;">' +
+                 '<span>' + nom(i.medio) + (ext ? ' <b>' + _escH(i.moneda) + '</b><br><small style="opacity:0.8">' + (i.monto != null ? Number(i.monto).toLocaleString('es-AR') + ' ' + _escH(i.moneda) + ' × ' + _mxFmt(i.cot) : '') + '</small>' : '') + '</span>' +
+                 '<b style="white-space:nowrap">' + _mxFmt(i.importe) + '</b></div>';
         });
+        if (e.total != null) h += '<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:0.86rem;"><span>Total de la venta</span><b>' + _mxFmt(e.total) + '</b></div>';
+        const rec = ingresos.reduce((s, i) => s + Math.round(Number(i.importe) * 100), 0) / 100;
+        h += '<div style="display:flex;justify-content:space-between;padding:2px 0 5px;font-size:0.86rem;"><span>Recibido (en pesos)</span><b>' + _mxFmt(rec) + '</b></div>';
     }
-    // Vuelto / deuda / fiado
-    if (e.vuelto > 0) h += '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.95rem;font-weight:900;color:#1b5e20;border-top:2px solid #a5d6a7;margin-top:4px;"><span>✅ Vuelto</span><span>' + _mxFmt(e.vuelto) + '</span></div>';
-    if (e.deuda > 0) h += '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.88rem;font-weight:700;color:#1565c0;"><span>💙 Abono a la deuda</span><span>' + _mxFmt(e.deuda) + '</span></div>';
-    if (e.fiado > 0) h += '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.88rem;font-weight:700;color:#e65100;"><span>🧾 Queda fiado</span><span>' + _mxFmt(e.fiado) + '</span></div>';
+    if (e.deuda > 0) h += '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.9rem;font-weight:800;color:#e65100;"><span>💰 Abono a la deuda</span><span>' + _mxFmt(e.deuda) + '</span></div>';
+    if (e.fiado > 0) h += '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.9rem;font-weight:800;color:#e65100;"><span>🧾 Queda fiado</span><span>' + _mxFmt(e.fiado) + '</span></div>';
+    if (e.vuelto > 0) h += '<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.95rem;font-weight:900;color:#e65100;border-top:2px solid #ffcc80;margin-top:4px;"><span>💵 Vuelto en mano</span><span>' + _mxFmt(e.vuelto) + '</span></div>';
     if (avisos && avisos.length) {
         p.className = 'mx-previa aviso';
-        avisos.forEach(a => { h += '<div style="font-size:0.82rem;color:#e65100;padding-top:4px;">⚠️ ' + a + '</div>'; });
+        avisos.forEach(a => { h += '<div style="font-size:0.82rem;color:#e65100;padding-top:4px;">⚠️ ' + _escH(String(a).replace(/^⚠️\s*/, '')) + '</div>'; });
     }
     p.innerHTML = h;
+    try { p.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (x) {}
 }
 async function confirmarVentaMixto() {
     const btn = document.getElementById('btnOkConfirm');
     let enCurso = _leerVentaEnCurso();
     if (!enCurso) {
         if (!ventaActual.length) { mostrarToast('Agregá productos primero', 'rojo'); return; }
+        if (_dcLeyendoSinSumar()) { _pmAviso('⚠️ Deuda leída sin sumar', 'Tenés una deuda leída sin sumar al cobro. Tocá «Sumar … al cobro» o cerrá la tarjeta naranja para poder cobrar.', '#e65100'); return; }
+        if (_pmAbierto()) {
+            const r = _pmRenderResumen();
+            if (!_mxLineas.length) { _pmError('⚠️ Cargá al menos un pago (efectivo, tarjeta, transferencia, fiado…) o tocá «✕ cerrar» para cobrar normal.'); return; }
+            if (r.falta > 0) { _pmError('⚠️ Todavía falta cubrir ' + _mxFmt(r.falta / 100) + ' — agregá otro medio o Fiado antes de confirmar.'); return; }
+            if (_pmFiadoLinea() && r.vuelto > 0) { _pmError('⚠️ Con fiado no puede haber vuelto: tocá ✕ en el fiado y cargalo por ' + _mxFmt((_pmFiadoLinea().monto * 100 - r.vuelto) / 100) + '.'); return; }
+            if (_pmFiadoLinea() && _vd) { _pmAviso('⛔ No disponible', PM_NO_REFINANCIA, '#c62828'); return; }
+            if (_vd && !(_vd.monto > 0)) { _pmError('⚠️ Poné cuánto del vuelto va a la deuda, o tocá «✕ No aplicar a deuda».'); return; }
+        }
         const op = _mxArmarOp('PREVIA0000');
-        if ((op.fiado || op.deuda) && !op.fiado && !op.deuda.cliente) { _mxPrevia('Escribí el nombre del cliente de la deuda. No se cobró nada.', 'error'); return; }
         if (op.fiado && !op.fiado.cliente) { _mxPrevia('Escribí el nombre del cliente al que se fía. No se cobró nada.', 'error'); return; }
         const firma = JSON.stringify(op);
         if (_mxRevisado && _mxRevisado.firma === firma) {
@@ -3562,45 +4330,62 @@ async function confirmarVentaMixto() {
             const opId = _generarVentaId();
             const opFinal = _mxArmarOp(opId); opFinal.esperado = _mxRevisado.esperado;
             enCurso = { ventaId: opId, metodoPago: 'mixto', op: opFinal };
+            if (!_pmAbierto()) enCurso.simple = metodoPagoActual;   // un medio + deuda sumada
             localStorage.setItem(_ventaEnCursoKey(), JSON.stringify(enCurso));
-            mxRender(true);
+            if (_pmAbierto()) mxRender(true); else _cbPintarModo(metodoPagoActual);
         } else {
             btn.disabled = true; btn.textContent = '⏳ Revisando...';
+            _cbProg('⏳ Revisando con el servidor…', '#1565c0');   // V43.41
             let r = null; try { r = await _llamarAPI('previsualizarCobro', { token: _tokenActual(), op: op }); } catch (e) { r = null; }
+            _cbProgFin(r && r.success ? '✔ Revisado: todavía no se cobró nada' : '', '#1565c0', 3000);
             btn.disabled = false;
             if (!r) { btn.textContent = '🔎 Revisar cobro'; _mxPrevia('Sin conexión: no se pudo revisar. No se cobró nada.', 'error'); return; }
             if (!r.success) { btn.textContent = '🔎 Revisar cobro'; _mxPrevia('❌ ' + (r.error || 'No se pudo revisar.'), 'error'); return; }
-            const e = r.esperado;
-            _mxPreviaRev(e, r.ingresos, r.avisos); // v045.3: bloques visuales
-            _mxRevisado = { firma: firma, esperado: e };
+            _mxPreviaRev(r.esperado, r.ingresos, r.avisos);
+            _mxRevisado = { firma: firma, esperado: r.esperado };
             btn.textContent = '✅ Confirmar cobro';
             return;
         }
     }
     btn.disabled = true; btn.textContent = '⏳ Procesando...';
     const hora = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-    let resp = null; try { resp = await _llamarAPI('cobrar', { token: _tokenActual(), op: enCurso.op }); } catch (e) { resp = null; }
+    // V43.41 (Copihue v560): sin respuesta u «ocupado» se REINTENTA solo con el MISMO número de operación (el servidor no cobra dos veces).
+    let resp = null; const tIni = Date.now();
+    for (let n = 0; n < CB_REINTENTOS.length; n++) {
+        if (n > 0) {
+            if (Date.now() - tIni + CB_REINTENTOS[n] > CB_TOPE_MS) break;
+            _cbProg('🔁 Procesando: reintentando (' + (n + 1) + ') · no se cobra dos veces…'); await new Promise(r => setTimeout(r, CB_REINTENTOS[n]));
+        }
+        _cbProg(n === 0 ? '⏳ Procesando: registrando el cobro en la planilla…' : '🔁 Procesando: reintento ' + (n + 1) + ' en curso…');
+        try { resp = await _llamarAPI('cobrar', { token: _tokenActual(), op: enCurso.op }); } catch (e) { resp = null; _diag('cobrar: sin respuesta (' + (e && e.message || e) + ')'); }
+        if (resp && (resp.success || resp.definitivo)) break;
+        _diag('cobrar intento ' + (n + 1) + ': ' + (resp ? (resp.ocupado ? 'servidor ocupado (no escribió nada)' : 'sin terminar: ' + resp.error) : 'sin respuesta'));
+    }
+    if (resp && resp.success) {
+        if (!resp.resumen && enCurso.op.esperado) { const e = enCurso.op.esperado; resp.resumen = { total: e.total, deuda: e.deuda, fiado: e.fiado, vuelto: e.vuelto, abonos: [], ingresos: [], avisos: [] }; }   // V43.41: «ya estaba registrado» no trae el detalle: se usa lo revisado con el servidor
+        const rs0 = resp.resumen || {}, nAb = (rs0.abonos || []).length;
+        _cbProgFin('✅ ' + (resp.yaExistia ? 'Ya estaba registrado' : 'Cobro registrado') + (rs0.deuda ? ' · abono ' + _mxFmt(rs0.deuda) + (nAb ? ' a ' + nAb + (nAb === 1 ? ' fiado' : ' fiados') : ' a la deuda') : '') + (rs0.fiado ? ' · queda fiado ' + _mxFmt(rs0.fiado) : '') + (rs0.vuelto ? ' · vuelto ' + _mxFmt(rs0.vuelto) : ''), '#2e7d32', 7000);
+    } else if (resp && resp.definitivo) _cbProgFin('');
+    else { _cbProgFin(''); _pmAviso('⏳ Cobro pendiente de confirmar', 'La planilla todavía no confirmó el cobro. NO lo cargues de nuevo: quedó guardado en este equipo. Tocá Confirmar para completarlo; con el mismo número de operación no se cobra dos veces.', '#e65100'); }
     if (resp && resp.success) {
         localStorage.removeItem(_ventaEnCursoKey());
         const rs = resp.resumen || {}, items = (enCurso.op.items || []).map(i => ({ name: i.name, qty: i.qty, price: i.precioVenta }));
         const total = items.reduce((s, i) => s + i.price * i.qty, 0);
-        window._ultimaVenta = { items, total, hora, metodo: 'mixto' };
+        window._ultimaVenta = { items, total, hora, metodo: 'mixto', cobro: _tkCobro(enCurso.op, rs) };   // V43.32: detalle real para el ticket (Copihue v451/v533/v538)
         if (items.length) guardarVentaDia({ items, total, hora, metodoPago: 'mixto' });
-        ventaActual = []; _mxLineas = []; _mxRevisado = null; localStorage.removeItem(CARRITO_KEY); renderVenta(); cargarProductos();
-        ['mxFiar', 'mxDeuda'].forEach(id => { document.getElementById(id).checked = false; }); ['mxCliente', 'mxTelefono', 'mxDeudaMonto'].forEach(id => { document.getElementById(id).value = ''; }); // la próxima venta empieza limpia
-        const av = (rs.avisos || []).map(a => '⚠️ ' + a);
-        // v045.3: resultado visual con bloques
-        _mxPreviaRev({ vuelto: rs.vuelto || 0, deuda: rs.deuda || 0, fiado: rs.fiado || 0 },
-            [], av); // ingresos ya se ven arriba; solo vuelto/deuda/fiado/avisos
-        if (items.length) document.getElementById('btnTicketWA').style.display = 'block';
+        ventaActual = []; localStorage.removeItem(CARRITO_KEY); renderVenta(); cargarProductos();
+        _mxLineas = []; _mxRevisado = null; _vd = null; _dc = null; _vdResetUI(); _dcResetUI();   // la próxima venta empieza limpia
+        _mxPreviaRev({ vuelto: rs.vuelto || 0, deuda: rs.deuda || 0, fiado: rs.fiado || 0 }, [], (rs.avisos || []));
+        if (items.length) { document.getElementById('btnTicketWA').style.display = 'block'; _tkBoton(); }
         btn.textContent = '✅ Confirmado';
-        mostrarToast(resp.yaExistia ? '✅ Ese cobro ya estaba registrado (no se cobró dos veces)' : '✅ Cobro registrado' + (rs.vuelto ? ' · Vuelto ' + _mxFmt(rs.vuelto) : ''), 'verde');
+        // V43.43: el resultado (registrado / ya estaba, abono, fiado y vuelto) ya lo muestra el cartel de avance de arriba (no se duplica)
         return;
     }
     btn.disabled = false; btn.textContent = '✅ Confirmar cobro';
     if (resp && resp.definitivo) {
         // El servidor no escribió nada: la operación se libera y el cobro se puede corregir.
-        localStorage.removeItem(_ventaEnCursoKey()); _mxRevisado = null; mxRender(false);
+        localStorage.removeItem(_ventaEnCursoKey()); _mxRevisado = null;
+        if (_pmAbierto()) mxRender(false); else _cbPintarModo(metodoPagoActual);
         _mxPrevia('❌ ' + resp.error, 'error'); btn.textContent = '🔎 Revisar cobro';
         if (resp.stockInsuficiente || /inventario cambió/.test(resp.error || '')) cargarProductos();
         return;
@@ -4222,38 +5007,65 @@ function _ocultarAvisoDeudaFiado() {
     const av = document.getElementById('fiadoDeudaAviso');
     if (av) { av.style.display = 'none'; av.textContent = ''; }
 }
-async function consultarDeudaFiado() {
-    if (_leerVentaEnCurso()) return; // fiado ya enviado: datos congelados, no se consulta
+// V43.37: mientras se consulta, el Confirmar espera («⏳ Revisando si ya debe…»): el fiado no sale antes de ver la deuda.
+let _deudaFiadoProm = null, _deudaFiadoVista = '';
+function _claveFiado() {
+    const cliente = (document.getElementById('fiadoCliente').value || '').trim(), telefono = (document.getElementById('fiadoTelefono').value || '').replace(/\D/g, '');
+    return telefono ? 'T:' + telefono : (cliente ? 'C:' + cliente.toUpperCase() : '');
+}
+function _btnFiadoEspera(esperando) {   // estado del botón con Fiado: sin cliente → «Escribí el cliente» · consultando → «⏳ Revisando si ya debe…»
+    const b = document.getElementById('btnOkConfirm'); if (!b || metodoPagoActual !== 'fiado' || _leerVentaEnCurso() || /Procesando|Confirmado/.test(b.textContent)) return;
+    const nombre = (document.getElementById('fiadoCliente').value || '').trim();
+    if (esperando || _deudaFiadoProm) { b.disabled = true; b.textContent = '⏳ Revisando si ya debe…'; }
+    else if (!nombre) { b.disabled = true; b.textContent = 'Escribí el cliente'; }
+    else { b.disabled = false; b.textContent = '✅ Confirmar'; }
+}
+function consultarDeudaFiado() {
+    if (_leerVentaEnCurso()) return Promise.resolve(); // fiado ya enviado: datos congelados, no se consulta
     const cliente = (document.getElementById('fiadoCliente').value || '').trim();
     const telefono = (document.getElementById('fiadoTelefono').value || '').replace(/\D/g, '');
-    const clave = telefono ? 'T:' + telefono : (cliente ? 'C:' + cliente.toUpperCase() : '');
-    if (!clave) { _deudaFiadoClave = ''; _deudaFiadoSeq++; _ocultarAvisoDeudaFiado(); return; }
-    if (clave === _deudaFiadoClave) return; // ya consultado para este cliente
-    _deudaFiadoClave = clave;
+    const clave = _claveFiado();
+    if (!clave) { _deudaFiadoClave = ''; _deudaFiadoSeq++; _deudaFiadoProm = null; _ocultarAvisoDeudaFiado(); _btnFiadoEspera(false); return Promise.resolve(); }
+    if (clave === _deudaFiadoClave) return _deudaFiadoProm || Promise.resolve(); // ya consultado (o consultándose) para este cliente
+    _deudaFiadoClave = clave; _deudaFiadoVista = '';   // cliente nuevo en pantalla: su deuda todavía no se vio
     const miSeq = ++_deudaFiadoSeq;
     _ocultarAvisoDeudaFiado();
-    let r = null;
-    try {
-        r = await _llamarAPI('getFiadosCliente', telefono ? { token: _tokenActual(), telefono: telefono } : { token: _tokenActual(), cliente: cliente });
-    } catch (e) { r = null; }
-    if (miSeq !== _deudaFiadoSeq) return; // cambió el cliente mientras se consultaba
-    if (!r || r.error || !(r.totalDeuda > 0) || !(r.cantFiados > 0)) { _ocultarAvisoDeudaFiado(); return; }
-    const vencidos = (r.fiados || []).filter(f => String(f.estado || '').toUpperCase() === 'VENCIDO').length;
-    const nombre = String(r.cliente || cliente || 'Este cliente').trim().toUpperCase();
-    const txt = '⚠️ ' + nombre + ' ya debe $' + Math.round(r.totalDeuda).toLocaleString('es-AR') +
-        ' en ' + r.cantFiados + (r.cantFiados === 1 ? ' fiado' : ' fiados') +
-        (vencidos ? ' (' + vencidos + (vencidos === 1 ? ' vencido)' : ' vencidos)') : '') +
-        '. Podés fiar igual.';
-    const av = document.getElementById('fiadoDeudaAviso');
-    if (av) { av.textContent = txt; av.style.display = 'block'; }
+    const av0 = document.getElementById('fiadoDeudaAviso');
+    if (av0) { av0.textContent = '⏳ Revisando si ' + (cliente || 'el cliente') + ' ya debe…'; av0.style.display = 'block'; }
+    _btnFiadoEspera(true);
+    _deudaFiadoProm = (async function () {
+        let r = null;
+        try {
+            r = await _llamarAPI('getFiadosCliente', telefono ? { token: _tokenActual(), telefono: telefono } : { token: _tokenActual(), cliente: cliente });
+        } catch (e) { r = null; }
+        if (miSeq !== _deudaFiadoSeq) return; // cambió el cliente mientras se consultaba
+        _deudaFiadoProm = null; _btnFiadoEspera(false);   // V43.37
+        if (!r || r.error || !(r.totalDeuda > 0) || !(r.cantFiados > 0)) { _ocultarAvisoDeudaFiado(); return; }   // sin deuda o sin respuesta: no se muestra nada (nunca bloquea)
+        const vencidos = (r.fiados || []).filter(f => String(f.estado || '').toUpperCase() === 'VENCIDO').length;
+        const nombre = String(r.cliente || cliente || 'Este cliente').trim().toUpperCase();
+        const txt = '⚠️ ' + nombre + ' ya debe $' + Math.round(r.totalDeuda).toLocaleString('es-AR') +
+            ' en ' + r.cantFiados + (r.cantFiados === 1 ? ' fiado' : ' fiados') +
+            (vencidos ? ' (' + vencidos + (vencidos === 1 ? ' vencido)' : ' vencidos)') : '') +
+            '. Podés fiar igual.';
+        const av = document.getElementById('fiadoDeudaAviso');
+        if (av) { av.textContent = txt; av.style.display = 'block'; }
+    })();
+    return _deudaFiadoProm;
 }
 ['fiadoCliente', 'fiadoTelefono'].forEach(function (id) {
-    document.getElementById(id).addEventListener('change', consultarDeudaFiado); // V38: al pasar al otro campo
+    document.getElementById(id).addEventListener('change', function () {   // V38: al pasar al otro campo
+        const d = document.getElementById('fiadoDrop'); if (d && d.style.display === 'block') return;   // V43.38: está eligiendo de la lista: se consulta al elegir
+        consultarDeudaFiado();
+    });
 });
 ['fiadoCliente', 'fiadoTelefono'].forEach(function (id) {
     document.getElementById(id).addEventListener('input', function () {
         if (_leerVentaEnCurso()) return; // un fiado en curso ya tiene sus datos congelados
         _guardarBorrador('fiado', { cliente: document.getElementById('fiadoCliente').value, telefono: document.getElementById('fiadoTelefono').value });
+        // V43.38: mientras escribe NO se consulta (con «vic» todavía no eligió al cliente). Se consulta al elegirlo de la lista,
+        // al pasar al otro campo o al tocar Confirmar. Si cambió el nombre, el aviso anterior ya no corresponde.
+        if (_claveFiado() !== _deudaFiadoClave) { _deudaFiadoClave = ''; _deudaFiadoSeq++; _deudaFiadoProm = null; _ocultarAvisoDeudaFiado(); }
+        _btnFiadoEspera(false);   // V43.37: se consulta al dejar de escribir (no hace falta salir del campo)
     });
 });
 

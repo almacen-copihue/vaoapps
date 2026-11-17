@@ -50,7 +50,16 @@ let DATOS = null; const SEL = {}, CANT = {}, OPS = {};
 const $ = id => document.getElementById(id);
 const chipUrg = { AGOTADO: 'rojo', ALTA: 'naranja', MEDIA: '', BAJA: 'gris' };
 function pintar() {
-  if (!DATOS.proveedores.length) { $('grupos').innerHTML = '<div class="vao-tarjeta"><p>✅ No hay nada urgente para comprar con esta cobertura.</p></div>'; return; }
+  // v2 (v045.5): explicar por qué está vacía. No es un error: con la cobertura elegida el stock actual alcanza
+  // (sugerido = promedio de venta por día × días a cubrir − stock). Con más días a cubrir aparecen más productos.
+  if (!DATOS.proveedores.length) {
+    const d = DATOS.coberturaDias, mas = [14, 21, 30].filter(x => x > d);
+    $('grupos').innerHTML = '<div class="vao-tarjeta"><p>✅ <b>Con tu stock actual cubrís los próximos ' + d + ' días.</b> No hace falta comprar nada todavía.</p>' +
+      '<p style="font-size:.85rem;color:var(--suave)">Cómo se calcula: para cada producto se mira cuánto vendiste por día (últimos 7 y 30 días) y se compara con tu stock. Si el stock alcanza para ' + d + ' días, no aparece en la lista.</p>' +
+      (mas.length ? '<button class="vao-btn" id="btnMasDias">🔎 Ver qué haría falta para ' + mas[mas.length - 1] + ' días</button>' : '') + '</div>';
+    const bm = $('btnMasDias'); if (bm) bm.onclick = () => { $('cobertura').value = String(mas[mas.length - 1]); cargar(); };
+    return;
+  }
   $('grupos').innerHTML = DATOS.proveedores.map((g, gi) => {
     const elegidos = g.items.filter(i => SEL[i.id]), est = elegidos.reduce((s, i) => s + (CANT[i.id] || 0) * i.ultimoCosto, 0);
     return '<div class="vao-tarjeta"><div class="prov-cab"><h2>🏷️ ' + VAO.esc(g.proveedor) + '</h2><span class="vao-chip">' + g.items.length + ' producto(s)</span></div>' +
@@ -67,13 +76,13 @@ function pintar() {
   $('grupos').querySelectorAll('[data-pedir]').forEach(b => b.addEventListener('click', () => pedir(+b.dataset.pedir, b)));
 }
 async function cargar() {
-  $('nota').textContent = 'Calculando…'; VAO.msg('msgLista', '');
+  $('nota').textContent = 'Calculando…'; VAO.msg('msgLista', ''); $('grupos').innerHTML = VAO.cargando('Calculando qué conviene comprar para ' + $('cobertura').value + ' días…');   // v2
   try {
     const r = await VAO.api('getListaCompra', { cobertura: +$('cobertura').value });
-    if (!r.success) { VAO.msg('msgLista', r.error, 'error'); return; }
+    if (!r.success) { VAO.msg('msgLista', r.error, 'error'); $('grupos').innerHTML = ''; return; }
     DATOS = r; DATOS.proveedores.forEach(g => g.items.forEach(i => { if (CANT[i.id] === undefined) CANT[i.id] = i.sugerido; if (SEL[i.id] === undefined) SEL[i.id] = i.urgencia === 'AGOTADO' || i.urgencia === 'ALTA'; }));
     $('nota').textContent = r.nota + ' ' + r.total + ' producto(s) para revisar.'; pintar();
-  } catch (e) { VAO.msg('msgLista', VAO.sinConexion, 'error'); }
+  } catch (e) { VAO.msg('msgLista', VAO.sinConexion, 'error'); $('grupos').innerHTML = '<div class="vao-tarjeta"><p>📡 No se pudo calcular la lista.</p><button class="vao-btn primario" onclick="cargar()">Reintentar</button></div>'; }
 }
 async function pedir(gi, btn) {
   const g = DATOS.proveedores[gi], items = g.items.filter(i => SEL[i.id] && CANT[i.id] > 0).map(i => ({ id: i.id, cantidad: CANT[i.id], costo: i.ultimoCosto }));

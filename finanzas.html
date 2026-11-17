@@ -60,11 +60,12 @@ function rango(r) {
   $('desde').value = f2(d); $('hasta').value = f2(a); $('agrupar').value = (r === 'anio') ? 'mes' : 'dia'; ver();
 }
 async function ver() {
-  VAO.msg('msg', 'Calculando…', 'info');
+  VAO.msg('msg', '⏳ Calculando ingresos y egresos del ' + $('desde').value.split('-').reverse().join('/') + ' al ' + $('hasta').value.split('-').reverse().join('/') + '…', 'info');
+  $('kpis').innerHTML = VAO.cargando('Calculando…'); $('barras').innerHTML = '';   // v2 (v045.5): nunca una pantalla vacía mientras calcula
   try {
     const r = await VAO.api('getFinanzas', { desde: $('desde').value, hasta: $('hasta').value, agrupar: $('agrupar').value });
-    if (!r.success) { VAO.msg('msg', r.error, 'error'); return; }
-    VAO.msg('msg', '');
+    if (!r.success) { VAO.msg('msg', r.error, 'error'); $('kpis').innerHTML = ''; return; }
+    VAO.msg('msg', (!r.totales.ingresos && !r.totales.egresos && !r.totales.otrosIngresos && !r.totales.fiadoOtorgado) ? 'No hay movimientos en este período. Probá con otro rango de fechas.' : '', 'info');
     const t = r.totales;
     $('kpis').innerHTML = '<div class="vao-kpi"><small>Ingresos (cobrado)</small><b>' + VAO.pesos(t.ingresos) + '</b></div>' + (t.otrosIngresos ? '<div class="vao-kpi"><small>Otros ingresos</small><b>' + VAO.pesos(t.otrosIngresos) + '</b></div>' : '') +
       '<div class="vao-kpi"><small>Egresos</small><b>' + VAO.pesos(t.egresos) + '</b></div><div class="vao-kpi kpi-res ' + (t.resultado < 0 ? 'neg' : '') + '"><small>Resultado</small><b>' + VAO.pesos(t.resultado) + '</b></div>' +
@@ -75,7 +76,7 @@ async function ver() {
     $('tMedios').innerHTML = filas(r.porMedio, MEDIOS) + (Object.keys(r.monedasExtranjeras).length ? '<tr><td colspan="2" style="font-size:.78rem;color:var(--suave)">Recibido en su moneda: ' + Object.keys(r.monedasExtranjeras).map(m => m + ' ' + r.monedasExtranjeras[m]).join(' · ') + '</td></tr>' : '');
     $('tCat').innerHTML = filas(r.egresosPorCategoria, {});
     $('notas').innerHTML = r.notas.map(n => '<li>' + VAO.esc(n) + '</li>').join('');
-  } catch (e) { VAO.msg('msg', VAO.sinConexion, 'error'); }
+  } catch (e) { VAO.msg('msg', VAO.sinConexion, 'error'); $('kpis').innerHTML = '<div class="vao-tarjeta"><p>📡 No se pudo calcular.</p><button class="vao-btn primario" onclick="ver()">Reintentar</button></div>'; }
 }
 VAO.iniciar({ modulo: 'pack3_finanzas', titulo: 'Finanzas', icono: '💹', grupo: 'P3' }).then(ok => {
   if (!ok) return;

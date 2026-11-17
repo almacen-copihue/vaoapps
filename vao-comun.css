@@ -94,3 +94,6 @@ html.vao-solo-lectura .vao-escribe { display: none !important; }
 .vao-resultados button:hover, .vao-resultados button:focus { background: var(--grupo-fondo); }
 .staging-badge { position: fixed; left: 8px; bottom: 8px; background: #F57C00; color: #fff; font-size: .7rem; font-weight: 800; border-radius: 999px; padding: 3px 9px; z-index: 30; opacity: .9; }
 @media (max-width: 480px) { main.vao { padding: 10px 10px 80px; } .vao-comercio { display: none; } .vao-tabla { font-size: .8rem; } }
+
+/* v045.5: animación del indicador de carga */
+@keyframes vaoGira { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

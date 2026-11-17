@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="vao-comun.css">
 <title>Anular venta · VAO POS</title>
-<style>/* anular.html v1 (v044) — P2 Gestión. Regla C2: nada se borra; la anulación es una operación nueva con motivo, operador y vista previa. */</style>
+<style>/* anular.html v2 (servidor v045.4): el historial muestra anulaciones a medias (PENDIENTE) o en revisión (BLOQUEADA); el medio de las ventas del cobro avanzado llega con su detalle real. v1 (v044) — P2 Gestión. Regla C2: nada se borra; la anulación es una operación nueva con motivo, operador y vista previa. */</style>
 </head>
 <body>
 <header id="vaoCabecera"></header>
@@ -43,7 +43,8 @@ async function cargar() {
 async function hist() {
   const r = await VAO.api('listarAnulaciones', {}); if (!r.success) return;
   const ic = { VENTA: '🧾', SALIDA: '📤', EGRESO: '💸', JUEGO: '🎁' };
-  $('hist').innerHTML = r.anulaciones.length ? r.anulaciones.map(a => '<li class="vao-item"><div class="izq"><b>' + (ic[a.tipo] || '↩️') + ' ' + VAO.esc(a.tipo) + ' · ' + VAO.esc(a.referencia) + '</b><small>' + VAO.esc(a.fecha) + ' · ' + VAO.esc(a.operador) + ' · «' + VAO.esc(a.motivo) + '» · ' + VAO.esc(a.detalle) + '</small></div></li>').join('') : '<li class="vao-item">No hay anulaciones.</li>';
+  const est = a => a.estado === 'PENDIENTE' ? ' <span class="vao-chip gris">A MEDIAS: tocá Anular otra vez para terminarla</span>' : (a.estado === 'BLOQUEADA' ? ' <span class="vao-chip rojo">EN REVISIÓN: avisá a VAO Sistemas</span>' : '');   // v2 (servidor v045.4)
+  $('hist').innerHTML = r.anulaciones.length ? r.anulaciones.map(a => '<li class="vao-item"><div class="izq"><b>' + (ic[a.tipo] || '↩️') + ' ' + VAO.esc(a.tipo) + ' · ' + VAO.esc(a.referencia) + '</b>' + est(a) + '<small>' + VAO.esc(a.fecha) + ' · ' + VAO.esc(a.operador) + ' · «' + VAO.esc(a.motivo) + '» · ' + VAO.esc(a.detalle) + '</small></div></li>').join('') : '<li class="vao-item">No hay anulaciones.</li>';
 }
 VAO.iniciar({ modulo: 'pack2_editor_stock', titulo: 'Anular venta', icono: '↩️', grupo: 'P2' }).then(ok => {
   if (!ok) return; VAO.pestanas('tabs', t => { if (t === 'hist') hist(); }); $('dias').onchange = cargar; cargar();

@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0D47A1">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="vao-comun.css">
+<title>SendWA · VAO POS</title>
+<style>
+/* sendwa.html v1.0 (2026-11-14): publicador WhatsApp para VAO POS.
+   Modo simple (3 pasos) por defecto. Modo avanzado recordado en localStorage. */
+
+/* ── Variables ── */
+:root {
+  --sw-verde: #2d5a22;
+  --sw-azul: #1565C0;
+  --sw-paso-bg: var(--papel);
+  --sw-card-sel: #E3F2FD;
+  --sw-card-sel-borde: #1976D2;
+  --sw-radius: 14px;
+}
+
+/* ── Loader ── */
+#sw-loader { display:flex; align-items:center; justify-content:center; min-height:200px; }
+
+/* ── Wizard (modo simple) ── */
+#sw-wizard { display:flex; flex-direction:column; gap:0; }
+
+/* Barra de progreso */
+.sw-progreso { display:flex; align-items:center; gap:0; padding:12px 16px 0; }
+.sw-paso-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:800; border:2px solid var(--borde); background:var(--papel); color:var(--suave); flex-shrink:0; }
+.sw-paso-dot.activo { background:var(--sw-azul); border-color:var(--sw-azul); color:#fff; }
+.sw-paso-dot.hecho  { background:#2E8B57; border-color:#2E8B57; color:#fff; }
+.sw-paso-linea { flex:1; height:3px; background:var(--borde); border-radius:2px; margin:0 4px; }
+.sw-paso-linea.hecha { background:#2E8B57; }
+
+/* Encabezado de paso */
+.sw-paso-titulo { padding:10px 16px 4px; font-size:1rem; font-weight:700; color:var(--texto); }
+.sw-paso-sub    { padding:0 16px 12px; font-size:0.82rem; color:var(--suave); }
+
+/* Contenido de cada paso */
+.sw-paso { display:none; flex-direction:column; gap:0; }
+.sw-paso.visible { display:flex; }
+
+/* ── Tarjetas de selección (Paso 1 — ¿qué publicás?) ── */
+.sw-origen-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px 16px; }
+.sw-origen-grid.tres { grid-template-columns:1fr 1fr 1fr; }
+.sw-origen-card { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  border:2px solid var(--borde); border-radius:var(--sw-radius); padding:18px 10px; background:var(--papel);
+  cursor:pointer; text-align:center; transition:border-color 0.15s, background 0.15s; min-height:90px; }
+.sw-origen-card:active { opacity:0.75; }
+.sw-origen-card.sel { border-color:var(--sw-card-sel-borde); background:var(--sw-card-sel); }
+.sw-origen-card .sw-ico { font-size:1.8rem; }
+.sw-origen-card .sw-lbl { font-size:0.78rem; font-weight:700; color:var(--texto); }
+.sw-origen-card .sw-sub-lbl { font-size:0.68rem; color:var(--suave); }
+
+/* ── Buscador (modo buscar — carrito style) ── */
+#sw-buscar-wrap { padding:0 16px 8px; display:none; }
+#sw-buscar-input { width:100%; padding:10px 14px; font-size:1rem; border:2px solid var(--borde);
+  border-radius:10px; background:var(--papel); color:var(--texto); box-sizing:border-box; }
+#sw-buscar-input:focus { outline:none; border-color:var(--sw-azul); }
+#sw-buscar-lista { margin:4px 16px 0; border:2px solid var(--borde); border-radius:10px; overflow:hidden; display:none; }
+.sw-buscar-item { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--papel);
+  border-bottom:1px solid var(--borde); cursor:pointer; }
+.sw-buscar-item:last-child { border-bottom:none; }
+.sw-buscar-item:active { background:var(--sw-card-sel); }
+.sw-buscar-item .sw-bi-foto { width:38px; height:38px; border-radius:8px; object-fit:cover; background:var(--fondo); }
+.sw-buscar-item .sw-bi-nom { font-size:0.85rem; font-weight:600; color:var(--texto); flex:1; }
+.sw-buscar-item .sw-bi-precio { font-size:0.78rem; color:var(--suave); }
+.sw-buscar-item .sw-bi-tick { font-size:1.2rem; color:#2E8B57; display:none; }
+.sw-buscar-item.sel .sw-bi-tick { display:block; }
+.sw-buscar-vacio { padding:18px; text-align:center; color:var(--suave); font-size:0.85rem; }
+
+/* ── Selector por categorías ── */
+#sw-cats-wrap { padding:0 16px 8px; display:none; flex-wrap:wrap; gap:8px; }
+.sw-cat-chip { padding:7px 14px; border:2px solid var(--borde); border-radius:20px; font-size:0.82rem;
+  font-weight:600; cursor:pointer; background:var(--papel); color:var(--texto); }
+.sw-cat-chip.sel { background:var(--sw-azul); border-color:var(--sw-azul); color:#fff; }
+
+/* ── Lista productos seleccionados (mini) ── */
+#sw-sel-contador { padding:8px 16px; font-size:0.82rem; color:var(--sw-azul); font-weight:700; display:none; }
+#sw-sel-lista { padding:0 16px 4px; display:flex; flex-wrap:wrap; gap:6px; }
+.sw-sel-chip { display:flex; align-items:center; gap:5px; padding:5px 10px 5px 8px;
+  background:#E3F2FD; border:1.5px solid #1976D2; border-radius:20px; font-size:0.76rem; cursor:pointer; }
+.sw-sel-chip .sw-rm { color:#E53935; font-weight:900; }
+
+/* ── Tarjetas de formato (Paso 2) ── */
+.sw-formato-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:0 16px 16px; }
+.sw-formato-card { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  border:2px solid var(--borde); border-radius:var(--sw-radius); padding:14px 8px; background:var(--papel);
+  cursor:pointer; text-align:center; transition:border-color 0.15s, background 0.15s; }
+.sw-formato-card:active { opacity:0.75; }
+.sw-formato-card.sel { border-color:var(--sw-card-sel-borde); background:var(--sw-card-sel); }
+.sw-formato-card .sw-ico { font-size:2rem; }
+.sw-formato-card .sw-lbl { font-size:0.78rem; font-weight:700; color:var(--texto); }
+.sw-formato-card .sw-sub-lbl { font-size:0.68rem; color:var(--suave); }
+
+/* ── Preview (Paso 3) ── */
+#sw-preview-wrap { padding:0 16px 12px; }
+#sw-canvas-container { text-align:center; margin-bottom:12px; }
+#sw-canvas { max-width:100%; border-radius:10px; border:1px solid var(--borde); display:none; }
+#sw-canvas-loading { padding:40px; text-align:center; color:var(--suave); font-size:0.9rem; }
+#sw-texto-wa { width:100%; min-height:80px; padding:10px; font-size:0.85rem; border:2px solid var(--borde);
+  border-radius:10px; background:var(--papel); color:var(--texto); box-sizing:border-box; resize:vertical; }
+.sw-btn-share { display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%; padding:14px; border:none; border-radius:12px; font-size:1rem; font-weight:800; cursor:pointer;
+  margin-top:8px; }
+.sw-btn-share.wa  { background:#25D366; color:#fff; }
+.sw-btn-share.dl  { background:var(--sw-azul); color:#fff; }
+.sw-btn-share.copy{ background:var(--fondo); color:var(--texto); border:2px solid var(--borde); }
+.sw-btn-adv { display:block; width:100%; padding:10px; border:2px solid var(--borde); border-radius:10px;
+  background:var(--papel); color:var(--suave); font-size:0.8rem; cursor:pointer; margin-top:8px; text-align:center; }
+
+/* ── Botones navegación entre pasos ── */
+.sw-nav { display:flex; align-items:center; gap:10px; padding:0 16px 16px; }
+.sw-btn-volver { padding:10px 18px; border:2px solid var(--borde); border-radius:10px;
+  background:var(--papel); color:var(--texto); font-size:0.9rem; cursor:pointer; }
+.sw-btn-sig { flex:1; padding:12px; border:none; border-radius:10px; background:var(--sw-azul); color:#fff;
+  font-size:0.95rem; font-weight:800; cursor:pointer; }
+.sw-btn-sig:disabled { background:var(--borde); color:var(--suave); cursor:default; }
+
+/* ── Aviso vacío ── */
+.sw-vacio { padding:28px 16px; text-align:center; }
+.sw-vacio .sw-vacio-ico { font-size:2.4rem; }
+.sw-vacio p { color:var(--suave); font-size:0.85rem; margin:6px 0 0; }
+
+/* ── Toast interno ── */
+#sw-toast { position:fixed; bottom:72px; left:50%; transform:translateX(-50%);
+  background:#333; color:#fff; padding:8px 18px; border-radius:20px; font-size:0.85rem;
+  opacity:0; transition:opacity 0.2s; pointer-events:none; z-index:999; white-space:nowrap; }
+#sw-toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sw-loader"><span>Cargando catálogo…</span></div>
+
+  <!-- ══ WIZARD MODO SIMPLE ══ -->
+  <div id="sw-wizard" style="display:none;">
+
+    <!-- Barra de progreso -->
+    <div class="sw-progreso">
+      <div class="sw-paso-dot activo" id="dot1">1</div>
+      <div class="sw-paso-linea"      id="linea12"></div>
+      <div class="sw-paso-dot"        id="dot2">2</div>
+      <div class="sw-paso-linea"      id="linea23"></div>
+      <div class="sw-paso-dot"        id="dot3">3</div>
+    </div>
+
+    <!-- ── PASO 1 — ¿Qué publicás? ── -->
+    <div id="sw-p1" class="sw-paso visible">
+      <div class="sw-paso-titulo">📢 ¿Qué publicás?</div>
+      <div class="sw-paso-sub">Elegí cómo querés armar el flyer</div>
+
+      <div class="sw-origen-grid tres" id="sw-origen-grid">
+        <div class="sw-origen-card" data-origen="ofertas" id="sw-origen-ofertas">
+          <span class="sw-ico">🏷️</span>
+          <span class="sw-lbl">Mis ofertas</span>
+          <span class="sw-sub-lbl">Oferta Simple activa</span>
+        </div>
+        <div class="sw-origen-card" data-origen="categoria" id="sw-origen-categoria">
+          <span class="sw-ico">📦</span>
+          <span class="sw-lbl">Por categoría</span>
+          <span class="sw-sub-lbl">Elegís cuál</span>
+        </div>
+        <div class="sw-origen-card" data-origen="buscar" id="sw-origen-buscar">
+          <span class="sw-ico">🔍</span>
+          <span class="sw-lbl">Buscar</span>
+          <span class="sw-sub-lbl">Por nombre</span>
+        </div>
+      </div>
+
+      <!-- Buscador (visible solo con origen=buscar) -->
+      <div id="sw-buscar-wrap">
+        <input type="search" id="sw-buscar-input" placeholder="Escribí el producto…" autocomplete="off">
+      </div>
+      <div id="sw-buscar-lista"></div>
+
+      <!-- Chips de categorías (visible solo con origen=categoria) -->
+      <div id="sw-cats-wrap"></div>
+
+      <!-- Productos seleccionados (chips) -->
+      <div id="sw-sel-contador"></div>
+      <div id="sw-sel-lista"></div>
+
+      <div class="sw-nav" style="margin-top:4px;">
+        <button class="sw-btn-volver" id="sw-btn-avanzado">⚙️ Modo avanzado</button>
+        <button class="sw-btn-sig" id="sw-p1-sig" disabled>Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- ── PASO 2 — ¿Cómo lo mostrás? ── -->
+    <div id="sw-p2" class="sw-paso">
+      <div class="sw-paso-titulo">🖼️ ¿Cómo lo mostrás?</div>
+      <div class="sw-paso-sub">Elegí el estilo del flyer</div>
+
+      <div class="sw-formato-grid">
+        <div class="sw-formato-card" data-fmt="foto">
+          <span class="sw-ico">📸</span>
+          <span class="sw-lbl">1 Foto</span>
+          <span class="sw-sub-lbl">Cuadrada 1:1</span>
+        </div>
+        <div class="sw-formato-card" data-fmt="collage">
+          <span class="sw-ico">🖼️</span>
+          <span class="sw-lbl">Collage</span>
+          <span class="sw-sub-lbl">Varios productos</span>
+        </div>
+        <div class="sw-formato-card" data-fmt="historia">
+          <span class="sw-ico">📱</span>
+          <span class="sw-lbl">Historia</span>
+          <span class="sw-sub-lbl">Estado 9:16</span>
+        </div>
+      </div>
+
+      <div class="sw-nav">
+        <button class="sw-btn-volver" id="sw-p2-volver">← Volver</button>
+        <button class="sw-btn-sig" id="sw-p2-sig" disabled>Siguiente →</button>
+      </div>
+    </div>
+
+    <!-- ── PASO 3 — Enviar ── -->
+    <div id="sw-p3" class="sw-paso">
+      <div class="sw-paso-titulo">📲 Listo para enviar</div>
+      <div class="sw-paso-sub">Revisá el flyer y el texto, luego compartí</div>
+
+      <div id="sw-preview-wrap">
+        <div id="sw-canvas-container">
+          <div id="sw-canvas-loading">⏳ Generando imagen…</div>
+          <canvas id="sw-canvas"></canvas>
+        </div>
+
+        <div style="font-size:0.78rem;color:var(--suave);margin-bottom:4px;">Texto para WhatsApp (podés editarlo):</div>
+        <textarea id="sw-texto-wa" placeholder="Cargando texto…"></textarea>
+
+        <button class="sw-btn-share wa" id="sw-btn-wa">💬 Compartir por WhatsApp</button>
+        <button class="sw-btn-share dl" id="sw-btn-dl">⬇️ Descargar imagen</button>
+        <button class="sw-btn-share copy" id="sw-btn-copiar">📋 Copiar texto</button>
+        <button class="sw-btn-adv" id="sw-btn-avanzado2">⚙️ Cambiar a modo avanzado (recordado)</button>
+      </div>
+
+      <div class="sw-nav">
+        <button class="sw-btn-volver" id="sw-p3-volver">← Volver</button>
+        <button class="sw-btn-sig" id="sw-p3-nuevo">🔄 Publicar otro</button>
+      </div>
+    </div>
+
+  </div><!-- /wizard -->
+
+</div><!-- /app -->
+<div id="sw-toast"></div>
+
+<script src="vao-comun.js"></script>
+<script>
+/* sendwa.html v1.0 — 2026-11-14
+   Publicador WhatsApp para VAO POS.
+   - Modo simple (3 pasos) por defecto para nuevos usuarios.
+   - localStorage 'swModoAvanzado=1' → recuerda avanzado.
+   Nota: modo avanzado apunta a SendWA externo (sendwa-adv.html) cuando exista.
+   Por ahora: botón de modo avanzado avisa que no está disponible aún. */
+
+'use strict';
+
+// ── Helpers de acceso DOM ──────────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+function qs(sel) { return document.querySelector(sel); }
+function qsa(sel) { return [...document.querySelectorAll(sel)]; }
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function swToast(msg, ms = 2200) {
+  const el = $('sw-toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), ms);
+}
+
+// ── Formato de precio ──────────────────────────────────────────────────────
+function fmt(n) {
+  if (!n && n !== 0) return '';
+  return '$' + Number(n).toLocaleString('es-AR');
+}
+
+// ── Normalizar texto para búsqueda ─────────────────────────────────────────
+function norm(s) {
+  return String(s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+// ── URL de imagen de producto ──────────────────────────────────────────────
+function getImgUrl(p) {
+  if (p.foto && p.foto.startsWith('http')) return p.foto;
+  // Mismo slug que usa el POS para las fotos locales
+  const slug = norm(p.nombre)
+    .replace(/[^a-z0-9 ]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-').trim();
+  return 'imagenes-productos/' + slug + '.jpg';
+}
+
+// ── Carga imagen con fallback placeholder ──────────────────────────────────
+function loadImg(url) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => {
+      // Placeholder gris con emoji
+      const c = document.createElement('canvas');
+      c.width = 100; c.height = 100;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#e0e0e0';
+      ctx.fillRect(0, 0, 100, 100);
+      ctx.font = '36px serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('📦', 50, 50);
+      const ph = new Image();
+      ph.src = c.toDataURL();
+      ph.onload = () => resolve(ph);
+    };
+    img.src = url;
+  });
+}
+
+// ── Emoji por categoría ────────────────────────────────────────────────────
+const CAT_EMOJIS = {
+  verduras: '🥦', frutas: '🍎', carnes: '🥩', lacteos: '🥛',
+  panaderia: '🍞', bebidas: '🍶', limpieza: '🧹', cuidado: '🧴',
+  almacen: '🏪', snacks: '🍿', congelados: '❄️', fiambres: '🧀',
+  quesos: '🧀', pollos: '🍗', pescados: '🐟', harinas: '🌾',
+  aceites: '🫒', condimentos: '🧂', galletitas: '🍪', golosinas: '🍬',
+};
+function getCatEmoji(cat) {
+  if (!cat) return '🛒';
+  const k = norm(cat).replace(/[^a-z]/g, '');
+  return Object.entries(CAT_EMOJIS).find(([c]) => k.includes(c))?.[1] || '🛒';
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ════════════════════════════════════════════════════════════════════════════
+let _productos = [];          // todos los productos con stock > 0
+let _selIds = new Set();      // IDs seleccionados
+let _origen = '';             // 'ofertas' | 'categoria' | 'buscar'
+let _formato = '';            // 'foto' | 'collage' | 'historia'
+let _catsSel = new Set();     // categorías seleccionadas (modo categoría)
+let _pasoActual = 1;
+
+// ════════════════════════════════════════════════════════════════════════════
+// PASO 1 — SELECCIÓN DE PRODUCTOS
+// ════════════════════════════════════════════════════════════════════════════
+
+// ── Actualiza botón "Siguiente" del P1 ──────────────────────────────────────
+function _p1ActualizarSig() {
+  const btn = $('sw-p1-sig');
+  const ok = _selIds.size > 0;
+  btn.disabled = !ok;
+  btn.textContent = ok ? `Siguiente → (${_selIds.size})` : 'Siguiente →';
+}
+
+// ── Renderiza chips de seleccionados ──────────────────────────────────────
+function _p1RenderSel() {
+  const cont = $('sw-sel-contador');
+  const lista = $('sw-sel-lista');
+  if (!_selIds.size) {
+    cont.style.display = 'none';
+    lista.innerHTML = '';
+    return;
+  }
+  cont.style.display = '';
+  cont.textContent = `✓ ${_selIds.size} producto${_selIds.size > 1 ? 's' : ''} seleccionado${_selIds.size > 1 ? 's' : ''}`;
+  lista.innerHTML = [..._selIds].map(id => {
+    const p = _productos.find(x => String(x.id) === String(id));
+    if (!p) return '';
+    return `<span class="sw-sel-chip" data-id="${id}">
+      ${p.nombre.length > 20 ? p.nombre.slice(0,18) + '…' : p.nombre}
+      <span class="sw-rm">✕</span>
+    </span>`;
+  }).join('');
+  // Eventos para quitar
+  lista.querySelectorAll('.sw-sel-chip').forEach(chip => {
+    chip.onclick = () => {
+      _selIds.delete(chip.dataset.id);
+      // Si estaba en lista de búsqueda, desmarcar
+      const item = $('sw-buscar-lista')?.querySelector(`[data-id="${chip.dataset.id}"]`);
+      if (item) item.classList.remove('sel');
+      _p1RenderSel();
+      _p1ActualizarSig();
+    };
+  });
+}
+
+// ── Modo OFERTAS: carga automática de productos con oferta simple activa ──
+function _p1Ofertas() {
+  const conOferta = _productos.filter(p =>
+    p.ofertaSimpleServer && p.ofertaSimpleServer.activa
+  );
+  if (!conOferta.length) {
+    $('sw-origen-grid').insertAdjacentHTML('afterend',
+      '<div class="sw-vacio"><div class="sw-vacio-ico">🏷️</div><p>No hay ofertas simples activas ahora.<br>Probá "Por categoría" o "Buscar".</p></div>'
+    );
+    _selIds.clear();
+  } else {
+    conOferta.forEach(p => _selIds.add(String(p.id)));
+  }
+  _p1RenderSel();
+  _p1ActualizarSig();
+}
+
+// ── Modo CATEGORÍA: muestra chips ─────────────────────────────────────────
+function _p1Categorias() {
+  const wrap = $('sw-cats-wrap');
+  const cats = [...new Set(_productos.map(p => p.categoria).filter(Boolean))].sort();
+  if (!cats.length) {
+    wrap.innerHTML = '<span style="color:var(--suave);font-size:0.85rem;">Sin categorías disponibles.</span>';
+    wrap.style.display = 'flex';
+    return;
+  }
+  wrap.innerHTML = cats.map(c =>
+    `<div class="sw-cat-chip" data-cat="${c}">${getCatEmoji(c)} ${c}</div>`
+  ).join('');
+  wrap.style.display = 'flex';
+  wrap.querySelectorAll('.sw-cat-chip').forEach(chip => {
+    chip.onclick = () => {
+      const cat = chip.dataset.cat;
+      if (_catsSel.has(cat)) {
+        _catsSel.delete(cat);
+        chip.classList.remove('sel');
+        // Quitar productos de esa cat
+        _productos.filter(p => p.categoria === cat)
+          .forEach(p => _selIds.delete(String(p.id)));
+      } else {
+        _catsSel.add(cat);
+        chip.classList.add('sel');
+        // Agregar productos de esa cat con stock
+        _productos.filter(p => p.categoria === cat && p.stock > 0)
+          .forEach(p => _selIds.add(String(p.id)));
+      }
+      _p1RenderSel();
+      _p1ActualizarSig();
+    };
+  });
+}
+
+// ── Modo BUSCAR: input + lista estilo carrito ──────────────────────────────
+function _p1Buscar() {
+  const wrap = $('sw-buscar-wrap');
+  const input = $('sw-buscar-input');
+  const lista = $('sw-buscar-lista');
+  wrap.style.display = '';
+  input.focus();
+
+  function renderBuscar(q) {
+    const termino = norm(q.trim());
+    if (!termino) { lista.style.display = 'none'; return; }
+    const res = _productos.filter(p =>
+      p.stock > 0 && norm(p.nombre).includes(termino)
+    ).slice(0, 15);
+    if (!res.length) {
+      lista.style.display = '';
+      lista.innerHTML = '<div class="sw-buscar-vacio">Sin resultados para "' + q + '"</div>';
+      return;
+    }
+    lista.style.display = '';
+    lista.innerHTML = res.map(p => {
+      const sel = _selIds.has(String(p.id));
+      const precioStr = p.ofertaSimpleServer?.activa
+        ? `<s>${fmt(p.precioVenta)}</s> → ${fmt(p.ofertaSimpleServer.precio || p.precioVenta)}`
+        : fmt(p.precioVenta);
+      return `<div class="sw-buscar-item${sel ? ' sel' : ''}" data-id="${p.id}">
+        <img class="sw-bi-foto" src="${getImgUrl(p)}" alt="" onerror="this.src=''">
+        <div style="flex:1;min-width:0;">
+          <div class="sw-bi-nom">${p.nombre}</div>
+          <div class="sw-bi-precio">${precioStr}</div>
+        </div>
+        <span class="sw-bi-tick">✓</span>
+      </div>`;
+    }).join('');
+    lista.querySelectorAll('.sw-buscar-item').forEach(item => {
+      item.onclick = () => {
+        const id = item.dataset.id;
+        if (_selIds.has(id)) {
+          _selIds.delete(id);
+          item.classList.remove('sel');
+        } else {
+          _selIds.add(id);
+          item.classList.add('sel');
+        }
+        item.querySelector('.sw-bi-tick').style.display = _selIds.has(id) ? 'block' : 'none';
+        _p1RenderSel();
+        _p1ActualizarSig();
+      };
+    });
+  }
+
+  input.oninput = () => renderBuscar(input.value);
+}
+
+// ── Al elegir origen ──────────────────────────────────────────────────────
+function _elegirOrigen(origen) {
+  _origen = origen;
+  _selIds.clear();
+  _catsSel.clear();
+
+  // Limpiar UI anterior
+  $('sw-buscar-wrap').style.display = 'none';
+  $('sw-buscar-lista').style.display = 'none';
+  $('sw-buscar-lista').innerHTML = '';
+  $('sw-buscar-input').value = '';
+  $('sw-cats-wrap').style.display = 'none';
+  $('sw-cats-wrap').innerHTML = '';
+  document.querySelector('.sw-vacio')?.remove();
+
+  qsa('.sw-origen-card').forEach(c => c.classList.toggle('sel', c.dataset.origen === origen));
+
+  if (origen === 'ofertas')   _p1Ofertas();
+  if (origen === 'categoria') _p1Categorias();
+  if (origen === 'buscar')    _p1Buscar();
+
+  _p1RenderSel();
+  _p1ActualizarSig();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PASO 2 — FORMATO
+// ════════════════════════════════════════════════════════════════════════════
+function _elegirFormato(fmt) {
+  _formato = fmt;
+  qsa('.sw-formato-card').forEach(c => c.classList.toggle('sel', c.dataset.fmt === fmt));
+  $('sw-p2-sig').disabled = false;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// PASO 3 — PREVIEW Y ENVÍO
+// ════════════════════════════════════════════════════════════════════════════
+
+// ── Genera texto WhatsApp ──────────────────────────────────────────────────
+function _generarTextoWA() {
+  const prods = [..._selIds]
+    .map(id => _productos.find(p => String(p.id) === String(id)))
+    .filter(Boolean);
+  if (!prods.length) return '';
+
+  const nombre = VAO.config?.nombre_empresa || VAO.config?.title || VAO.prefijo || 'Mi comercio';
+
+  // Verificar si hay ofertas
+  const conOferta = prods.filter(p => p.ofertaSimpleServer?.activa);
+
+  let header = '';
+  if (conOferta.length > 0 && conOferta.length === prods.length) {
+    header = `🏷️ *${nombre.toUpperCase()}*\n🔥 ¡OFERTAS DEL DÍA! 🔥\n`;
+  } else if (conOferta.length > 0) {
+    header = `🛒 *${nombre.toUpperCase()}*\n`;
+  } else {
+    header = `🛒 *${nombre.toUpperCase()}*\n`;
+  }
+
+  // Agrupar por categoría
+  const grupos = {};
+  for (const p of prods) {
+    const cat = p.categoria || 'Varios';
+    if (!grupos[cat]) grupos[cat] = [];
+    grupos[cat].push(p);
+  }
+
+  let lineas = [];
+  for (const [cat, ps] of Object.entries(grupos)) {
+    const e = getCatEmoji(cat);
+    lineas.push(`\n${e} *${cat.toUpperCase()}*`);
+    for (const p of ps) {
+      const of = p.ofertaSimpleServer;
+      if (of?.activa && of.precio && of.precio !== p.precioVenta) {
+        const textoOf = of.texto ? ` _(${of.texto})_` : ' _(oferta)_';
+        lineas.push(`• *${p.nombre}*${textoOf}\n  ~${fmt(p.precioVenta)}~ → *${fmt(of.precio)}*`);
+      } else {
+        lineas.push(`• ${p.nombre} — *${fmt(p.precioVenta)}*`);
+      }
+    }
+  }
+
+  const footer = '\n\n💬 Consultá por WhatsApp\n📦 Pedidos a domicilio';
+  return header + lineas.join('\n') + footer;
+}
+
+// ── Dibuja canvas ──────────────────────────────────────────────────────────
+async function _dibujarCanvas() {
+  const canvas = $('sw-canvas');
+  const loading = $('sw-canvas-loading');
+  loading.style.display = '';
+  canvas.style.display = 'none';
+
+  const prods = [..._selIds]
+    .map(id => _productos.find(p => String(p.id) === String(id)))
+    .filter(Boolean)
+    .slice(0, _formato === 'foto' ? 1 : (_formato === 'historia' ? 6 : 9));
+
+  if (!prods.length) { loading.textContent = '⚠️ Sin productos seleccionados'; return; }
+
+  // Dimensiones según formato
+  let W = 1080, H = 1080;
+  if (_formato === 'historia') { W = 1080; H = 1920; }
+
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Fondo
+  ctx.fillStyle = '#1a1a2e';
+  ctx.fillRect(0, 0, W, H);
+
+  // Color del comercio o genérico
+  const bgColor = VAO.config?.color_fondo || '#1565C0';
+  ctx.fillStyle = bgColor;
+
+  if (_formato === 'foto') {
+    // ── 1 Foto ── //
+    const p = prods[0];
+    const img = await loadImg(getImgUrl(p));
+    // Fondo completo con color
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, W, W * 0.75);
+    // Imagen centrada
+    const fotoH = Math.round(W * 0.72);
+    const fotoY = Math.round(W * 0.015);
+    _drawImgCover(ctx, img, 0, fotoY, W, fotoH);
+    // Franja info abajo
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, W * 0.75, W, H - W * 0.75);
+    // Nombre
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${Math.round(W * 0.055)}px 'Segoe UI', Arial, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    _drawTextWrapped(ctx, p.nombre.toUpperCase(), W / 2, Math.round(H * 0.78), W * 0.9, Math.round(W * 0.062));
+    // Precio
+    const of = p.ofertaSimpleServer;
+    const precioFinal = of?.activa ? (of.precio || p.precioVenta) : p.precioVenta;
+    ctx.font = `bold ${Math.round(W * 0.085)}px 'Segoe UI', Arial, sans-serif`;
+    ctx.fillStyle = '#FFD700';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText(fmt(precioFinal), W / 2, Math.round(H * 0.96));
+    if (of?.activa && of.precio && of.precio !== p.precioVenta) {
+      ctx.font = `${Math.round(W * 0.042)}px 'Segoe UI', Arial, sans-serif`;
+      ctx.fillStyle = 'rgba(255,255,255,0.65)';
+      ctx.fillText('antes ' + fmt(p.precioVenta), W / 2, Math.round(H * 0.955 - W * 0.085));
+    }
+    // Nombre del comercio
+    const nomCom = VAO.config?.nombre_empresa || VAO.config?.title || '';
+    if (nomCom) {
+      ctx.font = `bold ${Math.round(W * 0.032)}px 'Segoe UI', Arial, sans-serif`;
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      ctx.fillText(nomCom, Math.round(W * 0.04), Math.round(H * 0.96));
+    }
+
+  } else if (_formato === 'collage' || _formato === 'historia') {
+    // ── Collage/Historia ── //
+    const n = prods.length;
+    const cols = n <= 2 ? n : (n <= 4 ? 2 : 3);
+    const rows = Math.ceil(n / cols);
+    const headerH = Math.round(H * (_formato === 'historia' ? 0.08 : 0.1));
+    const footerH = Math.round(H * 0.07);
+    const gridH   = H - headerH - footerH;
+    const cellW   = Math.floor(W / cols);
+    const cellH   = Math.floor(gridH / rows);
+    const pad     = 4;
+
+    // Header
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, W, headerH);
+    const nomCom = VAO.config?.nombre_empresa || VAO.config?.title || 'Mi comercio';
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${Math.round(headerH * 0.5)}px 'Segoe UI', Arial, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(nomCom.toUpperCase(), W / 2, headerH / 2);
+
+    // Grid de fotos
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, headerH, W, gridH);
+
+    for (let i = 0; i < prods.length && i < rows * cols; i++) {
+      const p = prods[i];
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const x = col * cellW + pad;
+      const y = headerH + row * cellH + pad;
+      const cw = cellW - pad * 2;
+      const ch = cellH - pad * 2;
+
+      const img = await loadImg(getImgUrl(p));
+      _drawImgCover(ctx, img, x, y, cw, Math.round(ch * 0.7));
+
+      // Info del producto
+      ctx.fillStyle = '#fff';
+      ctx.font = `600 ${Math.round(cw * 0.1)}px 'Segoe UI', Arial, sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      const nomCorto = p.nombre.length > 22 ? p.nombre.slice(0, 20) + '…' : p.nombre;
+      ctx.fillText(nomCorto, x + cw / 2, y + Math.round(ch * 0.72));
+
+      const of = p.ofertaSimpleServer;
+      const precioFinal = of?.activa ? (of.precio || p.precioVenta) : p.precioVenta;
+      ctx.font = `bold ${Math.round(cw * 0.13)}px 'Segoe UI', Arial, sans-serif`;
+      ctx.fillStyle = '#FFD700';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillText(fmt(precioFinal), x + cw / 2, y + Math.round(ch * 0.84));
+    }
+
+    // Footer
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, H - footerH, W, footerH);
+    ctx.fillStyle = '#fff';
+    ctx.font = `${Math.round(footerH * 0.38)}px 'Segoe UI', Arial, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('💬 Pedidos por WhatsApp', W / 2, H - footerH / 2);
+  }
+
+  loading.style.display = 'none';
+  canvas.style.display = '';
+}
+
+// ── Helpers canvas ─────────────────────────────────────────────────────────
+function _drawImgCover(ctx, img, x, y, w, h) {
+  const iw = img.width, ih = img.height;
+  if (!iw || !ih) return;
+  const scale = Math.max(w / iw, h / ih);
+  const sw = iw * scale, sh = ih * scale;
+  const sx = x + (w - sw) / 2, sy = y + (h - sh) / 2;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+  ctx.drawImage(img, sx, sy, sw, sh);
+  ctx.restore();
+}
+
+function _drawTextWrapped(ctx, text, x, y, maxW, lineH) {
+  const words = text.split(' ');
+  let line = '';
+  let cy = y;
+  for (const w of words) {
+    const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, cy);
+      line = w;
+      cy += lineH;
+    } else {
+      line = test;
+    }
+  }
+  if (line) ctx.fillText(line, x, cy);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// NAVEGACIÓN ENTRE PASOS
+// ════════════════════════════════════════════════════════════════════════════
+function _irPaso(n) {
+  _pasoActual = n;
+  qsa('.sw-paso').forEach(el => el.classList.remove('visible'));
+  $(`sw-p${n}`).classList.add('visible');
+
+  // Actualizar barra de progreso
+  [1, 2, 3].forEach(i => {
+    const dot = $(`dot${i}`);
+    dot.classList.remove('activo', 'hecho');
+    if (i < n) dot.classList.add('hecho');
+    else if (i === n) dot.classList.add('activo');
+  });
+  ['linea12', 'linea23'].forEach((id, idx) => {
+    const linea = $(id);
+    linea.classList.toggle('hecha', idx + 2 <= n);
+  });
+
+  // Acciones al llegar al paso 3
+  if (n === 3) {
+    $('sw-texto-wa').value = _generarTextoWA();
+    _dibujarCanvas();
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// MODO AVANZADO
+// ════════════════════════════════════════════════════════════════════════════
+function _activarModoAvanzado() {
+  localStorage.setItem('swModoAvanzado', '1');
+  swToast('⚙️ Modo avanzado guardado');
+  // Por ahora, el modo avanzado no existe como archivo separado.
+  // Avisa al usuario y no hace nada más.
+  setTimeout(() => {
+    swToast('🚧 Modo avanzado próximamente', 3000);
+  }, 500);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// INICIALIZACIÓN
+// ════════════════════════════════════════════════════════════════════════════
+VAO.iniciar({ modulo: 'pack2_editor_stock', titulo: 'SendWA', icono: '📲', grupo: 'P2' })   /* v045.6: módulo real de P2 (antes 'sendwa', inexistente: siempre «no está en tu plan») */.then(async ok => {
+  if (!ok) return;
+
+  // ── Cargar productos ──
+  let data;
+  try {
+    data = await VAO.api('getProductos', {});
+  } catch (e) {
+    $('sw-loader').innerHTML = '<div class="sw-vacio"><div class="sw-vacio-ico">❌</div><p>No se pudo conectar con el catálogo.<br>Revisá tu conexión e intentá de nuevo.</p></div>';
+    return;
+  }
+
+  // Parsear productos igual que el POS (soporta array o { productos: [...] })
+  let rows = null;
+  if (Array.isArray(data)) rows = data;
+  else if (data && typeof data === 'object') {
+    for (const k of Object.keys(data)) {
+      if (Array.isArray(data[k])) { rows = data[k]; break; }
+    }
+  }
+
+  if (!rows || !rows.length) {
+    $('sw-loader').innerHTML = '<div class="sw-vacio"><div class="sw-vacio-ico">📦</div><p>No hay productos cargados en el catálogo.<br>Agregá productos desde el inventario.</p></div>';
+    return;
+  }
+
+  _productos = rows
+    .filter(r => r && r.nombre && (parseFloat(r.precio || r.precioVenta || 0) > 0))
+    .map(r => ({
+      id:           Number(r.id) || r.nombre,
+      nombre:       String(r.nombre || '').trim(),
+      precioVenta:  parseFloat(r.precio || r.precioVenta || 0),
+      categoria:    String(r.categoria || r.category || '').trim(),
+      stock:        parseFloat(r.stock ?? 1),
+      foto:         String(r.foto || r.image || r.imagen || '').trim(),
+      ofertaSimpleServer: r.ofertaSimple || null,
+    }))
+    .filter(p => p.stock > 0);
+
+  if (!_productos.length) {
+    $('sw-loader').innerHTML = '<div class="sw-vacio"><div class="sw-vacio-ico">📦</div><p>No hay productos con stock disponible.</p></div>';
+    return;
+  }
+
+  // ── Ocultar loader y mostrar wizard ──
+  $('sw-loader').style.display = 'none';
+  $('sw-wizard').style.display = '';
+
+  // ── Verificar modo avanzado ──
+  if (localStorage.getItem('swModoAvanzado') === '1') {
+    // Si el usuario ya es avanzado, avisar que el modo avanzado no está disponible aún
+    swToast('💡 Modo avanzado próximamente disponible', 4000);
+    // Mantiene el modo simple igual pero lo recuerda
+  }
+
+  // ── Eventos Paso 1 ──
+  qsa('.sw-origen-card').forEach(card => {
+    card.onclick = () => _elegirOrigen(card.dataset.origen);
+  });
+
+  $('sw-p1-sig').onclick = () => { if (_selIds.size) _irPaso(2); };
+
+  $('sw-btn-avanzado').onclick = () => {
+    _activarModoAvanzado();
+  };
+
+  // ── Eventos Paso 2 ──
+  qsa('.sw-formato-card').forEach(card => {
+    card.onclick = () => _elegirFormato(card.dataset.fmt);
+  });
+
+  $('sw-p2-volver').onclick = () => _irPaso(1);
+  $('sw-p2-sig').onclick = () => { if (_formato) _irPaso(3); };
+
+  // ── Eventos Paso 3 ──
+  $('sw-p3-volver').onclick = () => _irPaso(2);
+
+  $('sw-p3-nuevo').onclick = () => {
+    _selIds.clear();
+    _catsSel.clear();
+    _origen = '';
+    _formato = '';
+    qsa('.sw-origen-card').forEach(c => c.classList.remove('sel'));
+    qsa('.sw-formato-card').forEach(c => c.classList.remove('sel'));
+    document.querySelector('.sw-vacio')?.remove();
+    $('sw-p2-sig').disabled = true;
+    _p1RenderSel();
+    _p1ActualizarSig();
+    _irPaso(1);
+  };
+
+  $('sw-btn-wa').onclick = () => {
+    const txt = $('sw-texto-wa').value.trim();
+    if (!txt) { swToast('⚠️ No hay texto para enviar'); return; }
+    window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank');
+  };
+
+  $('sw-btn-dl').onclick = async () => {
+    const canvas = $('sw-canvas');
+    if (!canvas || canvas.style.display === 'none') {
+      swToast('⚠️ Esperá que termine de generar la imagen');
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/jpeg', 0.92);
+    const prods = [..._selIds].map(id => _productos.find(p => String(p.id) === String(id))).filter(Boolean);
+    a.download = (prods[0]?.nombre ? norm(prods[0].nombre).replace(/[^a-z0-9]/g, '_') : 'flyer') + '_sendwa.jpg';
+    a.click();
+    swToast('⬇️ Descargando imagen…');
+  };
+
+  $('sw-btn-copiar').onclick = () => {
+    const txt = $('sw-texto-wa').value.trim();
+    if (!txt) { swToast('Sin texto para copiar'); return; }
+    navigator.clipboard.writeText(txt)
+      .then(() => swToast('✓ Texto copiado'))
+      .catch(() => swToast('⚠️ No se pudo copiar'));
+  };
+
+  $('sw-btn-avanzado2').onclick = () => {
+    _activarModoAvanzado();
+  };
+
+  // Ir al paso 1
+  _irPaso(1);
+});
+</script>
+</body>
+</html>
