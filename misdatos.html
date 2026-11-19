@@ -294,7 +294,7 @@ function monedas() {
     try {
       const r = await VAO.api('setMiCotizacion', { moneda: k, valor: $('cot_' + k).value.trim() });
       VAO.msg('msgMon', r.success ? r.mensaje : r.error, r.success ? 'ok' : 'error');
-      if (r.success) { AJ = await VAO.api('getAjustes', {}); monedas(); }
+      if (r.success) { try { sessionStorage.removeItem('vao_snapcfg_' + VAO.prefijo); } catch (x) {} AJ = await VAO.api('getAjustes', {}); monedas(); }   // v2.1: el POS vuelve a pedir la cotización nueva
     } catch (e) { VAO.msg('msgMon', VAO.sinConexion, 'error'); }
     finally { b.disabled = false; }
   });
